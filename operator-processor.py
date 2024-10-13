@@ -174,16 +174,24 @@ class quay_controller:
         headers = {'Authorization': f'Bearer {os.environ[self.org.upper() + "_QUAY_API_TOKEN"]}',
                    'Accept': 'application/json'}
         response = requests.get(url, headers=headers)
-        tag = response.json()['tags']
-        return tag
+        if 'tags' in response.json():
+            tag = response.json()['tags']
+            return tag
+        else:
+            print(response.json())
+            sys.exit(1)
 
     def get_git_labels(self, repo, tag):
         url = f'{BASE_URL}/repository/{self.org}/{repo}/manifest/{tag}/labels?filter=git'
         headers = {'Authorization': f'Bearer {os.environ[self.org.upper() + "_QUAY_API_TOKEN"]}',
                    'Accept': 'application/json'}
         response = requests.get(url, headers=headers)
-        labels = response.json()['labels']
-        return labels
+        if 'labels' in response.json():
+            labels = response.json()['labels']
+            return labels
+        else:
+            print(response.json())
+            sys.exit(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
