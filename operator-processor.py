@@ -47,17 +47,17 @@ class operator_processor:
 
 
     def write_output_files(self):
-        # ruyaml.dump(self.nudging_yaml_dict, open(self.nudging_yaml_path, 'w'), Dumper=ruyaml.RoundTripDumper, default_flow_style=False)
-        # ruyaml.dump(self.operands_map_dict, open(self.operands_map_path, 'w'), Dumper=ruyaml.RoundTripDumper,
-        #             default_flow_style=False)
-        # ruyaml.dump(self.manifest_config_dict, open(self.manifest_config_path, 'w'), Dumper=ruyaml.RoundTripDumper,
-        #             default_flow_style=False)
+        ruyaml.dump(self.nudging_yaml_dict, open(self.nudging_yaml_path, 'w'), Dumper=ruyaml.RoundTripDumper, default_flow_style=False)
+        ruyaml.dump(self.operands_map_dict, open(self.operands_map_path, 'w'), Dumper=ruyaml.RoundTripDumper,
+                    default_flow_style=False)
+        ruyaml.dump(self.manifest_config_dict, open(self.manifest_config_path, 'w'), Dumper=ruyaml.RoundTripDumper,
+                    default_flow_style=False)
 
-        ruyaml.dump(self.nudging_yaml_dict, open('nudging_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper, default_flow_style=False)
-        ruyaml.dump(self.operands_map_dict, open('operands_map_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper,
-                    default_flow_style=False)
-        ruyaml.dump(self.manifest_config_dict, open('manifests_config_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper,
-                    default_flow_style=False)
+        # ruyaml.dump(self.nudging_yaml_dict, open('nudging_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper, default_flow_style=False)
+        # ruyaml.dump(self.operands_map_dict, open('operands_map_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper,
+        #             default_flow_style=False)
+        # ruyaml.dump(self.manifest_config_dict, open('manifests_config_output.yaml', 'w'), Dumper=ruyaml.RoundTripDumper,
+        #             default_flow_style=False)
 
     def update_operands_map(self):
         self.operands_map_dict = jsonupdate_ng.updateJson(self.operands_map_dict, {'relatedImages': self.latest_images }, meta={'listPatchScheme': {'$.relatedImages': {'key': 'name'}}} )
