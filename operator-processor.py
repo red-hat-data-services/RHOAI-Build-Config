@@ -9,6 +9,7 @@ import yaml
 import ruamel.yaml as ruyaml
 import os
 from ruamel.yaml.scalarstring import DoubleQuotedScalarString
+
 import json
 class operator_processor:
     PRODUCTION_REGISTRY = 'registry.redhat.io'
@@ -24,6 +25,8 @@ class operator_processor:
         self.rhoai_version = rhoai_version
 
         self.patch_dict = self.parse_patch_yaml()
+
+        ruyaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
         self.operands_map_dict = ruyaml.load(open(self.operands_map_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
         self.nudging_yaml_dict = ruyaml.load(open(self.nudging_yaml_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
         self.manifest_config_dict = ruyaml.load(open(self.manifest_config_path), Loader=ruyaml.RoundTripLoader,
@@ -126,7 +129,9 @@ class operator_processor:
                 sig_tag = f'{tag["manifest_digest"].replace(":", "-")}.sig'
                 signature = qc.get_tag_details(repo, sig_tag)
                 if signature:
-                    image_entry['value'] = DoubleQuotedScalarString(f'{registry}/{org}/{repo}@{tag["manifest_digest"]}')
+                    value = f'{registry}/{org}/{repo}@{tag["manifest_digest"]}'
+                    # if image_entry['value'] != value:
+                    image_entry['value'] = DoubleQuotedScalarString(value)
                     latest_images.append(image_entry)
 
                     labels = qc.get_git_labels(repo, tag["manifest_digest"])
