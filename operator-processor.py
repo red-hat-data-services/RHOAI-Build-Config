@@ -26,7 +26,9 @@ class operator_processor:
 
         self.patch_dict = self.parse_patch_yaml()
 
-        ruyaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+        #uncomment this if we face id001 problem in the operands map yaml
+        #ruyaml.representer.RoundTripRepresenter.ignore_aliases = lambda x, y: True
+
         self.operands_map_dict = ruyaml.load(open(self.operands_map_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
         self.nudging_yaml_dict = ruyaml.load(open(self.nudging_yaml_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
         self.manifest_config_dict = ruyaml.load(open(self.manifest_config_path), Loader=ruyaml.RoundTripLoader,
