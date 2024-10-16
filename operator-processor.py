@@ -17,7 +17,7 @@ class operator_processor:
     GIT_URL_LABEL_KEY = 'git.url'
     GIT_COMMIT_LABEL_KEY = 'git.commit'
 
-    def __init__(self, patch_yaml_path:str, rhoai_version:str, operands_map_path:str, nudging_yaml_path:str, manifest_config_path:str):
+    def __init__(self, patch_yaml_path:str, rhoai_version:str, operands_map_path:str, nudging_yaml_path:str, manifest_config_path:str, push_pipeline_operation:str, push_pipeline_yaml_path:str):
         self.patch_yaml_path = patch_yaml_path
         self.operands_map_path = operands_map_path
         self.nudging_yaml_path = nudging_yaml_path
@@ -33,6 +33,9 @@ class operator_processor:
         self.nudging_yaml_dict = ruyaml.load(open(self.nudging_yaml_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
         self.manifest_config_dict = ruyaml.load(open(self.manifest_config_path), Loader=ruyaml.RoundTripLoader,
                                              preserve_quotes=True)
+        self.push_pipeline_operation = push_pipeline_operation
+        self.push_pipeline_yaml_path = push_pipeline_yaml_path
+        self.push_pipeline_dict = ruyaml.load(open(self.push_pipeline_yaml_path), Loader=ruyaml.RoundTripLoader, preserve_quotes=True)
 
     def parse_patch_yaml(self):
         return yaml.safe_load(open(self.patch_yaml_path))
@@ -47,10 +50,26 @@ class operator_processor:
         if self.git_labels_meta:
             self.update_manifest_config()
 
+        self.process_push_pipeline()
+
         self.write_output_files()
 
 
+    def process_push_pipeline(self):
+        current_on_cel_expr = self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression']
+        disable_ext = 'non-existent-file.non-existent-ext'
+        disable_expr = f'&& "{disable_ext}".pathChanged()'
+        updated=False
+        if self.push_pipeline_operation.lower() == 'enable' and disable_ext in current_on_cel_expr:
+            self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression'] = current_on_cel_expr.replace(disable_expr, '')
+            updated = True
+        elif self.push_pipeline_operation.lower() == 'disable' and disable_ext not in current_on_cel_expr:
+            self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression'] = f'{current_on_cel_expr} {disable_expr}'
+            updated = True
 
+        if updated:
+            ruyaml.dump(self.push_pipeline_dict, open(self.push_pipeline_yaml_path, 'w'), Dumper=ruyaml.RoundTripDumper,
+                    default_flow_style=False)
     def write_output_files(self):
         ruyaml.dump(self.nudging_yaml_dict, open(self.nudging_yaml_path, 'w'), Dumper=ruyaml.RoundTripDumper, default_flow_style=False)
         ruyaml.dump(self.operands_map_dict, open(self.operands_map_path, 'w'), Dumper=ruyaml.RoundTripDumper,
@@ -214,10 +233,14 @@ if __name__ == '__main__':
                         help='Path of the manifest config yaml', dest='manifest_config_path')
     parser.add_argument('-v', '--rhoai-version', required=False,
                         help='The version of Openshift-AI being processed', dest='rhoai_version')
+    parser.add_argument('-y', '--push-pipeline-yaml-path', required=False,
+                        help='Path of the tekton pipeline for push builds', dest='push_pipeline_yaml_path')
+    parser.add_argument('-x', '--push-pipeline-operation', required=False, default="enable",
+                        help='Operation code, supported values are "enable" and "disable"', dest='push_pipeline_operation')
     args = parser.parse_args()
 
     if args.operation.lower() == 'process-operator-yamls':
-        processor = operator_processor(patch_yaml_path=args.patch_yaml_path, rhoai_version=args.rhoai_version, operands_map_path=args.operands_map_path, nudging_yaml_path=args.nudging_yaml_path, manifest_config_path=args.manifest_config_path)
+        processor = operator_processor(patch_yaml_path=args.patch_yaml_path, rhoai_version=args.rhoai_version, operands_map_path=args.operands_map_path, nudging_yaml_path=args.nudging_yaml_path, manifest_config_path=args.manifest_config_path, push_pipeline_operation=args.push_pipeline_operation, push_pipeline_yaml_path=args.push_pipeline_yaml_path)
         processor.generate_latest_operands_map()
 
     # patch_yaml_path = '/home/dchouras/RHODS/DevOps/RHOAI-Build-Config/bundle/bundle-patch.yaml'
@@ -225,11 +248,14 @@ if __name__ == '__main__':
     # nudging_yaml_path = '/home/dchouras/RHODS/DevOps/rhods-operator/build/operator-nudging.yaml'
     # manifest_config_path = '/home/dchouras/RHODS/DevOps/rhods-operator/build/manifests-config.yaml'
     # rhoai_version = 'rhoai-2.13'
+    # push_pipeline_operation = 'enable'
+    # push_pipeline_yaml_path = '/home/dchouras/RHODS/DevOps/rhods-operator/.tekton/odh-operator-v2-13-push.yaml'
     #
     #
     # processor = operator_processor(patch_yaml_path=patch_yaml_path, rhoai_version=rhoai_version,
     #                                operands_map_path=operands_map_path, nudging_yaml_path=nudging_yaml_path,
-    #                                manifest_config_path=manifest_config_path)
+    #                                manifest_config_path=manifest_config_path,
+    #                              push_pipeline_yaml_path=push_pipeline_yaml_path, push_pipeline_operation=push_pipeline_operation)
     # processor.generate_latest_operands_map()
 
 
