@@ -58,13 +58,13 @@ class operator_processor:
     def process_push_pipeline(self):
         current_on_cel_expr = self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression']
         disable_ext = 'non-existent-file.non-existent-ext'
-        disable_expr = f'&& "{disable_ext}".pathChanged()'
+        disable_expr = f'"{disable_ext}".pathChanged() && '
         updated=False
         if self.push_pipeline_operation.lower() == 'enable' and disable_ext in current_on_cel_expr:
             self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression'] = current_on_cel_expr.replace(disable_expr, '')
             updated = True
         elif self.push_pipeline_operation.lower() == 'disable' and disable_ext not in current_on_cel_expr:
-            self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression'] = f'{current_on_cel_expr} {disable_expr}'
+            self.push_pipeline_dict['metadata']['annotations']['pipelinesascode.tekton.dev/on-cel-expression'] = f'{disable_expr}{current_on_cel_expr}'
             updated = True
 
         if updated:
