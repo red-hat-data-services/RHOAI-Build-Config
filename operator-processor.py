@@ -97,6 +97,10 @@ class operator_processor:
                     manifest_config[self.GIT_COMMIT_LABEL_KEY] = git_commit
                 else:
                     missing_git_labels.append(component)
+        self.manifest_config_dict['additional_meta'] = {}
+        for component, git_meta in self.git_labels_meta['map'].items():
+            if component not in self.manifest_config_dict['map']:
+                self.manifest_config_dict['additional_meta'][component] = git_meta
         if missing_git_labels:
             print('git.url and git.commit labels missing/empty for : ', missing_git_labels)
             sys.exit(1)
