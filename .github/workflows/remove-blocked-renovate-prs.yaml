@@ -1,0 +1,128 @@
+name: Remove blocked renovate Pull Requests
+
+on:
+  # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#schedule
+  # this may not work as per above doc: Scheduled workflows will only run on the default branch.
+  # schedule:
+  pull_request:
+    branches:
+      - 'rhoai-2.1[6-9]+'  # Trigger the workflow on pushes to any rhoai-2.16 branch
+      - 'wznoinsk_RHOAIENG-14372'  # Trigger the workflow on pushes to any rhoai-2.16 branch
+    types:
+      - opened
+      - reopened
+      - edited
+    paths: # TODO: change it
+      - .github/workflows/remove-blocked-renovate-prs.yaml
+      # TODO: enable the below for prod
+      # - bundle/bundle-patch.yaml
+      # - schedule/bundle-github-trigger.txt
+      # - catalog/catalog-patch.yaml
+      # - schedule/catalog-github-trigger.txt
+
+# env:
+#   GITHUB_ORG: red-hat-data-services
+#   GITHUB_RKA_ORG: rhoai-rhtap
+#   RESOLVE_CONFLICTS_FOR: 'catalog/catalog-patch.yaml,schedule/catalog-github-trigger.txt,bundle/bundle-patch.yaml,schedule/bundle-github-trigger.txt'
+
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+  security-events: write
+  statuses: write
+
+jobs:
+  remove-blocked-prs:
+    if: ${{ ( github.event.sender.login == 'wznoinsk' || github.event.sender.login == 'konflux-internal-p02[bot]') && contains(github.event.pull_request.title, 'update odh-')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: check what's on the filesystem
+        if: ${{ steps.changed-files.outputs.all_changed_files == 'catalog/catalog-patch.yaml' || steps.changed-files.outputs.all_changed_files == 'schedule/catalog-github-trigger.txt' || steps.changed-files.outputs.all_changed_files == 'bundle/bundle-patch.yaml' || steps.changed-files.outputs.all_changed_files == 'schedule/bundle-github-trigger.txt'}}
+        id: filesystem-content-check
+        run:
+          pwd
+          find .
+
+      - name: show filesystem content
+        run:
+          echo "${{ steps.filesystem-content-check.outputs }}"
+
+      # TODO: do we need this?
+      # - uses: actions/checkout@v4
+
+      # - name: Merge Feasibility Check
+      #   if: ${{ steps.changed-files.outputs.all_changed_files == 'catalog/catalog-patch.yaml' || steps.changed-files.outputs.all_changed_files == 'schedule/catalog-github-trigger.txt' }}
+      #   id: merge-feasibility-check
+      #   run: |
+      #     # Declare variables
+      #     BASE_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
+      #     HEAD_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+      #     VERSION=v${BASE_BRANCH/rhoai-/}
+      #     SUFFIX=${VERSION/./-}
+      #     echo "SUFFIX=$SUFFIX"
+      #     echo "HEAD_BRANCH=$HEAD_BRANCH"
+      #     TITLE="${{ github.event.pull_request.title }}"
+
+      #     if [[ $TITLE == chore\(deps\)* ]]
+      #     then
+      #       TITLE=${TITLE/chore\(deps\): u/U}
+      #     fi
+      #     REGEX="^Update.*-$SUFFIX to [0-9a-z]{1,40}$"
+
+      #     FEASIBLE=No
+      #     #Check if PR title is as per the convention
+      #     if [[ "$TITLE" =~ $REGEX ]]
+      #     then
+      #       FEASIBLE=Yes
+      #       echo "It's a valid PR to merge!"
+      #     else
+      #       echo "Insta-merge not configured to merge this PR, skipping."
+      #     fi
+      #     echo "FEASIBLE=$FEASIBLE" >> $GITHUB_OUTPUT
+      #     echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_OUTPUT
+      #     echo "HEAD_BRANCH=$HEAD_BRANCH" >> $GITHUB_OUTPUT
+
+      # - name: Generate github-app token
+      #   id: app-token
+      #   uses: getsentry/action-github-app-token@v2
+      #   with:
+      #     app_id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
+      #     private_key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
+
+      # - uses: Wandalen/wretry.action@v3.5.0
+      #   if: ${{ steps.merge-feasibility-check.outputs.FEASIBLE == 'Yes' }}
+      #   with:
+      #     action: red-hat-data-services/insta-merge@main
+      #     retry_condition: steps._this.outputs.code == 0
+      #     attempt_limit: 5
+      #     github_token: ${{ steps.app-token.outputs.token }}
+      #     with: |
+      #       upstream_repo: "https://github.com/${GITHUB_ORG}/RHOAI-Build-Config.git"
+      #       upstream_branch: "${{ steps.merge-feasibility-check.outputs.BASE_BRANCH }}"
+      #       downstream_repo: "https://github.com/${GITHUB_ORG}/RHOAI-Build-Config.git"
+      #       downstream_branch: "${{ steps.merge-feasibility-check.outputs.HEAD_BRANCH }}"
+      #       token: ${{ steps.app-token.outputs.token }}
+      #       resolve_conflicts_for: "${RESOLVE_CONFLICTS_FOR}"
+      #       merge_args: "--no-edit"
+      #       pr_url: "${{ github.event.pull_request.html_url }}"
+
+#      - name: instant-merge
+#        env:
+#          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+#        run: |
+#          # Declare variables
+#          BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
+#          VERSION=v${BRANCH/rhoai-/}
+#          SUFFIX=${VERSION/./-}
+#          REGEX="^Update $COMPONENT-$SUFFIX to [0-9a-z]{1,40}$"
+#
+#          #Check if PR title is as per the convention
+#          if [[ "${{ github.event.pull_request.title }}" =~ $REGEX ]]
+#          then
+#            gh pr merge --merge --admin ${{ github.event.pull_request.html_url }}
+#            echo "Merged!!"
+#          else
+#            echo "Insta-merge not configured to merge this PR, skipping."
+#          fi
