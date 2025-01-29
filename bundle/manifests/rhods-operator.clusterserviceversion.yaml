@@ -106,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel8-operator@sha256:da193806b429af495cc875aa2618f6bffb9f3ee0f146d7f8d4f11e782bd06878"
-    createdAt: "2025-01-29T12:32:56Z"
+    createdAt: "2025-01-29T15:46:23Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -514,6 +514,17 @@ spec:
           - build.openshift.io
           resources:
           - buildconfigs
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - build.openshift.io
+          resources:
           - buildconfigs/instantiate
           - builds
           verbs:
@@ -627,6 +638,7 @@ spec:
           - get
           - list
           - patch
+          - update
           - watch
         - apiGroups:
           - controller-runtime.sigs.k8s.io
@@ -743,6 +755,7 @@ spec:
           - get
           - list
           - patch
+          - update
           - watch
         - apiGroups:
           - datasciencecluster.opendatahub.io
@@ -989,17 +1002,6 @@ spec:
           - monitoring.coreos.com
           resources:
           - prometheusrules
-          verbs:
-          - create
-          - delete
-          - deletecollection
-          - get
-          - list
-          - patch
-          - watch
-        - apiGroups:
-          - monitoring.coreos.com
-          resources:
           - servicemonitors
           verbs:
           - create
@@ -1339,6 +1341,7 @@ spec:
           - get
           - list
           - patch
+          - update
           - watch
         serviceAccountName: redhat-ods-operator-controller-manager
       deployments:
