@@ -221,7 +221,7 @@ class quay_controller:
     def get_supported_archs(self, repo, manifest_digest):
         manifest_json = self.get_manifest_details(repo, manifest_digest)
         supported_archs = []
-        if manifest_json['is_manifest_list'] == True
+        if manifest_json['is_manifest_list'] == True:
             manifest_data = manifest_json['manifest_data']
             manifest_data = json.loads(manifest_data)
             for manifest in manifest_data['manifests']:
@@ -231,7 +231,7 @@ class quay_controller:
     def get_image_manifest_digests_for_all_the_supported_archs(self, repo, manifest_digest):
         manifest_json = self.get_manifest_details(repo, manifest_digest)
         image_manifest_digests = []
-        if manifest_json['is_manifest_list'] == True
+        if manifest_json['is_manifest_list'] == True:
             manifest_data = manifest_json['manifest_data']
             manifest_data = json.loads(manifest_data)
             for manifest in manifest_data['manifests']:
