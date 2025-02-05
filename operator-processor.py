@@ -159,7 +159,14 @@ class operator_processor:
                     image_entry['value'] = DoubleQuotedScalarString(value)
                     latest_images.append(image_entry)
 
-                    labels = qc.get_git_labels(repo, tag["manifest_digest"])
+                    manifest_digest = tag["manifest_digest"]
+                    if tag['is_manifest_list'] == True:
+                        image_manifest_digests = qc.get_image_manifest_digests_for_all_the_supported_archs(repo, manifest_digest)
+                        if image_manifest_digests:
+                            manifest_digest = image_manifest_digests[0]
+
+
+                    labels = qc.get_git_labels(repo, manifest_digest)
                     labels = {label['key']:label['value'] for label in labels if label['value']}
                     git_url = labels[self.GIT_URL_LABEL_KEY] if self.GIT_URL_LABEL_KEY in labels else ''
                     git_commit = labels[self.GIT_COMMIT_LABEL_KEY] if self.GIT_COMMIT_LABEL_KEY in labels else ''
@@ -210,6 +217,38 @@ class quay_controller:
         else:
             print(response.json())
             sys.exit(1)
+
+    def get_supported_archs(self, repo, manifest_digest):
+        manifest_json = self.get_manifest_details(repo, manifest_digest)
+        supported_archs = []
+        if manifest_json['is_manifest_list'] == True
+            manifest_data = manifest_json['manifest_data']
+            manifest_data = json.loads(manifest_data)
+            for manifest in manifest_data['manifests']:
+                supported_archs.append(f'{manifest["platform"]["os"]}-{manifest["platform"]["architecture"]}')
+        return supported_archs
+
+    def get_image_manifest_digests_for_all_the_supported_archs(self, repo, manifest_digest):
+        manifest_json = self.get_manifest_details(repo, manifest_digest)
+        image_manifest_digests = []
+        if manifest_json['is_manifest_list'] == True
+            manifest_data = manifest_json['manifest_data']
+            manifest_data = json.loads(manifest_data)
+            for manifest in manifest_data['manifests']:
+                image_manifest_digests.append(manifest['digest'])
+        return image_manifest_digests
+    def get_manifest_details(self, repo, manifest_digest):
+        url = f'{BASE_URL}/repository/{self.org}/{repo}/manifest/{manifest_digest}'
+        headers = {'Authorization': f'Bearer {os.environ[self.org.upper() + "_QUAY_API_TOKEN"]}',
+                   'Accept': 'application/json'}
+        response = requests.get(url, headers=headers)
+
+        if 'manifest_data' in response.json():
+            return response.json()
+        else:
+            print(response.json())
+            sys.exit(1)
+
 
     def get_git_labels(self, repo, tag):
         url = f'{BASE_URL}/repository/{self.org}/{repo}/manifest/{tag}/labels?filter=git'
