@@ -24,7 +24,14 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "branch=${branch}" >> $GITHUB_OUTPUT
+          IFS='.' read -a parts <<< "$branch"
+          previous_minor_version=$(expr ${parts[1]} - 1)
+          previous_branch=${parts[0]}.${previous_minor_version}
+          echo "previous_branch=${previous_branch}" >> $GITHUB_OUTPUT
+
         id: get_branch
       - name: Git checkout RBC main
         uses: actions/checkout@v4
@@ -40,6 +47,16 @@ jobs:
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
+
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.get_branch.outputs.previous_branch }}
+          path: ${{ steps.get_branch.outputs.previous_branch }}
+          sparse-checkout: |
+            catalog/v4.16
+            catalog/v4.19
+
       - name: Git checkout utils
         uses: actions/checkout@v4
         with:
@@ -189,6 +206,7 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PREVIOUS_BRANCH: ${{ steps.get_branch.outputs.previous_branch }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
@@ -239,11 +257,14 @@ jobs:
           BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
           CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
           
+          PREVIOUS_BUNDLE_OBJECT_CATALOG_YAML_PATH=${PREVIOUS_BRANCH}/catalog/v4.16/rhods-operator/catalog.yaml
+          PREVIOUS_CSV_META_CATALOG_YAML_PATH=${PREVIOUS_BRANCH}/catalog/v4.19/rhods-operator/catalog.yaml
+          
           PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
           
           #Invoke FBC processor to patch the catalog
-          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -pc ${PREVIOUS_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -pc ${PREVIOUS_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
           
           while IFS= read -r value;
           do
