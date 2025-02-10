@@ -6,9 +6,10 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-2.18" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-18-push.yaml".pathChanged()
-      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged()
+      && event == "push" && target_branch == "rhoai-2.18" && ( "catalog/**".pathChanged()
+      || ".tekton/rhoai-fbc-fragment-v2-18-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
+      && !".github/workflows/**".pathChanged()'
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-18
@@ -200,7 +201,7 @@ spec:
 
             application_name=${target_branch/rhoai-/}
             echo "application-name = $application_name"
-            
+
             application_name=rhoai-v${application_name/./-}
             echo "application-name = $application_name"
 
@@ -217,7 +218,6 @@ spec:
             slack_message=${slack_message/__BUILD__TIME__/$build_time}
 
             echo -en "${slack_message}" > "$(results.slack-message-failure-text.path)"
-
     - name: init
       params:
       - name: image-url
