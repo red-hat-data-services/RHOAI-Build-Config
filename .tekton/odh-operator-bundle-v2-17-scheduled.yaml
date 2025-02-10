@@ -146,7 +146,7 @@ spec:
         - description: Notification text to be posted to slack
           name: slack-message-failure-text
         steps:
-        - image: alpine
+        - image: quay.io/rhoai-konflux/alpine:latest
           name: rhoai-init
           env:
           - name: slack_message
@@ -157,11 +157,9 @@ spec:
           script: |
             pipelinerun_name=$(params.pipelinerun-name)
             target_branch={{target_branch}}
-            echo "target_branche = $target_branch"
+            echo "pipelinerun-name = $pipelinerun_name"
 
             application_name=${target_branch/rhoai-/}
-            echo "application-name = $application_name"
-            
             application_name=rhoai-v${application_name/./-}
             echo "application-name = $application_name"
 
