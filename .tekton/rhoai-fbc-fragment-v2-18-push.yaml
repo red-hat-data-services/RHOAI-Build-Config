@@ -27,7 +27,7 @@ spec:
     - linux/x86_64
     - linux/ppc64le
     - linux/s390x
-  - name: x86_64-dockerfile
+  - name: x86-dockerfile
     value: Dockerfile
   - name: ppc64le-dockerfile
     value: Dockerfile
@@ -98,7 +98,7 @@ spec:
     - default: Dockerfile
       description: Path to the Dockerfile inside the context specified by parameter
         path-context
-      name: x86_64-dockerfile
+      name: x86-dockerfile
     - default: Dockerfile
       description: Path to the Dockerfile inside the context specified by parameter
         path-context
@@ -279,14 +279,14 @@ spec:
         workspace: git-auth
       - name: netrc
         workspace: netrc
-    - name: build-x86_64-image
+    - name: build-x86-image
       params:
       - name: PLATFORM
         value: linux/x86_64
       - name: IMAGE
         value: $(params.output-image)
       - name: DOCKERFILE
-        value: $(params.x86_64-dockerfile)
+        value: $(params.x86-dockerfile)
       - name: CONTEXT
         value: $(params.path-context)
       - name: HERMETIC
@@ -447,11 +447,13 @@ spec:
         value: $(params.build-image-index)
       - name: IMAGES
         value:
-        - $(tasks.build-x86_64-image.results.IMAGE_REF)
+        - $(tasks.build-x86-image.results.IMAGE_REF)
         - $(tasks.build-ppc64le-image.results.IMAGE_REF)
         - $(tasks.build-s390x-image.results.IMAGE_REF)
       runAfter:
-      - build-images
+      - build-x86-image
+      - build-ppc64le-image
+      - build-s390x-image
       taskRef:
         params:
         - name: name
