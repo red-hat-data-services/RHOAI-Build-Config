@@ -3,15 +3,15 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    name: rhods-operator
+    control-plane: controller-manager
   name: redhat-ods-operator-controller-manager-metrics-service
 spec:
   ports:
-  - name: http
+  - name: https
     port: 8443
     protocol: TCP
-    targetPort: http
+    targetPort: https
   selector:
-    name: rhods-operator
+    control-plane: controller-manager
 status:
   loadBalancer: {}

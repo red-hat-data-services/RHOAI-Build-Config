@@ -30,7 +30,7 @@ spec:
     name: v1
     schema:
       openAPIV3Schema:
-        description: DSCInitialization is the Schema for the dscinitializations API.
+        description: DSCInitialization is the Schema for the dscinitializations API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -45,7 +45,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: DSCInitializationSpec defines the desired state of DSCInitialization.
+            description: DSCInitializationSpec defines the desired state of DSCInitialization
             properties:
               applicationsNamespace:
                 default: redhat-ods-applications
@@ -56,14 +56,6 @@ spec:
                 description: Internal development useful field to test customizations.
                   This is not recommended to be used in production environment.
                 properties:
-                  logmode:
-                    default: production
-                    enum:
-                    - devel
-                    - development
-                    - prod
-                    - production
-                    type: string
                   manifestsUri:
                     description: Custom manifests uri for odh-manifests
                     type: string
@@ -96,28 +88,6 @@ spec:
                   user experience; e.g. it provides unified authentication giving
                   a Single Sign On experience.
                 properties:
-                  auth:
-                    description: Auth holds configuration of authentication and authorization
-                      services used by Service Mesh in Opendatahub.
-                    properties:
-                      audiences:
-                        default:
-                        - https://kubernetes.default.svc
-                        description: Audiences is a list of the identifiers that the
-                          resource server presented with the token identifies as.
-                          Audience-aware token authenticators will verify that the
-                          token was intended for at least one of the audiences in
-                          this list. If no audiences are provided, the audience will
-                          default to the audience of the Kubernetes apiserver (kubernetes.default.svc).
-                        items:
-                          type: string
-                        type: array
-                      namespace:
-                        description: Namespace where it is deployed. If not provided,
-                          the default is to use '-auth-provider' suffix on the ApplicationsNamespace
-                          of the DSCI.
-                        type: string
-                    type: object
                   controlPlane:
                     description: ControlPlane holds configuration of Service Mesh
                       used by Opendatahub.
@@ -148,8 +118,8 @@ spec:
                     default: Managed
                     enum:
                     - Managed
-                    - Unmanaged
                     - Removed
+                    - Unmanaged
                     pattern: ^(Managed|Unmanaged|Force|Removed)$
                     type: string
                 type: object
@@ -171,20 +141,20 @@ spec:
                     description: managementState indicates whether and how the operator
                       should manage customized CA bundle
                     enum:
-                    - Managed
-                    - Removed
-                    - Unmanaged
+                      - Managed
+                      - Removed
+                      - Unmanaged
                     pattern: ^(Managed|Unmanaged|Force|Removed)$
                     type: string
                 required:
-                - customCABundle
-                - managementState
+                  - customCABundle
+                  - managementState
                 type: object
             required:
             - applicationsNamespace
             type: object
           status:
-            description: DSCInitializationStatus defines the observed state of DSCInitialization.
+            description: DSCInitializationStatus defines the observed state of DSCInitialization
             properties:
               conditions:
                 description: Conditions describes the state of the DSCInitializationStatus
@@ -286,14 +256,6 @@ spec:
                   type: object
                   x-kubernetes-map-type: atomic
                 type: array
-              release:
-                description: Version and release type
-                properties:
-                  name:
-                    type: string
-                  version:
-                    type: string
-                type: object
             type: object
         type: object
     served: true
