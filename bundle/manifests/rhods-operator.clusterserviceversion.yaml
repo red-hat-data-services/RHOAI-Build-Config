@@ -28,6 +28,9 @@ metadata:
               "datasciencepipelines": {
                 "managementState": "Managed"
               },
+              "feastoperator": {
+                "managementState": "Removed"
+              },
               "kserve": {
                 "managementState": "Managed",
                 "nim": {
@@ -106,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel8-operator@sha256:578f9ba0be3c03c4a5b88f915cfaf82cea91da72b69808d338df47833a910685"
-    createdAt: "2025-03-07T06:27:19Z"
+    createdAt: "2025-03-07T09:22:12Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -282,6 +285,9 @@ spec:
         displayName: Conditions
         path: conditions
       version: v1
+    - kind: FeastOperator
+      name: feastoperators.components.platform.opendatahub.io
+      version: v1alpha1
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
       version: v1
@@ -548,6 +554,7 @@ spec:
           - codeflares
           - dashboards
           - datasciencepipelines
+          - feastoperators
           - kserves
           - kueues
           - modelcontrollers
@@ -570,6 +577,7 @@ spec:
           resources:
           - codeflares/finalizers
           - datasciencepipelines/finalizers
+          - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
           - modelcontrollers/finalizers
@@ -587,6 +595,7 @@ spec:
           - codeflares/status
           - dashboards/status
           - datasciencepipelines/status
+          - feastoperators/status
           - kserves/status
           - kueues/status
           - modelcontrollers/status
