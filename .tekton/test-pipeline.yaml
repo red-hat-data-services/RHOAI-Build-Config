@@ -1,0 +1,67 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: rhoai-v2-19
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-19
+    pipelines.appstudio.openshift.io/type: build
+  name: rhoai-fbc-fragment-test
+  namespace: rhoai-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: output-image
+    value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
+  - name: build-platforms
+    value:
+    - linux/x86_64
+    - linux/ppc64le
+    - linux/s390x
+  - name: build-image-index
+    value: 'true'
+  - name: append-platform-name
+    value: 'true'
+  - name: dockerfile
+    value: Dockerfile
+  - name: path-context
+    value: catalog/rhoai-2.19/v4.19
+  - name: build-args-file
+    value: catalog/rhoai-2.19/catalog_build_args.map
+  - name: skip-checks
+    value: 'true'
+  - name: rhoai-version
+    value: 'v2.19.0'
+  - name: component-name
+    value: 'rhoai-fbc-fragment'
+  - name: build-type
+    value: 'stage'
+  - name: additional-tags
+    value:
+    - 'ocp-4.20-rhoai-2.20'
+    - '{{target_branch}}-{{revision}}'
+  pipelineRef:
+    resolver: git
+    params:
+    - name: url
+      value: https://github.com/red-hat-data-services/RHOAI-Build-Config.git
+    - name: revision
+      value: pipeline
+    - name: pathInRepo
+      value: pipeline/fbc-fragment-build-pipeline.yaml
+  taskRunTemplate: {}
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
