@@ -35,7 +35,7 @@ spec:
   - name: path-context
     value: catalog/rhoai-2.13/v4.14
   - name: build-args-file
-    value: catalog/rhoai-2.13/catalog_build_args.map
+    value: catalog/$(params.rhoai-version)/catalog_build_args.map
   - name: undeclared-param
     value: "I an mot declared in pipeline"
   pipelineSpec:
@@ -127,3 +127,4 @@ spec:
           script: |
             echo $(params.pipelinerun-name)
             echo $(params.undeclared-param)
+            echo $(params.build-args-file)
