@@ -6,13 +6,15 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.19" && "schedule/catalog-tekton-trigger.txt".pathChanged()
+    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
+      == "rhoai-2.20" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-20-push.yaml".pathChanged()
+      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhoai-v2-19
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-19
+    appstudio.openshift.io/application: rhoai-v2-20
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-20
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v2-19-on-schedule
+  name: rhoai-fbc-fragment-v2-20-on-push
   namespace: rhoai-tenant
 spec:
   params:
@@ -97,28 +99,6 @@ spec:
         operator: in
         values:
         - "Completed"
-        - "Succeeded"
-    - name: custom-task
-      params:
-      - name: pipelinerun-name
-        value: "$(context.pipelineRun.name)"
-      - name: fbc-check-status
-        value: "$(tasks.validate-fbc.status)"
-      - name: overall-task-status
-        value: "$(tasks.status)"
-      taskSpec:
-        steps:
-        - image: quay.io/rhoai-konflux/alpine:latest
-          name: rhoai-init
-          script: |
-            pipelinerun_name=$(params.pipelinerun-name)
-            fbc_check_status=$(params.fbc-check-status)
-            overall_task_status=$(params.overall-task-status)
-            
-            echo "pipelinerun-name = $pipelinerun_name"
-            echo "fbc_check_status = $fbc_check_status"
-            echo "overall_task_status-name = $overall_task_status"
-
     params:
     - description: Source Repository URL
       name: git-url
@@ -131,18 +111,20 @@ spec:
       name: output-image
       type: string
     - default: .
-      description: Path to the source code of an application's component from where to build image.
+      description: Path to the source code of an application's component from where
+        to build image.
       name: path-context
       type: string
     - default: Dockerfile
-      description: Path to the Dockerfile inside the context specified by parameter path-context
+      description: Path to the Dockerfile inside the context specified by parameter
+        path-context
       name: dockerfile
       type: string
     - default: "false"
       description: Force rebuild image
       name: rebuild
       type: string
-    - default: "false"
+    - default: "true"
       description: Skip checks against built image
       name: skip-checks
       type: string
@@ -155,7 +137,8 @@ spec:
       name: prefetch-input
       type: string
     - default: ""
-      description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+      description: Image tag expiration time, time values could be something like
+        1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
     - default: "false"
       description: Build a source image.
@@ -213,9 +196,11 @@ spec:
           script: |
             pipelinerun_name=$(params.pipelinerun-name)
             target_branch={{target_branch}}
-            echo "pipelinerun-name = $pipelinerun_name"
+            echo "target_branche = $target_branch"
 
             application_name=${target_branch/rhoai-/}
+            echo "application-name = $application_name"
+
             application_name=rhoai-v${application_name/./-}
             echo "application-name = $application_name"
 
@@ -239,7 +224,7 @@ spec:
       - name: rebuild
         value: $(params.rebuild)
       - name: skip-checks
-        value: "false" #"$(params.skip-checks)
+        value: "false"
       taskRef:
         params:
         - name: name
@@ -340,7 +325,7 @@ spec:
         value: "true"
       - name: LABELS
         value:
-        - version=v2.19.0
+        - version=v2.20.0
         - url=$(params.git-url)
         - git.url=$(params.git-url)
         - git.commit=$(params.revision)
@@ -443,7 +428,6 @@ spec:
       - name: ADDITIONAL_TAGS
         value:
         - '{{target_branch}}-{{revision}}'
-        - '{{target_branch}}-nightly'
       runAfter:
       - build-image-index
       taskRef:
@@ -533,14 +517,14 @@ spec:
             KONFLUX_SERVER="https://konflux.apps.stone-prod-p02.hjvn.p1.openshiftapps.com"
             build_url="${KONFLUX_SERVER}/application-pipeline/workspaces/rhoai/applications/${application_name}/pipelineruns/${pipelinerun_name}/logs"
 
-            alertEmoji=":nightly:"
+            alertEmoji=":solid-success:"
             build_time="$(date +%Y-%m-%dT%H:%M:%S)"
-            slack_message="${alertEmoji} A new *nightly build* is available for ${target_branch}: ${build_time}"
+            slack_message="${alertEmoji} A new CI build is available for ${target_branch}: ${build_time}"
             slack_message=$(echo -e "${slack_message}\nImage: $(params.image-url)@$(params.image-digest)")
             slack_message=$(echo -e "${slack_message}\n<${build_url}|${pipelinerun_name}>")
+            #slack_message=$(echo -e "${slack_message}\nCC - <@U04KZMFDZ2T>")
 
             echo -n "${slack_message}" > "$(results.slack-message-sucess-text.path)"
-
       runAfter:
       - build-image-index
     workspaces:
