@@ -34,10 +34,12 @@ spec:
     value: Dockerfile
   - name: path-context
     value: catalog/rhoai-2.13/v4.14
-  - name: build-args-file
-    value: catalog/$(params.rhoai-version)/catalog_build_args.map
   - name: undeclared-param
     value: "I an mot declared in pipeline"
+  - name: condition-1
+    value: "true"
+  - name: condition-2
+    value: "false"
   pipelineSpec:
     description: |
       This pipeline is ideal for building and verifying [file-based catalogs](https://konflux-ci.dev/docs/advanced-how-tos/building-olm.adoc#building-the-file-based-catalog).
@@ -126,5 +128,24 @@ spec:
           name: rhoai-init
           script: |
             echo $(params.pipelinerun-name)
-            echo $(params.undeclared-param)
-            echo $(params.build-args-file)
+    - name: conditional-task
+      params:
+      - name: pipelinerun-name
+        value: "$(context.pipelineRun.name)"
+      taskSpec:
+        steps:
+        - image: quay.io/rhoai-konflux/alpine:latest
+          name: rhoai-init
+          script: |
+            echo $(params.pipelinerun-name)
+      runAfter:
+      - rhoai-init
+      when:
+      - input: $(params.condition-1)
+        operator: in
+        values:
+        - "true"
+      - input: $(params.condition-2)
+        operator: in
+        values:
+        - "true"
