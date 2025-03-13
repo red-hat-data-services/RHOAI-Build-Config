@@ -36,6 +36,8 @@ spec:
     value: catalog/rhoai-2.13/v4.14
   - name: build-args-file
     value: catalog/rhoai-2.13/catalog_build_args.map
+  - name: undeclared-param
+    value: "I an mot declared in pipeline"
   pipelineSpec:
     description: |
       This pipeline is ideal for building and verifying [file-based catalogs](https://konflux-ci.dev/docs/advanced-how-tos/building-olm.adoc#building-the-file-based-catalog).
@@ -124,3 +126,4 @@ spec:
           name: rhoai-init
           script: |
             echo $(params.pipelinerun-name)
+            echo $(params.undeclared-param)
