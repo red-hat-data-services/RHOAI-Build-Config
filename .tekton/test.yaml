@@ -1,0 +1,126 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
+      == "main"
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: rhoai-fbc-fragment-ocp-414
+    appstudio.openshift.io/component: rhoai-fbc-fragment-ocp-414
+    pipelines.appstudio.openshift.io/type: build
+  name: rhoai-fbc-fragment-rhoai-213-ocp-414-on-push
+  namespace: rhoai-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: rhoai-version
+    value: 'rhoai-2.13'
+  - name: ocp-version
+    value: 'ocp-4.14'
+  - name: build-platforms
+    value:
+    - linux/x86_64
+  - name: output-image
+    value: quay.io/rhoai/rhoai-fbc-fragment:ocp-4.14-rhoai-2.13-{{revision}}
+  - name: dockerfile
+    value: Dockerfile
+  - name: path-context
+    value: catalog/rhoai-2.13/v4.14
+  - name: build-args-file
+    value: catalog/rhoai-2.13/catalog_build_args.map
+  pipelineSpec:
+    description: |
+      This pipeline is ideal for building and verifying [file-based catalogs](https://konflux-ci.dev/docs/advanced-how-tos/building-olm.adoc#building-the-file-based-catalog).
+
+      _Uses `buildah` to create a container image. Its build-time tests are limited to verifying the included catalog and do not scan the image.
+      This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-fbc-builder?tab=tags)_
+    params:
+    - description: Source Repository URL
+      name: git-url
+      type: string
+    - default: ""
+      description: Revision of the Source Repository
+      name: revision
+      type: string
+    - description: Fully Qualified Output Image
+      name: output-image
+      type: string
+    - default: .
+      description: Path to the source code of an application's component from where
+        to build image.
+      name: path-context
+      type: string
+    - default: Dockerfile
+      description: Path to the Dockerfile inside the context specified by parameter
+        path-context
+      name: dockerfile
+      type: string
+    - default: "false"
+      description: Force rebuild image
+      name: rebuild
+      type: string
+    - default: "false"
+      description: Skip checks against built image
+      name: skip-checks
+      type: string
+    - default: "true"
+      description: Execute the build with network isolation
+      name: hermetic
+      type: string
+    - default: ""
+      description: Build dependencies to be prefetched by Cachi2
+      name: prefetch-input
+      type: string
+    - default: ""
+      description: Image tag expiration time, time values could be something like
+        1h, 2d, 3w for hours, days, and weeks, respectively.
+      name: image-expires-after
+    - default: "false"
+      description: Build a source image.
+      name: build-source-image
+      type: string
+    - default: "false"
+      description: Add built image into an OCI image index
+      name: build-image-index
+      type: string
+    - default: []
+      description: Array of --build-arg values ("arg=value" strings) for buildah
+      name: build-args
+      type: array
+    - default: ""
+      description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
+      name: build-args-file
+      type: string
+    - default: ""
+      description: current OCP version
+      name: ocp-version
+      type: string
+    - default: ""
+      description: current RHOAI version
+      name: rhoai-version
+      type: string
+    - default:
+      - linux/x86_64
+      description: List of platforms to build the container images on. The available
+        set of values is determined by the configuration of the multi-platform-controller.
+      name: build-platforms
+      type: 
+    tasks:
+    - name: rhoai-init
+      params:
+      - name: pipelinerun-name
+        value: "$(context.pipelineRun.name)"
+      taskSpec:
+        steps:
+        - image: quay.io/rhoai-konflux/alpine:latest
+          name: rhoai-init
+          script: |
+            pipelinerun_name=$(params.pipelinerun-name)
