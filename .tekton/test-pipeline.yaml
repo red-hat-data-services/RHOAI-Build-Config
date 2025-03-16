@@ -51,14 +51,10 @@ spec:
     - 'ocp-4.20-rhoai-2.20'
     - '{{target_branch}}-{{revision}}'
   pipelineRef:
-    resolver: git
+    resolver: http
     params:
     - name: url
-      value: https://github.com/red-hat-data-services/RHOAI-Build-Config.git
-    - name: revision
-      value: pipeline
-    - name: pathInRepo
-      value: pipeline/fbc-fragment-build-pipeline.yaml
+      value: https://raw.githubusercontent.com/red-hat-data-services/RHOAI-Build-Config/centralize-fbc-build-pipeline/pipelines/fbc-fragment-build-pipeline.yaml
   taskRunTemplate: {}
   workspaces:
   - name: git-auth
