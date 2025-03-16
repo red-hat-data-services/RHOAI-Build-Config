@@ -71,7 +71,7 @@ spec:
       operator: in
       values:
       - "ci"
-  - name: Show Pipeline Details
+  - name: show-pipelinerun-details
     params:
     - name: pipelinerun-name
       value: "$(context.pipelineRun.name)"
@@ -152,6 +152,19 @@ spec:
       set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
+  - description: RHOAI version in format vx.y.z
+    name: rhoai-version
+    type: string
+  - description: Name of the component
+    name: component-name
+    type: string
+  - description: Additional quay image tags
+    name: additional-tags
+    type: string
+  - default: "ci"
+    name: build-type
+    enum: ["ci", "stage"]
+    type: string
   results:
   - description: ""
     name: IMAGE_URL
