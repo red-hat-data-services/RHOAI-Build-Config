@@ -6,7 +6,9 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged() && event == "push" && target_branch == "rhoai-2.19" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-19-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
+      == "rhoai-2.19" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-19-push.yaml".pathChanged()
+      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-19
@@ -109,11 +111,13 @@ spec:
       name: output-image
       type: string
     - default: .
-      description: Path to the source code of an application's component from where to build image.
+      description: Path to the source code of an application's component from where
+        to build image.
       name: path-context
       type: string
     - default: Dockerfile
-      description: Path to the Dockerfile inside the context specified by parameter path-context
+      description: Path to the Dockerfile inside the context specified by parameter
+        path-context
       name: dockerfile
       type: string
     - default: "false"
@@ -133,7 +137,8 @@ spec:
       name: prefetch-input
       type: string
     - default: ""
-      description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+      description: Image tag expiration time, time values could be something like
+        1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
     - default: "false"
       description: Build a source image.
@@ -153,7 +158,8 @@ spec:
       type: string
     - default:
       - linux/x86_64
-      description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+      description: List of platforms to build the container images on. The available
+        set of values is determined by the configuration of the multi-platform-controller.
       name: build-platforms
       type: array
     results:
