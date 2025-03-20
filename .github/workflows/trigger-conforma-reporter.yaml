@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event.check_run.conclusion == 'success' &&
-      startsWith(github.event.check_run.name, 'Red Hat Konflux / conforma-registry-rhoai-prod-v') &&
-      endsWith(github.event.check_run.name, '-scheduled')
-
+      startsWith(github.event.check_run.name, 'Konflux Production Internal / rhoai-fbc-fragment-v') &&
+      (
+        endsWith(github.event.check_run.name, '-schedule') ||
+        endsWith(github.event.check_run.name, '-on-schedule') ||
+        endsWith(github.event.check_run.name, '-scheduled')
+      )
 
     steps:
       - name: Debug Event Payload
