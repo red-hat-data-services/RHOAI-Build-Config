@@ -1,9 +1,9 @@
-name: Test Trigger
+name: Debug Check Run
 
 on:
   check_run:
     types:
-      - completed  # Listen for check completion
+      - completed  # Trigger when a check run completes
 
 jobs:
   debug-konflux:
@@ -20,3 +20,7 @@ jobs:
       - name: Print Check Conclusion
         run: |
           echo "Check Conclusion: '${{ github.event.check_run.conclusion }}'"
+
+      - name: Print Check Run Details
+        run: |
+          echo "Check Run URL: '${{ github.event.check_run.html_url }}'"
