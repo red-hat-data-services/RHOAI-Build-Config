@@ -28,6 +28,10 @@ spec:
     value: Dockerfile.konflux
   - name: path-context
     value: .
+  - name: target_branch
+    value: "main"
+  - name: workflow_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while maintaining trust after pipeline customization.
@@ -105,6 +109,14 @@ spec:
       description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
       name: build-args-file
       type: string
+    - name: target_branch
+      type: string
+      description: "Target branch for the workflow"
+      default: "main"  # Set a default value
+    - name: workflow_url
+      type: string
+      description: "URL of the workflow to trigger"
+      default: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
     results:
     - description: ""
       name: IMAGE_URL
@@ -289,6 +301,38 @@ spec:
         operator: in
         values:
         - "true"
+    - name: trigger-conforma
+      params:
+      - name: target_branch
+        value: "$(params.target_branch)"  # Pass value here
+      - name: workflow_url
+        value: "$(params.workflow_url)"
+      runAfter:
+      - rpms-signature-scan
+      taskSpec:
+        params:
+        - name: target_branch
+          type: string
+          value: "$(params.target_branch)"
+        - name: workflow_url
+          type: string
+        steps:
+        - name: trigger-workflow
+          image: quay.io/centos/centos:stream9
+          env:
+          - name: TARGET_BRANCH
+            value: "$(params.target_branch)"
+          - name: WORKFLOW_URL
+            value: "$(params.workflow_url)"
+          script: |
+            #!/bin/bash
+            set -e
+
+            TARGET_BRANCH="$(params.target_branch)" 
+            echo "Triggering Conforma workflow for branch: $TARGET_BRANCH"
+
+            curl -X POST "$WORKFLOW_URL" -H "Content-Type: application/json" \
+             -d '{ "ref": "'"$TARGET_BRANCH"'" }'
     - name: apply-tags
       params:
       - name: IMAGE
