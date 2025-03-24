@@ -7,10 +7,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
-    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged()
-      && event == "push" && target_branch == "rhoai-2.19" && ( "bundle/**".pathChanged()
-      || ".tekton/odh-operator-bundle-v2-19-push.yaml".pathChanged() ) && !"bundle/bundle-patch.yaml".pathChanged()
-      && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged() && event == "push" && target_branch == "rhoai-2.19" && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v2-19-push.yaml".pathChanged() ) && !"bundle/bundle-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-19
@@ -84,13 +81,11 @@ spec:
       name: output-image
       type: string
     - default: .
-      description: Path to the source code of an application's component from where
-        to build image.
+      description: Path to the source code of an application's component from where to build image.
       name: path-context
       type: string
     - default: Dockerfile
-      description: Path to the Dockerfile inside the context specified by parameter
-        path-context
+      description: Path to the Dockerfile inside the context specified by parameter path-context
       name: dockerfile
       type: string
     - default: "false"
@@ -110,8 +105,7 @@ spec:
       name: prefetch-input
       type: string
     - default: ""
-      description: Image tag expiration time, time values could be something like
-        1h, 2d, 3w for hours, days, and weeks, respectively.
+      description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
       name: image-expires-after
     - default: "true"
       description: Build a source image.
@@ -508,7 +502,7 @@ spec:
         - name: name
           value: rpms-signature-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:3e01c8b322226ad5067ba1ce4ea7bc528f708c3e0d8b6a17a0c4112dbd46c549
+          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:60ec0c93f54f743a7b636fed30e4f32fbcb5338fbc8db48f12c37f3a2f3b3a45
         - name: kind
           value: task
         resolver: bundles
