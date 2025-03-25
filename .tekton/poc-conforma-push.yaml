@@ -344,10 +344,11 @@ spec:
             echo "Triggering Conforma workflow for branch: $TARGET_BRANCH"
     
             curl -X POST "https://api.github.com/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d '{ "ref": "'"$TARGET_BRANCH"'" }'
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{ "ref": "main", "inputs": { "target_branch": "'"$TARGET_BRANCH"'" } }'
+
     - name: apply-tags
       params:
       - name: IMAGE
