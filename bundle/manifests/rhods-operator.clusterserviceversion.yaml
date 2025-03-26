@@ -28,9 +28,6 @@ metadata:
               "datasciencepipelines": {
                 "managementState": "Managed"
               },
-              "feastoperator": {
-                "managementState": "Removed"
-              },
               "kserve": {
                 "managementState": "Managed",
                 "nim": {
@@ -109,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel8-operator@sha256:c8f417f68a2ba385c328692f9195c71c9b266b9ee5e6e8340954ddb7d7ac0398"
-    createdAt: "2025-03-26T06:40:52Z"
+    createdAt: "2025-03-26T10:45:54Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -193,7 +190,7 @@ metadata:
       "kueues.components.platform.opendatahub.io", "modelmeshservings.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",  "workbenches.components.platform.opendatahub.io",
-      "monitorings.services.platform.opendatahub.io","modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io"]
+      "monitorings.services.platform.opendatahub.io","modelcontrollers.components.platform.opendatahub.io"]
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -287,9 +284,6 @@ spec:
         displayName: Conditions
         path: conditions
       version: v1
-    - kind: FeastOperator
-      name: feastoperators.components.platform.opendatahub.io
-      version: v1alpha1
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
       version: v1
@@ -556,7 +550,6 @@ spec:
           - codeflares
           - dashboards
           - datasciencepipelines
-          - feastoperators
           - kserves
           - kueues
           - modelcontrollers
@@ -579,7 +572,6 @@ spec:
           resources:
           - codeflares/finalizers
           - datasciencepipelines/finalizers
-          - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
           - modelcontrollers/finalizers
@@ -597,7 +589,6 @@ spec:
           - codeflares/status
           - dashboards/status
           - datasciencepipelines/status
-          - feastoperators/status
           - kserves/status
           - kueues/status
           - modelcontrollers/status
