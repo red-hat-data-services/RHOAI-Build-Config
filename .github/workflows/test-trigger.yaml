@@ -20,24 +20,20 @@ jobs:
           echo "Head Branch (if available): '${{ github.event.check_run.head_branch }}'"
           echo "Commit SHA: '${{ github.event.check_run.head_sha }}'"
 
-      - name: Fetch Branch Name from Commit (Fallback)
+      - name: Fetch Branch Name from Commit (Fixed)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # First, try to get the branch directly
+          # Try to get the branch directly from check_run event
           BRANCH_NAME="${{ github.event.check_run.head_branch }}"
 
-          # If head_branch is empty, fetch using GitHub API
+          # If head_branch is empty, fetch it from the GitHub API
           if [[ -z "$BRANCH_NAME" ]]; then
-            BRANCH_NAME=$(gh api repos/${{ github.repository }}/commits/${{ github.event.check_run.head_sha }}/branches-where-head --jq '.[0]')
+            BRANCH_NAME=$(gh api repos/${{ github.repository }}/commits/${{ github.event.check_run.head_sha }}/branches-where-head --jq '.[0].name')
           fi
 
-          # If still empty, fetch all branches and find the one containing the commit
-          if [[ -z "$BRANCH_NAME" || "$BRANCH_NAME" == "null" ]]; then
-            BRANCH_NAME=$(gh api repos/${{ github.repository }}/git/refs/heads --jq '[.[] | select(.object.sha == "${{ github.event.check_run.head_sha }}") | .ref] | map(sub("refs/heads/"; "")) | join(", ")')
-          fi
-
-          echo "Branch from commit: '$BRANCH_NAME'"
+          # Ensure BRANCH_NAME is extracted correctly
+          echo "Extracted Branch Name: '$BRANCH_NAME'"
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
       - name: Check if Branch Matches `rhoai-*`
