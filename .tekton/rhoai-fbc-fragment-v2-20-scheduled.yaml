@@ -34,6 +34,10 @@ spec:
     value: catalog/v4.17
   - name: build-args-file
     value: catalog/catalog_build_args.map
+  - name: target_branch
+    value: '{{target_branch}}'
+  - name: workflow_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   pipelineSpec:
     description: |
       This pipeline is ideal for building and verifying [file-based catalogs](https://konflux-ci.dev/docs/advanced-how-tos/building-olm.adoc#building-the-file-based-catalog).
@@ -99,6 +103,49 @@ spec:
         values:
         - "Completed"
         - "Succeeded"
+    - name: trigger-conforma
+      params:
+      - name: target_branch
+        value: "$(params.target_branch)"  # Pass value here
+      - name: workflow_url
+        value: "$(params.workflow_url)"
+      taskSpec:
+        params:
+        - name: target_branch
+          type: string
+          value: "$(params.target_branch)"
+        - name: workflow_url
+          type: string
+        steps:
+        - name: trigger-workflow
+          image: quay.io/centos/centos:stream9
+          env:
+          - name: TARGET_BRANCH
+            value: "$(params.target_branch)"
+          - name: WORKFLOW_URL
+            value: "$(params.workflow_url)"
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: pat-trigger
+                key: secret
+          script: |
+            #!/bin/bash
+            set -e
+    
+            OWNER="red-hat-data-services"
+            REPO="conforma-reporter"
+            WORKFLOW_FILE="conforma-reporter.yaml"
+            TARGET_BRANCH="$(params.target_branch)"
+            
+            echo "Target branch is: '$TARGET_BRANCH'"
+            echo "Triggering Conforma workflow for branch: $TARGET_BRANCH"
+    
+            curl -X POST "https://api.github.com/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{ "ref": "main", "inputs": { "target_branch": "'"$TARGET_BRANCH"'" } }'
     - name: custom-task
       params:
       - name: pipelinerun-name
@@ -119,7 +166,7 @@ spec:
             echo "pipelinerun-name = $pipelinerun_name"
             echo "fbc_check_status = $fbc_check_status"
             echo "overall_task_status-name = $overall_task_status"
-
+     
     params:
     - description: Source Repository URL
       name: git-url
@@ -179,6 +226,14 @@ spec:
       description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
       name: build-platforms
       type: array
+    - name: target_branch
+      type: string
+      description: "Target branch for the workflow"
+      default: ""
+    - name: workflow_url
+      type: string
+      description: "URL of the workflow to trigger"
+      default: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
     results:
     - description: ""
       name: IMAGE_URL
