@@ -8,6 +8,7 @@
   "ignoreTests": true,
   "automergeType": "pr",
   "automerge": true,
+  "prHourlyLimit": 0,
   "enabledManagers": ["tekton"],
   "tekton": {
     "schedule": ["* 0-3 1 * *"],
@@ -20,6 +21,12 @@
     ],
     "packageRules": [
       {
+        "matchManagers": ["tekton"],
+        "matchBaseBranches": ["rhoai-2.19"],
+        "enabled": false
+      }   
+    ],
+    "tekton": {
         "matchPackagePatterns": [
           "^quay.io/redhat-appstudio-tekton-catalog/",
           "^quay.io/konflux-ci/tekton-catalog/"
@@ -45,8 +52,5 @@
         "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
         "recreateWhen": "always",
         "rebaseWhen": "behind-base-branch"
-      }
-    ]
-  },
- "prHourlyLimit": 0
+    }
 }
