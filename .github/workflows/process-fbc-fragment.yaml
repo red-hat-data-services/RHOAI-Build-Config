@@ -6,7 +6,7 @@ on:
     paths:
       - catalog/catalog-patch.yaml
     branches:
-      - 'rhoai-2.1[6-9]+'
+      - 'sealights-poc-2.1[6-9]+'
 permissions:
   contents: write
 
@@ -198,7 +198,7 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          RHOAI_VERSION=v${BRANCH/rhoai-/}
+          RHOAI_VERSION=v${BRANCH/^.*-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
           #OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
@@ -211,8 +211,8 @@ jobs:
           #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
           BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
           mkdir ${HOME}/.docker
-          echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
-          APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
+          echo '{"auths":{"quay.io/rhoai-sealights/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
+          APPLICATION_NAME=sealights-poc-${COMPONENT_SUFFIX}
           echo "APPLICATION_NAME = $APPLICATION_NAME"
           
           #Invoke the FBC processor to extract the snapshot images
@@ -240,7 +240,7 @@ jobs:
           BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
           CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
           
-          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
+          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/sealights-poc-rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
           
           #Invoke FBC processor to patch the catalog
           python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
