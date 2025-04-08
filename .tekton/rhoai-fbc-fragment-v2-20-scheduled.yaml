@@ -38,6 +38,8 @@ spec:
     value: '{{target_branch}}'
   - name: workflow_url
     value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
+  - name: smoke_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/smoke-trigger.yaml"
   pipelineSpec:
     description: |
       This pipeline is ideal for building and verifying [file-based catalogs](https://konflux-ci.dev/docs/advanced-how-tos/building-olm.adoc#building-the-file-based-catalog).
@@ -146,6 +148,51 @@ spec:
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{ "ref": "main", "inputs": { "target_branch": "'"$TARGET_BRANCH"'" } }'
+
+    - name: trigger-smoke
+      params:
+      - name: target_branch
+        value: "$(params.target_branch)"  # Pass value here
+      - name: smoke_url
+        value: "$(params.smoke_url)"
+      taskSpec:
+        params:
+        - name: target_branch
+          type: string
+          value: "$(params.target_branch)"
+        - name: smoke_url
+          type: string
+        steps:
+        - name: trigger-workflow
+          image: quay.io/centos/centos:stream9
+          env:
+          - name: TARGET_BRANCH
+            value: "$(params.target_branch)"
+          - name: SMOKE_URL
+            value: "$(params.smoke_url)"
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: pat-trigger
+                key: secret
+          script: |
+            #!/bin/bash
+            set -e
+    
+            OWNER="red-hat-data-services"
+            REPO="conforma-reporter"
+            WORKFLOW_FILE="smoke-trigger.yaml"
+            TARGET_BRANCH="$(params.target_branch)"
+            
+            echo "Target branch is: '$TARGET_BRANCH'"
+            echo "Triggering Conforma workflow for branch: $TARGET_BRANCH"
+    
+            curl -X POST "https://api.github.com/repos/$OWNER/$REPO/actions/workflows/$WORKFLOW_FILE/dispatches" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{ "ref": "main", "inputs": { "target_branch": "'"$TARGET_BRANCH"'" } }'
+            
     - name: custom-task
       params:
       - name: pipelinerun-name
@@ -234,6 +281,10 @@ spec:
       type: string
       description: "URL of the workflow to trigger"
       default: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
+    - name: smoke_url
+      type: string
+      description: "smoke url of the workflow to trigger"
+      default: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/smoke-trigger.yaml"
     results:
     - description: ""
       name: IMAGE_URL
