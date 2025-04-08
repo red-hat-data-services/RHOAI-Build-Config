@@ -68,7 +68,7 @@ jobs:
           chmod +x "$opm_filename"
           ln -fs "$opm_filename" opm
           cp "$opm_filename" /usr/local/bin/opm
-          pip install -r utils/utils/fbc-processor/requirements.txt
+          pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt
 
           microdnf install -y skopeo && \
               microdnf clean all && rm -rf /var/cache/dnf/*
