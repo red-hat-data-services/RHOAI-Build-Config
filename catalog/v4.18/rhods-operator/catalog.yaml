@@ -14324,7 +14324,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5789519ce1131e0baeedcc56add5c703db75df246eea12fbfc13ad91defe7dfe
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:7f406fe0a3d17b5ce6f6fc1dbdb5a05ac715658a81d9cb4c1106c3611707c448
 name: rhods-operator.2.20.0
 package: rhods-operator
 properties:
@@ -14530,7 +14530,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel8-operator@sha256:5274a67079d9b3699dd2d1139950b8244f0b4d1c6dd5e10dd723195551a74641
-      createdAt: "2025-04-08T01:19:03Z"
+      createdAt: "2025-04-08T01:32:22Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       features.operators.openshift.io/cnf: "false"
       features.operators.openshift.io/cni: "false"
@@ -14611,7 +14611,7 @@ properties:
       operatorframework.io/suggested-namespace: redhat-ods-operator
       operators.openshift.io/infrastructure-features: '["disconnected"]'
       operators.openshift.io/valid-subscription: '["OpenShift AI"]'
-      operators.operatorframework.io/builder: operator-sdk-v1.33.0
+      operators.operatorframework.io/builder: operator-sdk-v1.37.0
       operators.operatorframework.io/internal-objects: |-
         ["featuretrackers.features.opendatahub.io",
         "codeflares.components.platform.opendatahub.io", "dashboards.components.platform.opendatahub.io",
@@ -14659,10 +14659,6 @@ properties:
         displayName: Data Science Cluster
         kind: DataScienceCluster
         name: datascienceclusters.datasciencecluster.opendatahub.io
-        specDescriptors:
-        - description: Override and fine tune specific component configurations.
-          displayName: Components
-          path: components
         version: v1
       - description: DataSciencePipelines is the Schema for the datasciencepipelines
           API
@@ -14671,40 +14667,9 @@ properties:
         name: datasciencepipelines.components.platform.opendatahub.io
         version: v1alpha1
       - description: DSCInitialization is the Schema for the dscinitializations API.
-        displayName: DSC Initialization
+        displayName: DSCInitialization
         kind: DSCInitialization
         name: dscinitializations.dscinitialization.opendatahub.io
-        specDescriptors:
-        - description: Namespace for applications to be installed, non-configurable,
-            default to "redhat-ods-applications"
-          displayName: Applications Namespace
-          path: applicationsNamespace
-        - description: Enable monitoring on specified namespace
-          displayName: Monitoring
-          path: monitoring
-        - description: Configures Service Mesh as networking layer for Data Science
-            Clusters components. The Service Mesh is a mandatory prerequisite for
-            single model serving (KServe) and you should review this configuration
-            if you are planning to use KServe. For other components, it enhances user
-            experience; e.g. it provides unified authentication giving a Single Sign
-            On experience.
-          displayName: Service Mesh
-          path: serviceMesh
-        - description: When set to `Managed`, adds odh-trusted-ca-bundle Configmap
-            to all namespaces that includes cluster-wide Trusted CA Bundle in .data["ca-bundle.crt"].
-            Additionally, this fields allows admins to add custom CA bundles to the
-            configmap using the .CustomCABundle field.
-          displayName: Trusted CABundle
-          path: trustedCABundle
-        - description: Internal development useful field to test customizations. This
-            is not recommended to be used in production environment.
-          displayName: Dev Flags
-          path: devFlags
-        statusDescriptors:
-        - description: Conditions describes the state of the DSCInitializationStatus
-            resource
-          displayName: Conditions
-          path: conditions
         version: v1
       - kind: FeatureTracker
         name: featuretrackers.features.opendatahub.io
@@ -14827,7 +14792,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5789519ce1131e0baeedcc56add5c703db75df246eea12fbfc13ad91defe7dfe
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:7f406fe0a3d17b5ce6f6fc1dbdb5a05ac715658a81d9cb4c1106c3611707c448
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a
   name: proxyv2-rhel8-b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a-annotation
