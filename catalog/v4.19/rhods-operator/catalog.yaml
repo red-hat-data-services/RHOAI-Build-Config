@@ -14324,7 +14324,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:ead984a99cca63a636672c96a8a4c6ff8d1e8ad04212d8d813a2f073bc11f18e
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5789519ce1131e0baeedcc56add5c703db75df246eea12fbfc13ad91defe7dfe
 name: rhods-operator.2.20.0
 package: rhods-operator
 properties:
@@ -14529,8 +14529,8 @@ properties:
       capabilities: Full Lifecycle
       categories: AI/Machine Learning, Big Data
       certified: "False"
-      containerImage: registry.redhat.io/rhoai/odh-rhel8-operator@sha256:0c9f3604f9de4ff8a625ba4fdde80d13b52913e72cb86e0dbf542a97004005cb
-      createdAt: "2025-04-08T02:46:33Z"
+      containerImage: registry.redhat.io/rhoai/odh-rhel8-operator@sha256:5274a67079d9b3699dd2d1139950b8244f0b4d1c6dd5e10dd723195551a74641
+      createdAt: "2025-04-08T01:19:03Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       features.operators.openshift.io/cnf: "false"
       features.operators.openshift.io/cni: "false"
@@ -14611,7 +14611,7 @@ properties:
       operatorframework.io/suggested-namespace: redhat-ods-operator
       operators.openshift.io/infrastructure-features: '["disconnected"]'
       operators.openshift.io/valid-subscription: '["OpenShift AI"]'
-      operators.operatorframework.io/builder: operator-sdk-v1.37.0
+      operators.operatorframework.io/builder: operator-sdk-v1.33.0
       operators.operatorframework.io/internal-objects: |-
         ["featuretrackers.features.opendatahub.io",
         "codeflares.components.platform.opendatahub.io", "dashboards.components.platform.opendatahub.io",
@@ -14659,6 +14659,10 @@ properties:
         displayName: Data Science Cluster
         kind: DataScienceCluster
         name: datascienceclusters.datasciencecluster.opendatahub.io
+        specDescriptors:
+        - description: Override and fine tune specific component configurations.
+          displayName: Components
+          path: components
         version: v1
       - description: DataSciencePipelines is the Schema for the datasciencepipelines
           API
@@ -14667,9 +14671,40 @@ properties:
         name: datasciencepipelines.components.platform.opendatahub.io
         version: v1alpha1
       - description: DSCInitialization is the Schema for the dscinitializations API.
-        displayName: DSCInitialization
+        displayName: DSC Initialization
         kind: DSCInitialization
         name: dscinitializations.dscinitialization.opendatahub.io
+        specDescriptors:
+        - description: Namespace for applications to be installed, non-configurable,
+            default to "redhat-ods-applications"
+          displayName: Applications Namespace
+          path: applicationsNamespace
+        - description: Enable monitoring on specified namespace
+          displayName: Monitoring
+          path: monitoring
+        - description: Configures Service Mesh as networking layer for Data Science
+            Clusters components. The Service Mesh is a mandatory prerequisite for
+            single model serving (KServe) and you should review this configuration
+            if you are planning to use KServe. For other components, it enhances user
+            experience; e.g. it provides unified authentication giving a Single Sign
+            On experience.
+          displayName: Service Mesh
+          path: serviceMesh
+        - description: When set to `Managed`, adds odh-trusted-ca-bundle Configmap
+            to all namespaces that includes cluster-wide Trusted CA Bundle in .data["ca-bundle.crt"].
+            Additionally, this fields allows admins to add custom CA bundles to the
+            configmap using the .CustomCABundle field.
+          displayName: Trusted CABundle
+          path: trustedCABundle
+        - description: Internal development useful field to test customizations. This
+            is not recommended to be used in production environment.
+          displayName: Dev Flags
+          path: devFlags
+        statusDescriptors:
+        - description: Conditions describes the state of the DSCInitializationStatus
+            resource
+          displayName: Conditions
+          path: conditions
         version: v1
       - kind: FeatureTracker
         name: featuretrackers.features.opendatahub.io
@@ -14792,7 +14827,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:ead984a99cca63a636672c96a8a4c6ff8d1e8ad04212d8d813a2f073bc11f18e
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5789519ce1131e0baeedcc56add5c703db75df246eea12fbfc13ad91defe7dfe
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a
   name: proxyv2-rhel8-b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a-annotation
@@ -14848,7 +14883,7 @@ relatedImages:
   name: odh_ml_pipelines_launcher_image
 - image: registry.redhat.io/rhoai/odh-ml-pipelines-persistenceagent-v2-rhel8@sha256:e70f37940084ea156fae12c6f27cda0797dfc2fc79d4acb0148b0caeb6b5d197
   name: odh_ml_pipelines_persistenceagent_v2_image
-- image: registry.redhat.io/rhoai/odh-ml-pipelines-runtime-generic-rhel8@sha256:a122f664b4550f5713f8d72cfd0d1a90130f6a54f544212b7f90e6349ba203bc
+- image: registry.redhat.io/rhoai/odh-ml-pipelines-runtime-generic-rhel8@sha256:a76ac62ac18cdb5576048a5d48a59038567dda3db4fb2b713b7c91659c1982d7
   name: odh_ml_pipelines_runtime_generic_image
 - image: registry.redhat.io/rhoai/odh-ml-pipelines-scheduledworkflow-v2-rhel8@sha256:a34e096e0698abd6452278ad2385c8f26df21c076e8e9754b7fe838fcb649256
   name: odh_ml_pipelines_scheduledworkflow_v2_image
@@ -14870,8 +14905,8 @@ relatedImages:
   name: odh_modelmesh_controller_image
 - image: registry.redhat.io/rhoai/odh-notebook-controller-rhel8@sha256:5b8a0ddd1ce6acda1f64c1ea130cdb92afff39f88614ba52fbd1518533a2c6be
   name: odh_notebook_controller_image
-- image: registry.redhat.io/rhoai/odh-rhel8-operator@sha256:0c9f3604f9de4ff8a625ba4fdde80d13b52913e72cb86e0dbf542a97004005cb
-  name: odh-rhel8-operator-0c9f3604f9de4ff8a625ba4fdde80d13b52913e72cb86e0dbf542a97004005cb-annotation
+- image: registry.redhat.io/rhoai/odh-rhel8-operator@sha256:5274a67079d9b3699dd2d1139950b8244f0b4d1c6dd5e10dd723195551a74641
+  name: odh-rhel8-operator-5274a67079d9b3699dd2d1139950b8244f0b4d1c6dd5e10dd723195551a74641-annotation
 - image: registry.redhat.io/rhoai/odh-training-operator-rhel8@sha256:768867ea00fa82b27649187a8dd5983ecbb95550cfe586525891dfbcb68d27b9
   name: odh_training_operator_image
 - image: registry.redhat.io/rhoai/odh-trustyai-service-operator-rhel8@sha256:150bf8fad8468e2959126dd1cea8fe3bba034e8797949db1c452e0f13dcc7230
