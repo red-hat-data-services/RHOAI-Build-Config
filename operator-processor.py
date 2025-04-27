@@ -145,7 +145,7 @@ class operator_processor:
             qc = quay_controller(org)
             repo = '/'.join(parts[2:])
             tags = qc.get_all_tags(repo, self.rhoai_version)
-            component_name = repo.replace('-rhel8', '') if repo.endswith('-rhel8') else repo
+            component_name = repo.replace('-rhel8', '').replace('-rhel9', '') if repo.endswith(('-rhel8', '-rhel9')) else repo
 
             if not tags:
                 print(f'no tags found for {repo}')
