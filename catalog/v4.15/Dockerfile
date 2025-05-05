@@ -2,8 +2,8 @@
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
 FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.15
 
-ARG ODH_RHEL8_OPERATOR_GIT_URL=
-ARG ODH_RHEL8_OPERATOR_GIT_COMMIT=
+ARG ODH_RHEL9_OPERATOR_GIT_URL=
+ARG ODH_RHEL9_OPERATOR_GIT_COMMIT=
 ARG ODH_KF_NOTEBOOK_CONTROLLER_GIT_URL=
 ARG ODH_KF_NOTEBOOK_CONTROLLER_GIT_COMMIT=
 ARG ODH_NOTEBOOK_CONTROLLER_GIT_URL=
@@ -70,8 +70,8 @@ RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"]
 LABEL operators.operatorframework.io.index.configs.v1=/configs
 
 LABEL \
-      odh-rhel8-operator.git.url="${ODH_RHEL8_OPERATOR_GIT_URL}" \
-      odh-rhel8-operator.git.commit="${ODH_RHEL8_OPERATOR_GIT_COMMIT}" \
+      odh-rhel9-operator.git.url="${ODH_RHEL9_OPERATOR_GIT_URL}" \
+      odh-rhel9-operator.git.commit="${ODH_RHEL9_OPERATOR_GIT_COMMIT}" \
       odh-kf-notebook-controller.git.url="${ODH_KF_NOTEBOOK_CONTROLLER_GIT_URL}" \
       odh-kf-notebook-controller.git.commit="${ODH_KF_NOTEBOOK_CONTROLLER_GIT_COMMIT}" \
       odh-notebook-controller.git.url="${ODH_NOTEBOOK_CONTROLLER_GIT_URL}" \
