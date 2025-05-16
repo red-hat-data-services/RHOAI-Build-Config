@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cd465da4868bae94e26b09f2a50a0d1641a3b90118f396a7880445d036fed421"
-    createdAt: "2025-05-16T11:23:27Z"
+    createdAt: "2025-05-16T13:57:25Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -213,10 +213,6 @@ metadata:
     prometheus-config-reloader-image: registry.redhat.io/openshift4/ose-prometheus-config-reloader@sha256:bd543e039c7c2b0857a7e0ce34d582b8954a8ad3a3f13a2eaaff2904cdae7c53
     prometheus-operator-image: registry.redhat.io/openshift4/ose-prometheus-operator@sha256:4aeb07f66dc39889e3d0e66eee7c4ea2e39ce4025852d1d1eaf662af8bd8eeb6
     ose-cli-image: registry.redhat.io/openshift4/ose-cli@sha256:25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61
-    odh-ml-pipeline-moveresult-image: registry.redhat.io/ubi8/ubi-micro@sha256:396baed3d689157d96aa7d8988fdfea7eb36684c8335eb391cf1952573e689c1
-    odh-ml-pipeline-mariadb-image: registry.redhat.io/rhel8/mariadb-103@sha256:f0ee0d27bb784e289f7d88cc8ee0e085ca70e88a5d126562105542f259a1ac01
-    ose-oauth-proxy-dsp-image: registry.redhat.io/openshift4/ose-oauth-proxy@sha256:8ce44de8c683f198bf24ba36cd17e89708153d11f5b42c0a27e77f8fdb233551
-    odh-ml-pipeline-envoy-proxy-image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a
     ose-cli-etcd-image: registry.redhat.io/openshift4/ose-cli@sha256:4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677
     ose-etcd-image: registry.redhat.io/openshift4/ose-etcd@sha256:d3275cd886d13865937d225d8138db7f6b7bf59ac1a94d9fbe61e35286bee6ff
     operators.openshift.io/valid-subscription: '["OpenShift AI"]'
@@ -1440,10 +1436,16 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-feast-operator-rhel9@sha256:e0ed6cf0222bd531c637657e8629a4f9a8433b7f67588dea475617d268790e51"
                 - name: RELATED_IMAGE_ODH_FEATURE_SERVER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:3efba7ad7133ac72f934734e774286048ddb24a5409df8bcc6ab91ecd2911d1f"
-                - name: RELATED_IMAGE_OSE_OAUTH_PROXY_LATEST_IMAGE
-                  value: registry.redhat.io/openshift4/ose-oauth-proxy@sha256:5391e9ec3748fec2b820db5fb0b8bd167a1efd607b8a0c090cce5ad2e94f4fcc
-                - name: RELATED_IMAGE_UBI_MINIMAL_LATEST_IMAGE
-                  value: registry.redhat.io/ubi9/ubi-minimal@sha256:e1c4703364c5cb58f5462575dc90345bcd934ddc45e6c32f9c162f2b5617681c
+                - name: RELATED_IMAGE_TOOLBOX_LATEST_IMAGE
+                  value: registry.redhat.io/ubi9/toolbox@sha256:3d0763bcabb6f571bb04d5a6364b408c4124f369b8117abf1a6e9c0bf3c98f06
+                - name: RELATED_IMAGE_INSTRUCTLAB_NVIDIA_RHEL9_LATEST_IMAGE
+                  value: registry.redhat.io/rhelai1/instructlab-nvidia-rhel9@sha256:3e6eb035c69b204746a44b3a58b2751c20050cfb6af2ba7989ba327809f87c0b
+                - name: RELATED_IMAGE_PROXYV2_RHEL9_2_6_IMAGE
+                  value: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
+                - name: RELATED_IMAGE_MARIADB_105_LATEST_IMAGE
+                  value: registry.redhat.io/rhel9/mariadb-105@sha256:07d3e7f5d46c14f3ec78dd8c8df46886017e2d079f1a0cef6b5fa68dd4f9a50b
+                - name: RELATED_IMAGE_OSE_OAUTH_PROXY_RHEL9_LATEST_IMAGE
+                  value: registry.redhat.io/openshift4/ose-oauth-proxy-rhel9@sha256:5f9f3ec444ce3f5b44d1d9cf7732cea9a562cc6f36a2f5647791462254a92dbc
                 image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cd465da4868bae94e26b09f2a50a0d1641a3b90118f396a7880445d036fed421"
                 imagePullPolicy: Always
                 livenessProbe:
@@ -1612,14 +1614,6 @@ spec:
     image: registry.redhat.io/openshift4/ose-prometheus-operator@sha256:4aeb07f66dc39889e3d0e66eee7c4ea2e39ce4025852d1d1eaf662af8bd8eeb6
   - name: ose-cli-25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61-annotation
     image: registry.redhat.io/openshift4/ose-cli@sha256:25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61
-  - name: ubi-micro-396baed3d689157d96aa7d8988fdfea7eb36684c8335eb391cf1952573e689c1-annotation
-    image: registry.redhat.io/ubi8/ubi-micro@sha256:396baed3d689157d96aa7d8988fdfea7eb36684c8335eb391cf1952573e689c1
-  - name: mariadb-103-f0ee0d27bb784e289f7d88cc8ee0e085ca70e88a5d126562105542f259a1ac01-annotation
-    image: registry.redhat.io/rhel8/mariadb-103@sha256:f0ee0d27bb784e289f7d88cc8ee0e085ca70e88a5d126562105542f259a1ac01
-  - name: ose-oauth-proxy-8ce44de8c683f198bf24ba36cd17e89708153d11f5b42c0a27e77f8fdb233551-annotation
-    image: registry.redhat.io/openshift4/ose-oauth-proxy@sha256:8ce44de8c683f198bf24ba36cd17e89708153d11f5b42c0a27e77f8fdb233551
-  - name: proxyv2-rhel8-b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a-annotation
-    image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a
   - name: ose-cli-4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677-annotation
     image: registry.redhat.io/openshift4/ose-cli@sha256:4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677
   - name: ose-etcd-d3275cd886d13865937d225d8138db7f6b7bf59ac1a94d9fbe61e35286bee6ff-annotation
@@ -1680,7 +1674,13 @@ spec:
     image: "registry.redhat.io/rhoai/odh-feast-operator-rhel9@sha256:e0ed6cf0222bd531c637657e8629a4f9a8433b7f67588dea475617d268790e51"
   - name: odh_feature_server_image
     image: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:3efba7ad7133ac72f934734e774286048ddb24a5409df8bcc6ab91ecd2911d1f"
-  - name: ose_oauth_proxy_latest_image
-    image: registry.redhat.io/openshift4/ose-oauth-proxy@sha256:5391e9ec3748fec2b820db5fb0b8bd167a1efd607b8a0c090cce5ad2e94f4fcc
-  - name: ubi_minimal_latest_image
-    image: registry.redhat.io/ubi9/ubi-minimal@sha256:e1c4703364c5cb58f5462575dc90345bcd934ddc45e6c32f9c162f2b5617681c
+  - name: toolbox_latest_image
+    image: registry.redhat.io/ubi9/toolbox@sha256:3d0763bcabb6f571bb04d5a6364b408c4124f369b8117abf1a6e9c0bf3c98f06
+  - name: instructlab_nvidia_rhel9_latest_image
+    image: registry.redhat.io/rhelai1/instructlab-nvidia-rhel9@sha256:3e6eb035c69b204746a44b3a58b2751c20050cfb6af2ba7989ba327809f87c0b
+  - name: proxyv2_rhel9_2_6_image
+    image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
+  - name: mariadb_105_latest_image
+    image: registry.redhat.io/rhel9/mariadb-105@sha256:07d3e7f5d46c14f3ec78dd8c8df46886017e2d079f1a0cef6b5fa68dd4f9a50b
+  - name: ose_oauth_proxy_rhel9_latest_image
+    image: registry.redhat.io/openshift4/ose-oauth-proxy-rhel9@sha256:5f9f3ec444ce3f5b44d1d9cf7732cea9a562cc6f36a2f5647791462254a92dbc
