@@ -6,10 +6,10 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
       == "rhoai-2.13" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-13-push.yaml".pathChanged()
-      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
-  creationTimestamp:
+      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()
+  creationTimestamp: null
   labels:
     appstudio.openshift.io/application: rhoai-v2-13
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-13
@@ -56,7 +56,7 @@ spec:
     - name: send-slack-notification
       params:
       - name: message
-        value: "$(tasks.rhoai-init.results.slack-message-failure-text)"
+        value: $(tasks.rhoai-init.results.slack-message-failure-text)
       - name: secret-name
         value: rhoai-konflux-secret
       - name: key-name
@@ -74,11 +74,11 @@ spec:
       - input: $(tasks.status)
         operator: in
         values:
-        - "Failed"
+        - Failed
     - name: share-fbc-details
       params:
       - name: message
-        value: "$(tasks.prepare-slack-message.results.slack-message-sucess-text)"
+        value: $(tasks.prepare-slack-message.results.slack-message-sucess-text)
       - name: secret-name
         value: rhoai-konflux-secret
       - name: key-name
@@ -96,7 +96,7 @@ spec:
       - input: $(tasks.status)
         operator: in
         values:
-        - "Completed"
+        - Completed
     params:
     - description: Source Repository URL
       name: git-url
@@ -177,20 +177,23 @@ spec:
     - name: rhoai-init
       params:
       - name: pipelinerun-name
-        value: "$(context.pipelineRun.name)"
+        value: $(context.pipelineRun.name)
       taskSpec:
+        metadata: {}
         results:
         - description: Notification text to be posted to slack
           name: slack-message-failure-text
+        spec: null
         steps:
-        - image: alpine
-          name: rhoai-init
+        - computeResources: {}
           env:
           - name: slack_message
             valueFrom:
               secretKeyRef:
-                name: rhoai-konflux-secret
                 key: slack-component-failure-notification
+                name: rhoai-konflux-secret
+          image: alpine
+          name: rhoai-init
           script: |
             pipelinerun_name=$(params.pipelinerun-name)
             target_branch={{target_branch}}
@@ -198,7 +201,7 @@ spec:
 
             application_name=${target_branch/rhoai-/}
             echo "application-name = $application_name"
-            
+
             application_name=rhoai-v${application_name/./-}
             echo "application-name = $application_name"
 
@@ -215,7 +218,6 @@ spec:
             slack_message=${slack_message/__BUILD__TIME__/$build_time}
 
             echo -en "${slack_message}" > "$(results.slack-message-failure-text.path)"
-
     - name: init
       params:
       - name: image-url
@@ -224,6 +226,8 @@ spec:
         value: $(params.rebuild)
       - name: skip-checks
         value: "false"
+      runAfter:
+      - rhoai-init
       taskRef:
         params:
         - name: name
@@ -233,8 +237,6 @@ spec:
         - name: kind
           value: task
         resolver: bundles
-      runAfter:
-      - rhoai-init
     - name: clone-repository
       params:
       - name: url
@@ -290,12 +292,12 @@ spec:
         workspace: git-auth
       - name: netrc
         workspace: netrc
-    - name: build-images
-      matrix:
+    - matrix:
         params:
         - name: PLATFORM
           value:
           - $(params.build-platforms)
+      name: build-images
       params:
       - name: IMAGE
         value: $(params.output-image)
@@ -489,17 +491,22 @@ spec:
     - name: prepare-slack-message
       params:
       - name: pipelinerun-name
-        value: "$(context.pipelineRun.name)"
+        value: $(context.pipelineRun.name)
       - name: image-url
         value: $(tasks.build-image-index.results.IMAGE_URL)
       - name: image-digest
         value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+      runAfter:
+      - build-image-index
       taskSpec:
+        metadata: {}
         results:
         - description: Notification text to be posted to slack
           name: slack-message-sucess-text
+        spec: null
         steps:
-        - image: alpine
+        - computeResources: {}
+          image: alpine
           name: rhoai-init
           script: |
             pipelinerun_name=$(params.pipelinerun-name)
@@ -524,14 +531,13 @@ spec:
             #slack_message=$(echo -e "${slack_message}\nCC - <@U04KZMFDZ2T>")
 
             echo -n "${slack_message}" > "$(results.slack-message-sucess-text.path)"
-      runAfter:
-      - build-image-index
     workspaces:
     - name: git-auth
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-13
   workspaces:
   - name: git-auth
     secret:
