@@ -1,5 +1,20 @@
+# Each additional image must follow the format:
+#
+# name:  Must be in the format RELATED_IMAGE_<IMAGE_NAME>_<TAG_LABEL>_IMAGE
+#        - IMAGE_NAME: A descriptive, uppercase identifier for the image
+#        - TAG_LABEL: A tag reference (e.g., LATEST, 2_6), use underscores for separators
+#
+# value: Must follow the format registry.redhat.io/<ORG>/<REPO>:<TAG>@<SHA256_DIGEST>
+#        - Use the full image reference including both tag and SHA digest
+#        - This is to ensure exact digest updates based on the tag versioning
 additionalImages:
-  - name: RELATED_IMAGE_OSE_OAUTH_PROXY_LATEST_IMAGE
-    value: "registry.redhat.io/openshift4/ose-oauth-proxy:latest@sha256:5391e9ec3748fec2b820db5fb0b8bd167a1efd607b8a0c090cce5ad2e94f4fcc"
-  - name: RELATED_IMAGE_UBI_MINIMAL_LATEST_IMAGE
-    value: "registry.redhat.io/ubi9/ubi-minimal:latest@sha256:e1c4703364c5cb58f5462575dc90345bcd934ddc45e6c32f9c162f2b5617681c"
+  - name: RELATED_IMAGE_TOOLBOX_LATEST_IMAGE
+    value: "registry.redhat.io/ubi9/toolbox:latest@sha256:3d0763bcabb6f571bb04d5a6364b408c4124f369b8117abf1a6e9c0bf3c98f06"
+  - name: RELATED_IMAGE_INSTRUCTLAB_NVIDIA_RHEL9_LATEST_IMAGE
+    value: "registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:latest@sha256:3e6eb035c69b204746a44b3a58b2751c20050cfb6af2ba7989ba327809f87c0b"
+  - name: RELATED_IMAGE_PROXYV2_RHEL9_2_6_IMAGE
+    value: "registry.redhat.io/openshift-service-mesh/proxyv2-rhel9:2.6@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd"
+  - name: RELATED_IMAGE_MARIADB_105_LATEST_IMAGE
+    value: "registry.redhat.io/rhel9/mariadb-105:latest@sha256:07d3e7f5d46c14f3ec78dd8c8df46886017e2d079f1a0cef6b5fa68dd4f9a50b"
+  - name: RELATED_IMAGE_OSE_OAUTH_PROXY_RHEL9_LATEST_IMAGE
+    value: "registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:latest@sha256:5f9f3ec444ce3f5b44d1d9cf7732cea9a562cc6f36a2f5647791462254a92dbc"
