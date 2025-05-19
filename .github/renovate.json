@@ -1,52 +1,52 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ],
-  "branchPrefix": "renovate/",
-  "baseBranches": ["main", "rhoai-2.8", "rhoai-2.16", "rhoai-2.20"],
-  "ignoreTests": true,
-  "automergeType": "pr",
-  "automerge": true,
-  "prHourlyLimit": 0,
-  "enabledManagers": ["tekton"],
-  "tekton": {
-    "schedule": ["* 0-3 1 * *"],
-    "fileMatch": [
-      "\\.yaml$",
-      "\\.yml$"
-    ],
-    "includePaths": [
-      ".tekton/**"
-    ],
-    "packageRules": [
-    ],
-    "tekton": {
-        "matchPackagePatterns": [
-          "^quay.io/redhat-appstudio-tekton-catalog/",
-          "^quay.io/konflux-ci/tekton-catalog/"
-        ],
-        "enabled": true,
-        "groupName": "Konflux references",
-        "branchPrefix": "konflux/references/",
-        "group": {
-          "branchTopic": "{{{baseBranch}}}",
-          "commitMessageTopic": "{{{groupName}}}"
-        },
-        "commitMessageTopic": "Konflux references",
-        "semanticCommits": "enabled",
-        "prFooter": "To execute skipped test pipelines write comment `/ok-to-test`",
-        "prBodyColumns": [
-          "Package",
-          "Change",
-          "Notes"
-        ],
-        "prBodyDefinitions": {
-          "Notes": "{{#if (or (containsString updateType 'minor') (containsString updateType 'major'))}}:warning:[migration](https://github.com/redhat-appstudio/build-definitions/blob/main/task/{{{replace '^quay.io/(redhat-appstudio-tekton-catalog|konflux-ci/tekton-catalog)/task-' '' packageName}}}/{{{newVersion}}}/MIGRATION.md):warning:{{/if}}"
-        },
-        "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
-        "recreateWhen": "always",
-        "rebaseWhen": "behind-base-branch"
-    }
-  }
-}
+         "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+         "extends": ["config:recommended"],
+         "branchPrefix": "renovate/",
+         "baseBranches": ["main", "rhoai-2.8", "rhoai-2.16", "rhoai-2.20", "rhoai-2.21"],
+         "ignoreTests": true,
+         "automergeType": "pr",
+         "automerge": true,
+         "enabledManagers": ["tekton", "custom.regex"],
+         "tekton": {
+           "schedule": ["at any time"],
+           "fileMatch": ["\\.yaml$", "\\.yml$"],
+           "includePaths": [".tekton/**"],
+           "packageRules": [
+             {
+               "enabled": true,
+               "groupName": "Konflux references",
+               "branchPrefix": "konflux/references/",
+               "group": {
+                 "branchTopic": "{{{baseBranch}}}",
+                 "commitMessageTopic": "{{{groupName}}}"
+               },
+               "commitMessageTopic": "Konflux references",
+               "semanticCommits": "enabled",
+               "prFooter": "To execute skipped test pipelines write comment `/ok-to-test`",
+               "prBodyColumns": ["Package", "Change", "Notes"],
+               "prBodyDefinitions": {
+                 "Notes": "{{#if (or (containsString updateType 'minor') (containsString updateType 'major'))}}:warning:[migration](https://github.com/redhat-appstudio/build-definitions/blob/main/task/{{{replace '^quay.io/(redhat-appstudio-tekton-catalog|konflux-ci/tekton-catalog)/task-' '' packageName}}}/{{{newVersion}}}/MIGRATION.md):warning:{{/if}}"
+               },
+               "prBodyTemplate": "{{{header}}}{{{table}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
+               "recreateWhen": "always",
+               "rebaseWhen": "behind-base-branch",
+               "matchPackageNames": [
+                 "/^quay.io/redhat-appstudio-tekton-catalog//",
+                 "/^quay.io/konflux-ci/tekton-catalog//"
+               ]
+             }
+           ]
+         },
+         "prHourlyLimit": 0,
+         "customManagers": [
+           {
+             "fileMatch": ["(^|/)additional-images-patch.yaml"],
+             "customType": "regex",
+             "datasourceTemplate": "docker",
+             "matchStrings": [
+               "(?<depName>[\\w\\.\\/\\-]+):(?<currentValue>[\\w]+)@(?<currentDigest>sha256:[a-f0-9]+)"
+             ],
+             "versioningTemplate": "docker"
+           }
+         ]
+       }
