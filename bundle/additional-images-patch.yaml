@@ -1,20 +1,20 @@
 # Each additional image must follow the format:
 #
-# name:  Must be in the format RELATED_IMAGE_<IMAGE_NAME>_<TAG_LABEL>_IMAGE
-#        - IMAGE_NAME: A descriptive, uppercase identifier for the image
-#        - TAG_LABEL: A tag reference (e.g., LATEST, 2_6), use underscores for separators
+# name:  Must be in the format RELATED_IMAGE_[COMPONENT_NAME]_<IMAGE_NAME>_IMAGE
+#        - COMPONENT_NAME (optional): Name of the component which uses the image. Omit if the image is shared by multiple components.
+#        - IMAGE_NAME: A descriptive, uppercase identifier for the image (omit version details to keep it generic)
 #
 # value: Must follow the format registry.redhat.io/<ORG>/<REPO>:<TAG>@<SHA256_DIGEST>
 #        - Use the full image reference including both tag and SHA digest
-#        - This is to ensure exact digest updates based on the tag versioning
+#        - This ensures updates are tied to a specific tag, avoiding unintended major or minor version bumps
 additionalImages:
-  - name: RELATED_IMAGE_TOOLBOX_LATEST_IMAGE
+  - name: RELATED_IMAGE_DSP_TOOLBOX_IMAGE
     value: "registry.redhat.io/ubi9/toolbox:latest@sha256:40b48c85d3d257c4030a65ba0a44d80ea84cd416df3719b4844d3f39b7b14d02"
-  - name: RELATED_IMAGE_INSTRUCTLAB_NVIDIA_RHEL9_1_5_IMAGE
+  - name: RELATED_IMAGE_DSP_INSTRUCTLAB_NVIDIA_IMAGE
     value: "registry.redhat.io/rhelai1/instructlab-nvidia-rhel9:1.5@sha256:3e6eb035c69b204746a44b3a58b2751c20050cfb6af2ba7989ba327809f87c0b"
-  - name: RELATED_IMAGE_PROXYV2_RHEL9_2_6_IMAGE
+  - name: RELATED_IMAGE_DSP_PROXYV2_IMAGE
     value: "registry.redhat.io/openshift-service-mesh/proxyv2-rhel9:2.6@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd"
-  - name: RELATED_IMAGE_MARIADB_105_LATEST_IMAGE
+  - name: RELATED_IMAGE_DSP_MARIADB_IMAGE
     value: "registry.redhat.io/rhel9/mariadb-105:latest@sha256:07d3e7f5d46c14f3ec78dd8c8df46886017e2d079f1a0cef6b5fa68dd4f9a50b"
-  - name: RELATED_IMAGE_OSE_OAUTH_PROXY_RHEL9_LATEST_IMAGE
+  - name: RELATED_IMAGE_OSE_OAUTH_PROXY_IMAGE
     value: "registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:latest@sha256:3bb1803cae39a31cc87bcf8affee0ad2576f1d2774a6c3de556adbbbc2687abc"
