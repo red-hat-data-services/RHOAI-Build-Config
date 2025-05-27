@@ -6,13 +6,13 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.21" && "schedule/catalog-tekton-trigger.txt".pathChanged()
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.22" && "schedule/catalog-tekton-trigger.txt".pathChanged()
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhoai-v2-21
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-21
+    appstudio.openshift.io/application: rhoai-v2-22
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-22
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v2-21-on-schedule
+  name: rhoai-fbc-fragment-v2-22-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -26,7 +26,7 @@ spec:
     - '{{target_branch}}-nightly'
   - name: additional-labels
     value:
-    - version=v2.21.0
+    - version=v2.22.0
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -61,7 +61,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-21
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-22
   workspaces:
   - name: git-auth
     secret:
