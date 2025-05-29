@@ -8,7 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
       == "sealights-poc-2.16" && ( "catalog/**".pathChanged() || ".tekton/sealights-poc-rhoai-fbc-fragment-v2-16-push.yaml".pathChanged()
-      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()
+      ) && !".github/workflows/**".pathChanged()
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: sealights-poc-v2-16
