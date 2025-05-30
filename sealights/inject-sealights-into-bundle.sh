@@ -6,6 +6,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
   sed=gsed
 fi
 
+ls -a -R /
+
 SEALIGHTS_INTEGRATED_REPOS=odh-dashboard-rhel9 
 
 for SEALIGHTS_INTEGRATED_REPO in $SEALIGHTS_INTEGRATED_REPOS; do
@@ -15,7 +17,7 @@ for SEALIGHTS_INTEGRATED_REPO in $SEALIGHTS_INTEGRATED_REPOS; do
   REAL_URI=$(grep "registry\.redhat\.io/rhoai" bundle/manifests/rhods-operator.clusterserviceversion.yaml | \
     grep -m 1 "$SEALIGHTS_INTEGRATED_REPO" | grep -E -o 'registry\.redhat\.io/rhoai/.*@sha256:.{64}')
   REAL_QUAY_URI=$(echo "$REAL_URI" | $sed 's/registry\.redhat\.io/quay.io/')
-  echo "Found $REAL_URL"
+  echo "Found $REAL_URI"
   echo " -> converting to $REAL_QUAY_URI"
 
   SEALIGHTS_QUAY_URI=$(get_sealights_image "$REAL_QUAY_URI" "build-sealights-image-index" | tail -n 1)
