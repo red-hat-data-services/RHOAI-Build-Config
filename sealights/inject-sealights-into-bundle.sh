@@ -1,5 +1,5 @@
 set -eo pipefail
-source "$(dirname $0)/helpers.sh"
+source "$(dirname $0)/sealights-helper.sh"
 
 sed=sed
 if [[ "$(uname -s)" == "Darwin" ]]; then
