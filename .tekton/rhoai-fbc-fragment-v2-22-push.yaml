@@ -48,6 +48,11 @@ spec:
     value: false
   - name: is_nightly
     value: false
+  - name: sealights-config
+    value:
+      build: "true"
+      script: "./sealights/inject-sealights-into-fbc.sh"
+      output-image: quay.io/rhoai-sealights/rhoai-fbc-fragment:{{target_branch}}
   pipelineRef:
     resolver: git
     params:
