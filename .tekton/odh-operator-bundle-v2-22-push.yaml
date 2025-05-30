@@ -44,6 +44,11 @@ spec:
     value: true
   - name: build-image-index
     value: false
+  - name: sealights-config
+    value:
+      build: "true"
+      script: "./sealights/inject-sealights-into-bundle.sh"
+      output-image: quay.io/rhoai-sealights/odh-operator-bundle:{{target_branch}}
   pipelineRef:
     resolver: git
     params:
