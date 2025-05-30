@@ -1,3 +1,5 @@
+apk add cosign jq
+
 function get_sealights_image {
   REAL_QUAY_URI=$1
   SEALIGHTS_BUILD_STEP=$2
