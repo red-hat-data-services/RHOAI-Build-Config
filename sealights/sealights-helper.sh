@@ -2,10 +2,8 @@ function get_sealights_image {
   REAL_QUAY_URI=$1
   SEALIGHTS_BUILD_STEP=$2
 
-  ### get the correct credential
-  mkdir -p /tmp/auth && select-oci-auth "$REAL_QUAY_URI" >/tmp/auth/config.json
   ### Get the attestation info from the actual build URI
-  DOCKER_CONFIG=/tmp/auth cosign download attestation $REAL_QUAY_URI > attestation.json
+  DOCKER_CONFIG=/tekton/creds-secrets/rhoai-quay-secret cosign download attestation $REAL_QUAY_URI > attestation.json
 
   SEALIGHTS_BUILD_RESULTS=$(jq '.payload|@base64d|fromjson' attestation.json \
     | jq -r --arg N "$SEALIGHTS_BUILD_STEP" '.predicate.buildConfig.tasks[] | select(.name == $N)| .results')
