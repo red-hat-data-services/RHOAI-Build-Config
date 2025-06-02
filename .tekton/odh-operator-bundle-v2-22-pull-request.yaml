@@ -50,16 +50,19 @@ spec:
   - name: sealights-config
     value:
       build: "true"
-      script: ""
+      build-type: "bundle"
       output-image: quay.io/rhoai-sealights/odh-operator-bundle:on-pr-{{revision}}
-      dockerfile: "./sealights/Dockerfile.bundle"
+  - name: sealights-integrated-repos
+    value:
+    - odh-dashboard-rhel9
   pipelineRef:
     resolver: git
     params:
     - name: url
       value: https://github.com/red-hat-data-services/konflux-central.git
     - name: revision
-      value: '{{ target_branch }}'
+      # value: '{{ target_branch }}'
+      value: add-sealights-task
     - name: pathInRepo
       value: pipelines/container-build.yaml
   taskRunTemplate:
