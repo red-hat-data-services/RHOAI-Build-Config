@@ -47,9 +47,12 @@ spec:
     value: false
   - name: sealights-config
     value:
-      build: "false"
-      script: "./sealights/inject-sealights-into-bundle.sh"
+      build: "true"
+      build-type: "bundle"
       output-image: quay.io/rhoai-sealights/odh-operator-bundle:{{target_branch}}
+  - name: sealights-integrated-repos
+    value:
+    - odh-dashboard-rhel9
   pipelineRef:
     resolver: git
     params:

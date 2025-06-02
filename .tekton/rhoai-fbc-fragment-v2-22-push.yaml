@@ -51,10 +51,13 @@ spec:
     value: false
   - name: sealights-config
     value:
-      build: "false"
+      build: "true"
       build-platform: "linux/x86_64"
-      script: "./sealights/inject-sealights-into-fbc.sh"
+      build-type: "fbc"
       output-image: quay.io/rhoai-sealights/rhoai-fbc-fragment:{{target_branch}}
+  - name: sealights-integrated-repos
+    value:
+    - odh-dashboard-rhel9
   pipelineRef:
     resolver: git
     params:
