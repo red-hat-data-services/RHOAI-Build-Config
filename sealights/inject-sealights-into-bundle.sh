@@ -12,7 +12,7 @@ for SEALIGHTS_INTEGRATED_REPO in $SEALIGHTS_INTEGRATED_REPOS; do
   echo "Processing $SEALIGHTS_INTEGRATED_REPO"
 
   ### Find the actual build uri
-  REAL_URI=$(grep "registry\.redhat\.io/rhoai" bundle/manifests/rhods-operator.clusterserviceversion.yaml | \
+  REAL_URI=$(grep "registry\.redhat\.io/rhoai" manifests/rhods-operator.clusterserviceversion.yaml | \
     grep -m 1 "$SEALIGHTS_INTEGRATED_REPO" | grep -E -o 'registry\.redhat\.io/rhoai/.*@sha256:.{64}')
   REAL_QUAY_URI=$(echo "$REAL_URI" | $sed 's/registry\.redhat\.io/quay.io/')
   echo "Found $REAL_URI"
@@ -26,7 +26,7 @@ for SEALIGHTS_INTEGRATED_REPO in $SEALIGHTS_INTEGRATED_REPOS; do
   # replace the real URI with the sealights ones
   echo "Replacing all instances of $REAL_URI"
   echo " with $SEALIGHTS_URI"
-  $sed -i "s|$REAL_URI|$SEALIGHTS_URI|g" bundle/manifests/rhods-operator.clusterserviceversion.yaml
+  $sed -i "s|$REAL_URI|$SEALIGHTS_URI|g" manifests/rhods-operator.clusterserviceversion.yaml
 done
 
 echo "finished processing"
