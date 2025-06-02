@@ -6,8 +6,6 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
   sed=gsed
 fi
 
-ls -a -R /
-
 SEALIGHTS_INTEGRATED_REPOS=odh-dashboard-rhel9 
 
 for SEALIGHTS_INTEGRATED_REPO in $SEALIGHTS_INTEGRATED_REPOS; do
