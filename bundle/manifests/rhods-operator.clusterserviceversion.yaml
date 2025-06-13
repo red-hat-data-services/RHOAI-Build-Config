@@ -49,6 +49,9 @@ metadata:
               "kueue": {
                 "managementState": "Managed"
               },
+              "llamastackoperator": {
+                "managementState": "Removed"
+              },
               "modelmeshserving": {
                 "managementState": "Managed"
               },
@@ -109,7 +112,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4687a65db5bf7840ed1d256738e255ba20359c71d23074f5def7686ae357a7e0"
-    createdAt: "2025-06-13T00:54:20Z"
+    createdAt: "2025-06-13T01:36:42Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -275,6 +278,11 @@ spec:
       displayName: Kueue
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
+      version: v1alpha1
+    - description: LlamaStackOperator is the Schema for the LlamaStackOperator API
+      displayName: Llama Stack Operator
+      kind: LlamaStackOperator
+      name: llamastackoperators.components.platform.opendatahub.io
       version: v1alpha1
     - kind: ModelController
       name: modelcontrollers.components.platform.opendatahub.io
@@ -533,6 +541,7 @@ spec:
           - feastoperators
           - kserves
           - kueues
+          - llamastackoperators
           - modelcontrollers
           - modelmeshservings
           - modelregistries
@@ -556,6 +565,7 @@ spec:
           - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
+          - llamastackoperators/finalizers
           - modelcontrollers/finalizers
           - modelmeshservings/finalizers
           - modelregistries/finalizers
@@ -574,6 +584,7 @@ spec:
           - feastoperators/status
           - kserves/status
           - kueues/status
+          - llamastackoperators/status
           - modelcontrollers/status
           - modelmeshservings/status
           - modelregistries/status
@@ -1531,6 +1542,7 @@ spec:
   - Data Science
   - Feast
   - featurestore
+  - llamastack
   links:
   - name: Red Hat OpenShift AI
     url: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.22
