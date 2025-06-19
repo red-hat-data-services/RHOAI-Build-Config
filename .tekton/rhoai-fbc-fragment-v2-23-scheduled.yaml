@@ -6,16 +6,13 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged()
-      && event == "push" && target_branch == "rhoai-2.22" && ( "catalog/**".pathChanged()
-      || ".tekton/rhoai-fbc-fragment-v2-22-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
-      && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.23" && "schedule/catalog-tekton-trigger.txt".pathChanged()
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: rhoai-v2-22
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-22
+    appstudio.openshift.io/application: rhoai-v2-23
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v2-23
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v2-22-on-push
+  name: rhoai-fbc-fragment-v2-23-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -26,9 +23,10 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: additional-labels
     value:
-    - version=v2.22.0
+    - version=v2.23.0
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -48,17 +46,11 @@ spec:
   - name: build-source-image
     value: false
   - name: is_nightly
-    value: false
-  - name: sealights-config
-    value:
-      build: "true"
-      build-platform: "linux/x86_64"
-      build-type: "fbc"
-      output-image: quay.io/rhoai-sealights/rhoai-fbc-fragment:{{target_branch}}
-  - name: sealights-integrated-repos
-    value:
-    - odh-dashboard-rhel9
-    - odh-operator-bundle
+    value: true
+  - name: workflow_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
+  - name: smoke_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/smoke-trigger.yaml"
   pipelineRef:
     resolver: git
     params:
@@ -69,7 +61,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-22
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-23
   workspaces:
   - name: git-auth
     secret:
