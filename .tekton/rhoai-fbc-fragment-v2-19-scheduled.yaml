@@ -33,6 +33,8 @@ spec:
     value: catalog/v4.17
   - name: build-args-file
     value: catalog/catalog_build_args.map
+  - name: target_branch
+    value: '{{target_branch}}'
   - name: workflow_url
     value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   - name: smoke_url
@@ -269,6 +271,10 @@ spec:
       description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
       name: build-platforms
       type: array
+    - name: target_branch
+      type: string
+      description: "Target branch for the workflow"
+      default: ""
     - name: workflow_url
       type: string
       description: "URL of the workflow to trigger"
