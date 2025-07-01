@@ -179,6 +179,8 @@ class operator_processor:
             print('Images missing for following components : ', missing_images)
             sys.exit(1)
         print('latest_images', json.dumps(latest_images, indent=4))
+        print()
+        print('git_labels_meta', json.dumps(git_labels_meta, indent=4))
         return latest_images, git_labels_meta
 
 
