@@ -274,7 +274,7 @@ jobs:
           cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
           { echo -en 'RBC_RELEASE_BRANCH_COMMIT=${{ steps.validate-fbc-image.outputs.ref }}\n'; cat main/catalog/${BRANCH}/tmp_args.map; } > main/catalog/${BRANCH}/catalog_build_args.map
           rm -rf main/catalog/${BRANCH}/tmp_args.map
-          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > main/builds/force-trigger.txt; fi
+          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${BRANCH}.txt"; fi
           git -C main/catalog/${BRANCH} status
           GIT_STATUS=$(git -C main/catalog/${BRANCH} status)
           CATALOGS_CHANGED=YES
