@@ -112,7 +112,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9a02bd90f3cf95a41cddef5fe59f2946a8acd5ba32e0c92490de586573b350ea"
-    createdAt: "2025-07-02T00:51:07Z"
+    createdAt: "2025-07-02T01:36:34Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -915,6 +915,18 @@ spec:
           - patch
           - watch
         - apiGroups:
+          - keda.sh
+          resources:
+          - triggerauthentications
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
           - machinelearning.seldon.io
           resources:
           - seldondeployments
@@ -946,6 +958,15 @@ spec:
           - patch
           - update
           - use
+          - watch
+        - apiGroups:
+          - metrics.k8s.io
+          resources:
+          - nodes
+          - pods
+          verbs:
+          - get
+          - list
           - watch
         - apiGroups:
           - modelregistry.opendatahub.io
