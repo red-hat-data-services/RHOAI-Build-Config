@@ -91,6 +91,7 @@ metadata:
             "applicationsNamespace": "redhat-ods-applications",
             "monitoring": {
               "managementState": "Managed",
+              "metrics": {},
               "namespace": "redhat-ods-monitoring"
             },
             "serviceMesh": {
@@ -112,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:53c346f639aaa1a15a6046810e31a822dfa96696b76f84ea1fdf22c73ff7bcaf"
-    createdAt: "2025-07-17T03:05:14Z"
+    createdAt: "2025-07-17T12:08:14Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -452,16 +453,6 @@ spec:
           verbs:
           - create
           - get
-        - apiGroups:
-          - authorization.openshift.io
-          - rbac.authorization.k8s.io
-          resources:
-          - clusterrolebindings
-          - clusterroles
-          - rolebindings
-          - roles
-          verbs:
-          - '*'
         - apiGroups:
           - autoscaling
           resources:
@@ -1224,6 +1215,15 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterrolebindings
+          - clusterroles
+          - rolebindings
+          - roles
+          verbs:
+          - '*'
         - apiGroups:
           - route.openshift.io
           resources:
