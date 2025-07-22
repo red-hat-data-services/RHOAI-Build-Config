@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:1337e4268842e2440831850657ac5dafe3d57e903911b6012983c3d42896a61b"
-    createdAt: "2025-07-22T22:13:12Z"
+    createdAt: "2025-07-22T22:31:42Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1037,6 +1037,7 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks
+          - servicemonitors
           verbs:
           - create
           - delete
@@ -1049,12 +1050,14 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks/finalizers
+          - servicemonitors/finalizers
           verbs:
           - update
         - apiGroups:
           - monitoring.rhobs
           resources:
           - monitoringstacks/status
+          - servicemonitors/status
           verbs:
           - get
           - patch
@@ -1125,6 +1128,32 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - opentelemetrycollectors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - opentelemetrycollectors/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - opentelemetrycollectors/status
+          verbs:
+          - get
+          - patch
+          - update
         - apiGroups:
           - operator.authorino.kuadrant.io
           resources:
@@ -1385,6 +1414,19 @@ spec:
           - templates
           verbs:
           - '*'
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics
+          - tempostacks
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - user.openshift.io
           resources:
