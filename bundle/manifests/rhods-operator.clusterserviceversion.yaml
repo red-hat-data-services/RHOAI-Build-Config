@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:89f7fed105cff73c435403876497ddf7778b0a1b214553ec61c9e5be3bdde2b4"
-    createdAt: "2025-07-24T13:51:58Z"
+    createdAt: "2025-07-25T10:08:06Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -274,6 +274,11 @@ spec:
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
       version: v1
+    - description: HardwareProfile is the Schema for the hardwareprofiles API.
+      displayName: Hardware Profile
+      kind: HardwareProfile
+      name: hardwareprofiles.infrastructure.opendatahub.io
+      version: v1alpha1
     - description: Kserve is the Schema for the kserves API
       displayName: Kserve
       kind: Kserve
@@ -750,6 +755,15 @@ spec:
           - update
           - watch
         - apiGroups:
+          - dashboard.opendatahub.io
+          resources:
+          - hardwareprofiles
+          verbs:
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
           - datasciencecluster.opendatahub.io
           resources:
           - datascienceclusters
@@ -897,6 +911,32 @@ spec:
           verbs:
           - get
         - apiGroups:
+          - infrastructure.opendatahub.io
+          resources:
+          - hardwareprofiles
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - infrastructure.opendatahub.io
+          resources:
+          - hardwareprofiles/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - infrastructure.opendatahub.io
+          resources:
+          - hardwareprofiles/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
           - integreatly.org
           resources:
           - rhmis
@@ -918,6 +958,48 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - kueue.openshift.io
+          resources:
+          - kueues
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kueue.openshift.io
+          resources:
+          - kueues/status
+          verbs:
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - kueue.x-k8s.io
+          resources:
+          - clusterqueues
+          - localqueues
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kueue.x-k8s.io
+          resources:
+          - clusterqueues/status
+          - localqueues/status
+          verbs:
+          - get
+          - patch
+          - update
         - apiGroups:
           - machinelearning.seldon.io
           resources:
@@ -1037,6 +1119,7 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks
+          - servicemonitors
           verbs:
           - create
           - delete
@@ -1049,12 +1132,14 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks/finalizers
+          - servicemonitors/finalizers
           verbs:
           - update
         - apiGroups:
           - monitoring.rhobs
           resources:
           - monitoringstacks/status
+          - servicemonitors/status
           verbs:
           - get
           - patch
@@ -1125,6 +1210,35 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - instrumentations
+          - opentelemetrycollectors
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - instrumentations/finalizers
+          - opentelemetrycollectors/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - opentelemetry.io
+          resources:
+          - instrumentations/status
+          - opentelemetrycollectors/status
+          verbs:
+          - get
+          - patch
+          - update
         - apiGroups:
           - operator.authorino.kuadrant.io
           resources:
@@ -1385,6 +1499,19 @@ spec:
           - templates
           verbs:
           - '*'
+        - apiGroups:
+          - tempo.grafana.com
+          resources:
+          - tempomonolithics
+          - tempostacks
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - user.openshift.io
           resources:
@@ -1690,6 +1817,108 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dscinitialization
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: hardwareprofile-kserve-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - serving.kserve.io
+      apiVersions:
+      - v1beta1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - inferenceservices
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-hardware-profile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: hardwareprofile-notebook-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - kubeflow.org
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - notebooks
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-hardware-profile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: kserve-kueuelabels-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - serving.kserve.io
+      apiVersions:
+      - v1beta1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - inferenceservices
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-kueue
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: kubeflow-kueuelabels-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - kubeflow.org
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - pytorchjobs
+      - notebooks
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-kueue
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: ray-kueuelabels-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - ray.io
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - rayjobs
+      - rayclusters
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-kueue
   relatedImages:
   - name: odh-rhel9-operator-89f7fed105cff73c435403876497ddf7778b0a1b214553ec61c9e5be3bdde2b4-annotation
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:89f7fed105cff73c435403876497ddf7778b0a1b214553ec61c9e5be3bdde2b4"
