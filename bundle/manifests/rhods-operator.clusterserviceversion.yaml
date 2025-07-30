@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:8a47831d74c68ae2dcdc3a3edee6e4ff19de7ba8900299294130ce6f75969de4"
-    createdAt: "2025-07-30T00:52:10Z"
+    createdAt: "2025-07-30T01:37:58Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1552,6 +1552,26 @@ spec:
               labels:
                 name: rhods-operator
             spec:
+              affinity:
+                nodeAffinity:
+                  requiredDuringSchedulingIgnoredDuringExecution:
+                    nodeSelectorTerms:
+                    - matchExpressions:
+                      - key: kubernetes.io/os
+                        operator: In
+                        values:
+                        - linux
+                podAntiAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                  - podAffinityTerm:
+                      labelSelector:
+                        matchExpressions:
+                        - key: name
+                          operator: In
+                          values:
+                          - opendatahub-operator
+                      topologyKey: kubernetes.io/hostname
+                    weight: 100
               containers:
               - args:
                 - --health-probe-bind-address=:8081
