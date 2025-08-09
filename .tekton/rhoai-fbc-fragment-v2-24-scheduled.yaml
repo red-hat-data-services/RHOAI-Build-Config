@@ -7,7 +7,6 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.24" && "schedule/catalog-tekton-trigger.txt".pathChanged()
-  creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-24
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-24
@@ -62,6 +61,18 @@ spec:
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-24
+  timeouts:
+    pipeline: 8h
+    tasks: 4h
+  taskRunSpecs:
+    - pipelineTaskName: fbc-fips-check-oci-ta
+      computeResources:
+        requests:
+          cpu: '8'
+          memory: 16Gi
+        limits:
+          cpu: '32'
+          memory: 64Gi
   workspaces:
   - name: git-auth
     secret:
