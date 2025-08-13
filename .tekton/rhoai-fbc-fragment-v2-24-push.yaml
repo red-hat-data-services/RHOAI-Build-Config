@@ -1,6 +1,5 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
-# manual trigger
 metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
@@ -18,6 +17,9 @@ metadata:
   name: rhoai-fbc-fragment-v2-24-on-push
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 8h
+    tasks: 4h
   params:
   - name: git-url
     value: '{{source_url}}'
