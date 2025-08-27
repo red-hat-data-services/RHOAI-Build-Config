@@ -38,6 +38,18 @@ env:
   GITHUB_RKA_ORG: rhoai-rhtap
 
 jobs:
+  show-info:
+    runs-on: ubuntu-latest
+    steps:
+      - name: show-info-step
+        run: |
+          echo "### release_branch: ${{ github.event.inputs.release_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "### rhoai_version: ${{ github.event.inputs.rhoai_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "### fbc_image_uri: ${{ github.event.inputs.fbc_image_uri }}" >> $GITHUB_STEP_SUMMARY
+          echo "### forced_slack_notification: ${{ github.event.inputs.forced_slack_notification }}" >> $GITHUB_STEP_SUMMARY
+          echo "### git_commit: ${{ github.event.inputs.git_commit }}" >> $GITHUB_STEP_SUMMARY
+          echo "### force_build: ${{ github.event.inputs.force_build }}" >> $GITHUB_STEP_SUMMARY          
+
   push-to-stage:
     if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-22.04
