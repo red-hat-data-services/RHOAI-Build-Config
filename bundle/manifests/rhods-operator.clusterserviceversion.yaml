@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3bab5ff82295c8b6bdf0a7a541edb230639340b45f04aeedeaec2907c669e489"
-    createdAt: "2025-08-29T00:53:43Z"
+    createdAt: "2025-08-29T01:35:32Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1119,6 +1119,7 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks
+          - prometheusrules
           - servicemonitors
           verbs:
           - create
@@ -1132,6 +1133,7 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks/finalizers
+          - prometheusrules/finalizers
           - servicemonitors/finalizers
           verbs:
           - update
@@ -1139,6 +1141,7 @@ spec:
           - monitoring.rhobs
           resources:
           - monitoringstacks/status
+          - prometheusrules/status
           - servicemonitors/status
           verbs:
           - get
