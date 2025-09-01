@@ -135,7 +135,9 @@ jobs:
 
           while IFS= read -r OCP_VERSION;
           do
-              CATALOG_YAML_PATH=main/pcc/${OCP_VERSION}/rhods-operator/catalog.yaml
+              CATALOG_DIR=main/pcc/${OCP_VERSION}/rhods-operator
+              mkdir -p ${CATALOG_DIR}
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog.yaml
               NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
               CSV_META_FLAG=
               if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
