@@ -8,6 +8,7 @@ on:
     branches:
       - 'rhoai-2.1[6-9]+'
       - 'rhoai-2.2[0-9]+' # Trigger the workflow on pushes to any rhoai-2.20 branch
+      - 'rhoai-3.[0-9]{1,2}' # Trigger the workflow on pushes to any rhoai-3.x branch
 permissions:
   contents: write
 
@@ -131,8 +132,8 @@ jobs:
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
           PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
           
-          CATALOG_GENERATION_REF_OCP_VERSION=v4.17
-          CSV_META_MIN_OCP_VERSION=417
+          CATALOG_GENERATION_REF_OCP_VERSION=v4.19
+          CSV_META_MIN_OCP_VERSION=419
           BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
           CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
           
@@ -224,7 +225,7 @@ jobs:
           LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
           
           #Generate the single bundle catalog === sbc
-          CSV_META_MIN_OCP_VERSION=417
+          CSV_META_MIN_OCP_VERSION=419
           WORK_DIR=utils/utils/fbc
           mkdir -p ${WORK_DIR}
           BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
