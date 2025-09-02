@@ -139,6 +139,7 @@ class operator_processor:
         git_labels_meta = {'map': {}}
         missing_images = []
         for image_entry in [image for image in self.operands_map_dict['relatedImages']  if 'FBC' not in image['name'] and 'BUNDLE' not in image['name'] and 'ODH_OPERATOR' not in image['name'] ]:
+            print(f'Processing Image Entry {image_entry}')
             parts = image_entry['value'].split('@')[0].split('/')
             registry = parts[0]
             org = parts[1]
