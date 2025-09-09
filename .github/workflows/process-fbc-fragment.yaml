@@ -36,6 +36,7 @@ jobs:
           sparse-checkout: |
             pcc
             catalog/${{ steps.get_branch.outputs.branch }}
+            config
           sparse-checkout-cone-mode: false
       - name: Git checkout RBC release
         uses: actions/checkout@v4
@@ -157,7 +158,7 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          BUILD_CONFIG_PATH=main/config/config.yaml
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
           PCC_FOLDER_PATH=main/pcc
           
