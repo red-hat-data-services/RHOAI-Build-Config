@@ -209,7 +209,7 @@ jobs:
 
           #Invoke the FBC processor to extract the snapshot images
           CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v rhoai-2.24 -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
           LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
           echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
@@ -253,6 +253,8 @@ jobs:
               
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+          
+          
 
       - name: Validate Catalogs
         id: validate-catalogs
@@ -265,16 +267,16 @@ jobs:
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
 
           #Validate Catalogs
-          #python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
 
-#      - name: Commit and push the changes to release branch
-#        uses: actions-js/push@master
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          branch: ${{ steps.get_branch.outputs.branch }}
-#          message: "Updating the catalog.yaml with latest images and patches"
-#          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
-#          directory: ${{ steps.get_branch.outputs.branch }}
-#          author_name: Openshift-AI DevOps
-#          author_email: openshift-ai-devops@redhat.com
+      - name: Commit and push the changes to release branch
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.get_branch.outputs.branch }}
+          message: "Updating the catalog.yaml with latest images and patches"
+          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
+          directory: ${{ steps.get_branch.outputs.branch }}
+          author_name: Openshift-AI DevOps
+          author_email: openshift-ai-devops@redhat.com
 #

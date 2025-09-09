@@ -7,8 +7,9 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-3.0" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-0-push.yaml".pathChanged()
+      == "rhoai-3.0" && (".tekton/rhoai-fbc-fragment-v3-0-push.yaml".pathChanged()
       ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
+    #  "catalog/**".pathChanged() ||
   creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v3-0
