@@ -148,24 +148,6 @@ jobs:
               opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
               opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
           done < <(yq e '.config.supported-ocp-versions[]' ${CONFIG_PATH})
-
-          
-          #while IFS= read -r value;
-          #do
-          #    OPENSHIFT_VERSION=$value
-          #    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          #    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-          #
-          #    CATALOG_YAML_PATH=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          #    CATALOG_DIR=main/pcc/${OPENSHIFT_VERSION}/rhods-operator
-          #    mkdir -p ${CATALOG_DIR}
-          #
-          #    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-          #    then
-          #      CATALOG_YAML_PATH=${CSV_META_CATALOG_YAML_PATH}
-          #    fi
-          #    cp ${CATALOG_YAML_PATH} ${CATALOG_DIR}/catalog.yaml
-          #done < <(find main/pcc/ -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
           
           ls -l main/pcc/
 
