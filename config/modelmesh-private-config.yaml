@@ -1,0 +1,57 @@
+#!productVersion=2.21.0
+#!scmRevision=rhoai-2.21
+
+
+product:
+  name: Red Hat OpenShift Data Science
+  abbreviation: rhods
+  stage:  beta
+  issueTrackerUrl: https://issues.redhat.com/projects/RHODS/issues
+version: {{productVersion}}
+milestone: beta
+group: data-hub-{{productVersion}}
+
+defaultBuildParameters:
+  buildType: MVN
+  environmentName: "OpenJDK 21.0; RHEL 9; Mvn 3.9.9; Nodejs 18; npm 10"
+  buildCategory: SERVICE
+  brewPullActive: true
+
+
+builds:
+  - name: modelmesh-{{productVersion}}
+    project: managed-open-data-hub
+    scmUrl: https://gitlab.cee.redhat.com/rhoai/odh-modelmesh.git
+    scmRevision: {{scmRevision}}
+    alignmentParameters:
+      - "-DdependencyOverride.io.grpc:grpc-bom@*=" #temp as the grpc bom package in pnc is not updated
+      - "-DdependencyOverride.com.google.protobuf:*@*="
+    buildScript:  |
+
+      VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+      ARTIFACT_ID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+      GROUP_ID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)
+
+      echo "VERSION environment variable set to: ${VERSION}"
+
+      mvn -B package -DskipTests=true --file pom.xml
+      echo "$(date '+%Y%m%d')-$(git rev-parse HEAD | cut -c -5)" > target/dockerhome/build-version
+      echo "$(git rev-parse HEAD)" > target/dockerhome/release
+      echo "$(git branch --show-current|sed 's/^release-//g')-$(git branch --show-current)_$(date '+%Y%m%d')-$(git rev-parse HEAD | cut -c -5)" > target/dockerhome/version
+      zip -r modelmesh_artifacts.zip target/
+      mvn deploy:deploy-file  -Durl=${AProxDeployUrl} -DrepositoryId=indy-mvn -Dfile=modelmesh_artifacts.zip -Dpackaging=zip -DgroupId=${GROUP_ID} -DartifactId=${ARTIFACT_ID} -Dversion=${VERSION}
+
+outputPrefixes:
+  releaseFile: rhods
+  releaseDir: rhods
+
+
+flow:
+  licensesGeneration:
+    strategy: IGNORE
+  repositoryGeneration:
+    strategy: IGNORE
+  javadocGeneration:
+    strategy: IGNORE
+  sourcesGeneration:
+    strategy: IGNORE
