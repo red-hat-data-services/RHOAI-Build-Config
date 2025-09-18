@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:12b40af17a43fd6f802d1c9757c2a3f61cbc0f9fbe37f4cfe058e377bb8f000e"
-    createdAt: "2025-09-18T12:26:56Z"
+    createdAt: "2025-09-18T13:51:37Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -175,7 +175,7 @@ metadata:
               "managementState": "Managed"
             },
             "modelregistry": {
-              "managementState": "Removed",
+              "managementState": "Managed",
               "registriesNamespace": "rhoai-model-registries"
             },
             "ray": {
@@ -202,9 +202,10 @@ metadata:
       "datasciencepipelines.components.platform.opendatahub.io", "kserves.components.platform.opendatahub.io",
       "kueues.components.platform.opendatahub.io", "modelmeshservings.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
-      "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",  "workbenches.components.platform.opendatahub.io",
-      "monitorings.services.platform.opendatahub.io","modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "llamastackoperators.components.platform.opendatahub.io"]
+      "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
+      "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
+      "servicemeshes.services.platform.opendatahub.io", "modelcontrollers.components.platform.opendatahub.io",
+      "feastoperators.components.platform.opendatahub.io", "llamastackoperators.components.platform.opendatahub.io"]
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -317,6 +318,11 @@ spec:
       displayName: Ray
       kind: Ray
       name: rays.components.platform.opendatahub.io
+      version: v1alpha1
+    - description: ServiceMesh is the Schema for the servicemesh API
+      displayName: Service Mesh
+      kind: ServiceMesh
+      name: servicemeshes.services.platform.opendatahub.io
       version: v1alpha1
     - description: TrainingOperator is the Schema for the trainingoperators API
       displayName: Training Operator
@@ -1030,10 +1036,10 @@ spec:
           - maistra.io
           resources:
           - servicemeshcontrolplanes
-          - servicemeshmemberrolls
-          - servicemeshmembers/finalizers
+          - servicemeshmembers
           verbs:
           - create
+          - delete
           - get
           - list
           - patch
@@ -1043,10 +1049,10 @@ spec:
         - apiGroups:
           - maistra.io
           resources:
-          - servicemeshmembers
+          - servicemeshmemberrolls
+          - servicemeshmembers/finalizers
           verbs:
           - create
-          - delete
           - get
           - list
           - patch
@@ -1414,6 +1420,7 @@ spec:
           resources:
           - auths
           - monitorings
+          - servicemeshes
           verbs:
           - create
           - delete
@@ -1427,6 +1434,7 @@ spec:
           resources:
           - auths/finalizers
           - monitorings/finalizers
+          - servicemeshes/finalizers
           verbs:
           - update
         - apiGroups:
@@ -1434,6 +1442,7 @@ spec:
           resources:
           - auths/status
           - monitorings/status
+          - servicemeshes/status
           verbs:
           - get
           - patch
