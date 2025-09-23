@@ -98,15 +98,17 @@ jobs:
         id: validate-fbc-image
         run: |
           BASE_URI=docker://quay.io/rhoai/rhoai-fbc-fragment
-          image_uri=${{ github.event.inputs.fbc_image_uri }}
+          
           declare -a GIT_COMMITS=()
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
           do
+              image_uri=${{ github.event.inputs.fbc_image_uri }}
+              echo "processing $release_branch"
               if [[ $image_uri == LATEST_NIGHTLY ]]; then image_uri=${BASE_URI}:${release_branch}-nightly; fi
               if [[ "$image_uri" != docker* ]]; then image_uri="docker://${image_uri}"; fi
-              
+              echo $image_uri
               META=$(skopeo inspect "${image_uri}")
               DIGEST=$(echo $META | jq -r .Digest)
               image_uri=${BASE_URI}@${DIGEST}
