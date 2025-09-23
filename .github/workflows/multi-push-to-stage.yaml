@@ -262,10 +262,10 @@ jobs:
         run: |
           
           release_branches="${{ github.event.inputs.release_branches }}"
-          RHOAI_NUMERIC_VERSION=${release_branches/rhoai-/}
-          RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
+
           rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
+          echo "GIT_COMMITS = ${GIT_COMMITS[*]}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           IFS=', ' read -r -a rhoai_versions <<< "${rhoai_versions}"
           COUNTER=0
@@ -274,6 +274,9 @@ jobs:
           rm -rf main/catalog/${COMMON_VERSION}/catalog_build_args.map
           for release_branch in "${release_branches[@]}"
           do
+                RHOAI_NUMERIC_VERSION=${release_branch/rhoai-/}
+                RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
+                echo "RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION}"
           
                 RHOAI_VERSION=${rhoai_versions[$COUNTER]}
                 BRANCH=${release_branch}
@@ -320,7 +323,7 @@ jobs:
                 
                 #Copy the build-args-map
                 cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
-                { echo -en 'RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n'; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
           done
