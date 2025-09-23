@@ -264,9 +264,10 @@ jobs:
           release_branches="${{ github.event.inputs.release_branches }}"
           RHOAI_NUMERIC_VERSION=${release_branches/rhoai-/}
           RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
-          rhoai_versions="${{ github.event.inputs.rhoai_version }}"
+          rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
+          IFS=" " read -r -a rhoai_versions <<< "${rhoai_versions}"
           COUNTER=0
           declare -a COVERED_OPENSHIFT_VERSIONS=()
           COMMON_VERSION=batch_releases
