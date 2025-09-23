@@ -338,12 +338,18 @@ jobs:
           BRANCH: ${{ github.event.inputs.release_branches }}
         run: |
           #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
           CATALOG_FOLDER_PATH=main/catalog/${COMMON_VERSION}
           
-          #Validate Catalogs
-          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          release_branches="${{ github.event.inputs.release_branches }}"
+          IFS=', ' read -r -a release_branches <<< "${release_branches}"
+          for release_branch in "${release_branches[@]}"
+          do
+              BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
+              #Validate Catalogs
+              python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          done
 
 
       - name: Commit and push the changes to main branch
