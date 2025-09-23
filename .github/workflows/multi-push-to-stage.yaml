@@ -323,7 +323,8 @@ jobs:
                 
                 #Copy the build-args-map
                 cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
-                { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                # { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
           done
