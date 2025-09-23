@@ -36,6 +36,7 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
+  COMMON_VERSION: batch_releases
 
 jobs:
   show-info:
@@ -60,7 +61,7 @@ jobs:
       - name: Git checkout RBC main
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: main_batch
           path: main
 
       - name: Git checkout all RBC branches
@@ -98,7 +99,7 @@ jobs:
         run: |
           BASE_URI=docker://quay.io/rhoai/rhoai-fbc-fragment
           image_uri=${{ github.event.inputs.fbc_image_uri }}
-          
+          declare -a GIT_COMMITS=()
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
@@ -116,7 +117,7 @@ jobs:
               echo "Valid signature found with the digest - ${SIG_DIGEST}"
               echo "Validation successful, preparing to push the image to stage - ${image_uri}"
               
-              echo "ref=${GIT_COMMIT}" >> $GITHUB_OUTPUT
+              
               echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
               echo "image_uri=${image_uri}" >> $GITHUB_OUTPUT
               echo "ref=$ref"
@@ -129,7 +130,9 @@ jobs:
               git remote add origin https://github.com/${{ env.GITHUB_ORG }}/RHOAI-Build-Config.git
               git fetch --depth=1 origin ${release_branch}
               git checkout ${GIT_COMMIT}
+              GIT_COMMITS+=("${GIT_COMMIT}")
           done
+          echo 'GIT_COMMITS="${GIT_COMMITS[*]}"' >> $GITHUB_OUTPUT
 
       - name: Git checkout utils
         uses: actions/checkout@v4
@@ -256,11 +259,15 @@ jobs:
         run: |
           
           release_branches="${{ github.event.inputs.release_branches }}"
+          RHOAI_NUMERIC_VERSION=${release_branches/rhoai-/}
+          RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
           rhoai_versions="${{ github.event.inputs.rhoai_version }}"
+          IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           COUNTER=0
           declare -a COVERED_OPENSHIFT_VERSIONS=()
           COMMON_VERSION=batch_releases
+          rm -rf main/catalog/${COMMON_VERSION}/catalog_build_args.map
           for release_branch in "${release_branches[@]}"
           do
           
@@ -308,17 +315,18 @@ jobs:
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
                 
                 #Copy the build-args-map
-                echo ${BRANCH}/catalog/catalog_build_args.map >> main/catalog/${COMMON_VERSION}/tmp_args.map
-                { echo -en 'RBC_RELEASE_BRANCH_COMMIT=${{ steps.validate-fbc-image.outputs.ref }}\n'; cat main/catalog/${BRANCH}/tmp_args.map; } > main/catalog/${BRANCH}/catalog_build_args.map
+                cat ${BRANCH}/catalog/catalog_build_args.map >> main/catalog/${BRANCH}/tmp_args.map
+                { echo -en 'RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n'; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
-                if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${BRANCH}.txt"; fi
-                git -C main/catalog/${BRANCH} status
-                GIT_STATUS=$(git -C main/catalog/${BRANCH} status)
-                CATALOGS_CHANGED=YES
-                if [[ $GIT_STATUS == *"nothing to commit"* ]]; then CATALOGS_CHANGED=NO; fi
-                echo "CATALOGS_CHANGED=${CATALOGS_CHANGED}" >> $GITHUB_OUTPUT
             COUNTER=$((COUNTER + 1))
           done
+          
+          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${COMMON_VERSION}.txt"; fi
+          git -C main/catalog/${BRANCH} status
+          GIT_STATUS=$(git -C main/catalog/${COMMON_VERSION} status)
+          CATALOGS_CHANGED=YES
+          if [[ $GIT_STATUS == *"nothing to commit"* ]]; then CATALOGS_CHANGED=NO; fi
+          echo "CATALOGS_CHANGED=${CATALOGS_CHANGED}" >> $GITHUB_OUTPUT
 
       - name: Validate Catalogs
         id: validate-catalogs
@@ -328,7 +336,7 @@ jobs:
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
-          CATALOG_FOLDER_PATH=main/catalog/${BRANCH}
+          CATALOG_FOLDER_PATH=main/catalog/${COMMON_VERSION}
           
           #Validate Catalogs
           python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
@@ -339,36 +347,36 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: main_batch
           message: "Patching the stage catalog with ${{ github.event.inputs.release_branches }} ${{ github.event.inputs.commit }}"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
           author_name: Openshift-AI DevOps
           author_email: openshift-ai-devops@redhat.com
-      - name: Monitor FBC builds
-        if: ${{ steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' }}
-        id: monitor-fbc-builds
-        env:
-          BRANCH: ${{ github.event.inputs.release_branches }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
-          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
-          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
-          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
-        run: |
-          LATEST_RBC_MAIN_COMMIT=$(git -C main log -1 | grep ^commit | cut -d " " -f 2)
-          BUILD_CONFIG_PATH=latest_rbc_release/config/build-config.yaml
-          GIT_COMMIT=${LATEST_RBC_MAIN_COMMIT}
-          if [[ -z ${{ github.event.inputs.release_branches }} ]]; then GIT_COMMIT=${{ github.event.inputs.release_branches }}; fi
-          python3 -u utils/utils/stage-promoter/stage_promoter.py -op monitor-fbc-builds -o utils/fbc_images.json -v ${BRANCH} --timeout 60 -b ${BUILD_CONFIG_PATH} --git-commit ${GIT_COMMIT}
-          #${LATEST_RBC_MAIN_COMMIT}
-          cat utils/slack_message.txt
-          SLACK_MESSAGE=$(cat utils/slack_message.txt)
-          #echo -en "SLACK_MESSAGE=${SLACK_MESSAGE}" >> $GITHUB_OUTPUT
-          {
-            echo "SLACK_MESSAGE<<EOF"
-            echo -e "${SLACK_MESSAGE}"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+#      - name: Monitor FBC builds
+#        if: ${{ steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' }}
+#        id: monitor-fbc-builds
+#        env:
+#          BRANCH: ${{ github.event.inputs.release_branches }}
+#          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
+#          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+#          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
+#          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
+#        run: |
+#          LATEST_RBC_MAIN_COMMIT=$(git -C main log -1 | grep ^commit | cut -d " " -f 2)
+#          BUILD_CONFIG_PATH=latest_rbc_release/config/build-config.yaml
+#          GIT_COMMIT=${LATEST_RBC_MAIN_COMMIT}
+#          if [[ -z ${{ github.event.inputs.release_branches }} ]]; then GIT_COMMIT=${{ github.event.inputs.release_branches }}; fi
+#          python3 -u utils/utils/stage-promoter/stage_promoter.py -op monitor-fbc-builds -o utils/fbc_images.json -v ${BRANCH} --timeout 60 -b ${BUILD_CONFIG_PATH} --git-commit ${GIT_COMMIT}
+#          #${LATEST_RBC_MAIN_COMMIT}
+#          cat utils/slack_message.txt
+#          SLACK_MESSAGE=$(cat utils/slack_message.txt)
+#          #echo -en "SLACK_MESSAGE=${SLACK_MESSAGE}" >> $GITHUB_OUTPUT
+#          {
+#            echo "SLACK_MESSAGE<<EOF"
+#            echo -e "${SLACK_MESSAGE}"
+#            echo "EOF"
+#          } >> $GITHUB_OUTPUT
 
       - name: Send Slack Notification
         if: ${{ success() && ( steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' ) }}
