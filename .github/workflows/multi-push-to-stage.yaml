@@ -259,10 +259,13 @@ jobs:
           rhoai_versions="${{ github.event.inputs.rhoai_version }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           COUNTER=0
+          declare -a COVERED_OPENSHIFT_VERSIONS=()
+          COMMON_VERSION=batch_releases
           for release_branch in "${release_branches[@]}"
           do
           
-          
+                RHOAI_VERSION=${rhoai_versions[$COUNTER]}
+                BRANCH=${release_branch}
                 #Declare basic variables
                 COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
                 OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
@@ -280,24 +283,32 @@ jobs:
                     OPENSHIFT_VERSION=$value
                     echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
                     NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-                
-                    CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
-                    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-                    then
-                      CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_YAML_PATH}
-                    fi
-                
+          
                     RELEASE_CATALOG_YAML_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
-                    OUTPUT_CATALOG_DIR=main/catalog/${BRANCH}/${OPENSHIFT_VERSION}/rhods-operator/
+                    OUTPUT_CATALOG_DIR=main/catalog/${COMMON_VERSION}/${OPENSHIFT_VERSION}/rhods-operator/
                     mkdir -p ${OUTPUT_CATALOG_DIR}
                     OUTPUT_CATALOG_PATH=${OUTPUT_CATALOG_DIR}/catalog.yaml
+                    
+                    if [[ ${COUNTER} -eq 0 ]] || ! [[ " ${COVERED_OPENSHIFT_VERSIONS[@]} " =~ " ${OPENSHIFT_VERSION} " ]]
+                    then
+                        CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
+                        if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+                        then
+                          CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_YAML_PATH}
+                        fi
+                    else
+                        CATALOG_YAML_PATH=${OUTPUT_CATALOG_PATH}
+                    fi
+                
+                    COVERED_OPENSHIFT_VERSIONS+=("$OPENSHIFT_VERSION")
+
       
                     #Invoke the stage promoter to patch the main catalog with release branch
                     python3 utils/utils/stage-promoter/stage_promoter.py -op stage-catalog-patch -c ${CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -r ${RELEASE_CATALOG_YAML_PATH} -o ${OUTPUT_CATALOG_PATH} -v ${RHOAI_VERSION}
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
                 
                 #Copy the build-args-map
-                cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
+                echo ${BRANCH}/catalog/catalog_build_args.map >> main/catalog/${COMMON_VERSION}/tmp_args.map
                 { echo -en 'RBC_RELEASE_BRANCH_COMMIT=${{ steps.validate-fbc-image.outputs.ref }}\n'; cat main/catalog/${BRANCH}/tmp_args.map; } > main/catalog/${BRANCH}/catalog_build_args.map
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
                 if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${BRANCH}.txt"; fi
