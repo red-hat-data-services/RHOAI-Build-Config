@@ -267,7 +267,7 @@ jobs:
           rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
-          IFS=" " read -r -a rhoai_versions <<< "${rhoai_versions}"
+          IFS=', ' read -r -a rhoai_versions <<< "${rhoai_versions}"
           COUNTER=0
           declare -a COVERED_OPENSHIFT_VERSIONS=()
           COMMON_VERSION=batch_releases
