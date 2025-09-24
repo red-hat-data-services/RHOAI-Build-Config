@@ -57,6 +57,10 @@ ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_URL=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT=
 ARG ODH_OPERATOR_BUNDLE_GIT_COMMIT
 ARG ODH_OPERATOR_BUNDLE_GIT_URL
+ARG RBC_RELEASE_BRANCH_COMMIT_216=
+ARG RBC_RELEASE_BRANCH_COMMIT_219=
+ARG RBC_RELEASE_BRANCH_COMMIT_221=
+ARG RBC_RELEASE_BRANCH_COMMIT_222=
 
 
 # Configure the entrypoint and command
@@ -125,7 +129,11 @@ LABEL \
       odh-model-registry-operator.git.commit="${ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT}" \
       odh-operator-bundle.git.url="${ODH_OPERATOR_BUNDLE_GIT_URL}" \
       odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}" \
-      rbc-release-branch.commit="${RBC_RELEASE_BRANCH_COMMIT}"
+      rbc-release-branch.commit="${RBC_RELEASE_BRANCH_COMMIT}" \
+      rbc-release-branch-216.commit="${RBC_RELEASE_BRANCH_COMMIT_216}" \
+      rbc-release-branch-219.commit="${RBC_RELEASE_BRANCH_COMMIT_219}" \
+      rbc-release-branch-221.commit="${RBC_RELEASE_BRANCH_COMMIT_221}" \
+      rbc-release-branch-222.commit="${RBC_RELEASE_BRANCH_COMMIT_222}"
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \
