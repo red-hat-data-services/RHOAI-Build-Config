@@ -270,7 +270,6 @@ jobs:
           IFS=', ' read -r -a rhoai_versions <<< "${rhoai_versions}"
           COUNTER=0
           declare -a COVERED_OPENSHIFT_VERSIONS=()
-          COMMON_VERSION=batch_releases
           rm -rf main/catalog/${COMMON_VERSION}/catalog_build_args.map
           for release_branch in "${release_branches[@]}"
           do
@@ -324,7 +323,10 @@ jobs:
                 #Copy the build-args-map
                 cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
                 { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
-                # { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                if [[ "${BRANCH}" == "${COMMON_VERSION}" ]]
+                then
+                    { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}"; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                done
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
           done
