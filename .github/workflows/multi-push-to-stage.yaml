@@ -336,7 +336,7 @@ jobs:
                 { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
                 if [[ "${BRANCH}" == "${COMMON_VERSION}" ]]
                 then
-                    { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}"; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
+                    { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
                 fi
                 rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
