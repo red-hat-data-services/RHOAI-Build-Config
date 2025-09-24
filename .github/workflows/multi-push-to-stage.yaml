@@ -135,14 +135,17 @@ jobs:
               GIT_COMMITS+=("${GIT_COMMIT}")
               cd ../
             echo "GIT_COMMIT=${GIT_COMMIT}"
-            echo echo "GIT_COMMITS=${GIT_COMMITS[*]}"
+            echo "GIT_COMMITS=${GIT_COMMITS[*]}"
           done
-          echo 'GIT_COMMITS="${GIT_COMMITS[*]}"' >> $GITHUB_OUTPUT
-          echo 'GIT_COMMITS="${GIT_COMMITS[*]}"'
+          echo "GIT_COMMITS='${GIT_COMMITS[*]}'" >> $GITHUB_OUTPUT
+          echo "GIT_COMMITS='${GIT_COMMITS[*]}'"
 
       - name: poc
         run: |
           echo "GIT_COMMITS=${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
+          IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
+          echo "GIT_COMMITS = ${GIT_COMMITS[*]}"
+          echo "GIT_COMMITS[1]=${GIT_COMMITS[1]}"
 
 #      - name: Git checkout utils
 #        uses: actions/checkout@v4
