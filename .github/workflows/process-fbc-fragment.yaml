@@ -92,14 +92,14 @@ jobs:
           echo "latest_shipped_rhoai_versions = "
           cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions.txt
+          cat main/pcc/shipped_rhoai_versions_granular.txt
           
-          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
           
           if [[ $diff -gt 0 ]]
           then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
+            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
             echo "following new versions are shipped - $diff"
             cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
             PCC_CACHE_VALID=NO
@@ -160,7 +160,7 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=main/config/config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           PCC_FOLDER_PATH=main/pcc
           
           #Validate PCC
@@ -261,7 +261,7 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
 
           #Validate Catalogs
