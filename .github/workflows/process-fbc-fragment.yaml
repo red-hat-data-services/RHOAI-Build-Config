@@ -86,22 +86,23 @@ jobs:
         run: |
           microdnf install -y coreutils-single && \
               microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
           PCC_CACHE_VALID=YES
           skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > latest_shipped_rhoai_versions.txt
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "latest_shipped_rhoai_versions = "
-          cat latest_shipped_rhoai_versions.txt
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "shipped_rhoai_versions = "
           cat main/pcc/shipped_rhoai_versions.txt
           
-          #diff=$(cmp --silent latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
           
           if [[ $diff -gt 0 ]]
           then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
+            diff=$(python -c 'print(list(set(open("${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
             echo "following new versions are shipped - $diff"
-            cp latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
             PCC_CACHE_VALID=NO
           fi
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
