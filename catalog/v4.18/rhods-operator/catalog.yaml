@@ -638,7 +638,7 @@ entries:
   replaces: rhods-operator.2.22.0
   skipRange: '>=2.22.0 <2.22.1'
 - name: rhods-operator.2.25.0
-  replaces: rhods-operator.2.22.1
+  replaces: rhods-operator.2.22.2
   skipRange: '>=2.22.0 <2.25.0'
 name: stable
 package: rhods-operator
@@ -1301,6 +1301,9 @@ entries:
 - name: rhods-operator.2.22.1
   replaces: rhods-operator.2.22.0
   skipRange: '>=2.22.0 <2.22.1'
+- name: rhods-operator.2.22.2
+  replaces: rhods-operator.2.22.1
+  skipRange: '>=2.22.0 <2.22.2'
 - name: rhods-operator.2.25.0
   replaces: rhods-operator.2.22.1
   skipRange: '>=2.22.0 <2.25.0'
@@ -1309,7 +1312,6 @@ name: eus-2.25
 package: rhods-operator
 schema: olm.channel
 entries:
-- name: rhods-operator.1.20.1-8
 - name: rhods-operator.1.21.0-22
   replaces: rhods-operator.1.20.1-8
 - name: rhods-operator.1.22.0-2
@@ -1387,8 +1389,11 @@ entries:
 - name: rhods-operator.2.16.2
   replaces: rhods-operator.2.16.1
   skipRange: '>=2.16.0 <2.16.2'
-- name: rhods-operator.2.25.0
+- name: rhods-operator.2.16.3
   replaces: rhods-operator.2.16.2
+  skipRange: '>=2.16.0 <2.16.3'
+- name: rhods-operator.2.25.0
+  replaces: rhods-operator.2.16.3
   skipRange: '>=2.16.0 <2.25.0'
 ---
 image: registry.redhat.io/rhods/odh-operator-bundle@sha256:26ab11ab19bc25bb0132949dce9f29f01b9674647057d30a1a0369736762308f
@@ -19596,7 +19601,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:d54a5e4a1371290da34b033cc981746249d5611291012c9d34c2521add3338d1
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:25abd123b0cf815a41d1a5c7a1178f3b733acf9282dfa9ff786d46d0220d7a3e
 name: rhods-operator.2.25.0
 package: rhods-operator
 properties:
@@ -19823,8 +19828,8 @@ properties:
       capabilities: Full Lifecycle
       categories: AI/Machine Learning, Big Data
       certified: "False"
-      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ea548e529106a5c67dab691f7bfa33429a9420ff4e0e0b6392162f9926d3adc3
-      createdAt: "2025-09-30T10:24:19Z"
+      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:acf7cb450c9da8ae7a60e2c64c26531c2e23d0d11d31c01292da93ef51d08434
+      createdAt: "2025-09-30T13:05:44Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       feast-cronjob-image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
       features.operators.openshift.io/cnf: "false"
@@ -20122,7 +20127,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:d54a5e4a1371290da34b033cc981746249d5611291012c9d34c2521add3338d1
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:25abd123b0cf815a41d1a5c7a1178f3b733acf9282dfa9ff786d46d0220d7a3e
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
   name: dsp_proxyv2_image
@@ -20252,7 +20257,7 @@ relatedImages:
   name: odh_must_gather_image
 - image: registry.redhat.io/rhoai/odh-notebook-controller-rhel9@sha256:e926f0e43b46c136645242a7fdc50c96aa0ff156a447111e3bb18c329fdf401a
   name: odh_notebook_controller_image
-- image: registry.redhat.io/rhoai/odh-openvino-model-server-rhel9@sha256:8f2909d3915615856e6822ce2d10e138766b267a1ff500207d8cf81ef9f2b159
+- image: registry.redhat.io/rhoai/odh-openvino-model-server-rhel9@sha256:60b1c1247325925e1e37e4c657bd8fecfd4fb426dd1850f3413d4b6a38d9c584
   name: odh_openvino_model_server_image
 - image: registry.redhat.io/rhoai/odh-pipeline-runtime-datascience-cpu-py312-rhel9@sha256:c173b1dd73ffc4245bfa4b5c5874c2458ee95b0e0567798ac7845ee9e46ca75c
   name: odh_pipeline_runtime_datascience_cpu_py312_image
@@ -20268,8 +20273,8 @@ relatedImages:
   name: odh_pipeline_runtime_tensorflow_cuda_py312_image
 - image: registry.redhat.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:d884577d7191b1d159b52f677c5dd9bffb74244fdbf05b0acfda913f84f14742
   name: odh_pipeline_runtime_tensorflow_rocm_py312_image
-- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ea548e529106a5c67dab691f7bfa33429a9420ff4e0e0b6392162f9926d3adc3
-  name: odh-rhel9-operator-ea548e529106a5c67dab691f7bfa33429a9420ff4e0e0b6392162f9926d3adc3-annotation
+- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:acf7cb450c9da8ae7a60e2c64c26531c2e23d0d11d31c01292da93ef51d08434
+  name: odh-rhel9-operator-acf7cb450c9da8ae7a60e2c64c26531c2e23d0d11d31c01292da93ef51d08434-annotation
 - image: registry.redhat.io/rhoai/odh-ta-lmes-driver-rhel9@sha256:dbe4c2dabca76c1168b71642d1b0af56f977fc96c9db3b0ccc1af04a62d5cf1e
   name: odh_ta_lmes_driver_image
 - image: registry.redhat.io/rhoai/odh-ta-lmes-job-rhel9@sha256:25c7d2d42d9544f2f45e23f7d1d4e9ab251b7bc83cb01e4d677ed7d539382d20
