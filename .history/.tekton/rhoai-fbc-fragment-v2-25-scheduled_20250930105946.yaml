@@ -6,20 +6,14 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-2.25" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-25-push.yaml".pathChanged()
-      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
-  creationTimestamp:
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.25" && "schedule/catalog-tekton-trigger.txt".pathChanged()
   labels:
     appstudio.openshift.io/application: rhoai-v2-25
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-25
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v2-25-on-push
+  name: rhoai-fbc-fragment-v2-25-on-schedule
   namespace: rhoai-tenant
 spec:
-  timeouts:
-    pipeline: 8h
-    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -28,6 +22,7 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: additional-labels
     value:
     - version=v2.25.0
@@ -50,7 +45,11 @@ spec:
   - name: build-source-image
     value: false
   - name: is_nightly
-    value: false
+    value: true
+  - name: workflow_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
+  - name: smoke_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/smoke-trigger.yaml"
   pipelineRef:
     resolver: git
     params:
@@ -62,6 +61,18 @@ spec:
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-25
+  timeouts:
+    pipeline: 8h
+    tasks: 4h
+  taskRunSpecs:
+    - pipelineTaskName: fbc-fips-check-oci-ta
+      computeResources:
+        requests:
+          cpu: '8'
+          memory: 16Gi
+        limits:
+          cpu: '32'
+          memory: 64Gi
   workspaces:
   - name: git-auth
     secret:
