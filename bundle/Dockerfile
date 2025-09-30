@@ -124,14 +124,15 @@ LABEL \
 LABEL com.redhat.component="odh-operator-bundle" \
       description="odh-operator-bundle" \
       distribution-scope="public" \
-      name="managed-open-data-hub/odh-operator-bundle" \
+      name="rhoai/odh-operator-bundle" \
       vendor="Red Hat, Inc." \
       summary="odh-operator-bundle" \
       maintainer="['managed-open-data-hub@redhat.com']" \
       io.k8s.display-name="odh-operator-bundle" \
       io.k8s.description="odh-operator-bundle" \
       com.redhat.delivery.operator.bundle="true" \
-      com.redhat.license_terms="https://www.redhat.com/licenses/Red_Hat_Standard_EULA_20191108.pdf"
+      com.redhat.license_terms="https://www.redhat.com/licenses/Red_Hat_Standard_EULA_20191108.pdf" \
+      cpe="cpe:/a:redhat:openshift_ai:2.21::el9"
 
 COPY bundle/manifests /manifests/
 COPY bundle/metadata /metadata/
