@@ -124,7 +124,8 @@ LABEL \
 LABEL com.redhat.component="odh-operator-bundle" \
       description="odh-operator-bundle" \
       distribution-scope="public" \
-      name="managed-open-data-hub/odh-operator-bundle" \
+      name="rhoai/odh-operator-bundle" \
+      cpe="cpe:/a:redhat:openshift_ai:2.19::el8" \
       vendor="Red Hat, Inc." \
       summary="odh-operator-bundle" \
       maintainer="['managed-open-data-hub@redhat.com']" \
