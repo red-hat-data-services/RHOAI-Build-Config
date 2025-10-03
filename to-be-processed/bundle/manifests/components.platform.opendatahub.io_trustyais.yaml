@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.17.3
   creationTimestamp: null
   name: trustyais.components.platform.opendatahub.io
 spec:
@@ -73,6 +73,24 @@ spec:
                           type: string
                       type: object
                     type: array
+                type: object
+              eval:
+                description: Eval configuration for TrustyAI evaluations
+                properties:
+                  lmeval:
+                    description: LMEval configuration for model evaluations
+                    properties:
+                      permitCodeExecution:
+                        default: false
+                        description: PermitCodeExecution controls whether code execution
+                          is allowed during evaluations
+                        type: boolean
+                      permitOnline:
+                        default: false
+                        description: PermitOnline controls whether online access is
+                          allowed during evaluations
+                        type: boolean
+                    type: object
                 type: object
             type: object
           status:

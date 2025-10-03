@@ -4,14 +4,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
   creationTimestamp: null
-  name: dashboards.components.platform.opendatahub.io
+  name: gatewayconfigs.services.platform.opendatahub.io
 spec:
-  group: components.platform.opendatahub.io
+  group: services.platform.opendatahub.io
   names:
-    kind: Dashboard
-    listKind: DashboardList
-    plural: dashboards
-    singular: dashboard
+    kind: GatewayConfig
+    listKind: GatewayConfigList
+    plural: gatewayconfigs
+    singular: gatewayconfig
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -23,14 +23,10 @@ spec:
       jsonPath: .status.conditions[?(@.type=="Ready")].reason
       name: Reason
       type: string
-    - description: URL
-      jsonPath: .status.url
-      name: URL
-      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Dashboard is the Schema for the dashboards API
+        description: GatewayConfig is the Schema for the gatewayconfigs API
         properties:
           apiVersion:
             description: |-
@@ -50,37 +46,77 @@ spec:
           metadata:
             type: object
           spec:
-            description: DashboardSpec defines the desired state of Dashboard
+            description: GatewayConfigSpec defines the desired state of GatewayConfig
             properties:
-              devFlags:
-                description: Add developer fields
+              certificate:
+                description: Certificate management
                 properties:
-                  manifests:
-                    description: List of custom manifests for the given component
-                    items:
-                      properties:
-                        contextDir:
-                          default: manifests
-                          description: contextDir is the relative path to the folder
-                            containing manifests in a repository, default value "manifests"
-                          type: string
-                        sourcePath:
-                          default: ""
-                          description: 'sourcePath is the subpath within contextDir
-                            where kustomize builds start. Examples include any sub-folder
-                            or path: `base`, `overlays/dev`, `default`, `odh` etc.'
-                          type: string
-                        uri:
-                          default: ""
-                          description: uri is the URI point to a git repo with tag/branch.
-                            e.g.  https://github.com/org/repo/tarball/<tag/branch>
-                          type: string
-                      type: object
-                    type: array
+                  secretName:
+                    description: |-
+                      SecretName specifies the name of the Kubernetes Secret resource that contains a
+                      TLS certificate secure HTTP communications for the KNative network.
+                    type: string
+                  type:
+                    default: OpenshiftDefaultIngress
+                    description: |-
+                      Type specifies if the TLS certificate should be generated automatically, or if the certificate
+                      is provided by the user. Allowed values are:
+                      * SelfSigned: A certificate is going to be generated using an own private key.
+                      * Provided: Pre-existence of the TLS Secret (see SecretName) with a valid certificate is assumed.
+                      * OpenshiftDefaultIngress: Default ingress certificate configured for OpenShift
+                    enum:
+                    - SelfSigned
+                    - Provided
+                    - OpenshiftDefaultIngress
+                    type: string
+                type: object
+              domain:
+                description: |-
+                  Domain configuration for the GatewayConfig
+                  Example: apps.example.com
+                type: string
+              oidc:
+                description: OIDC configuration (used when cluster is in OIDC authentication
+                  mode)
+                properties:
+                  clientID:
+                    description: OIDC client ID
+                    type: string
+                  clientSecretRef:
+                    description: Reference to secret containing client secret
+                    properties:
+                      key:
+                        description: The key of the secret to select from.  Must be
+                          a valid secret key.
+                        type: string
+                      name:
+                        default: ""
+                        description: |-
+                          Name of the referent.
+                          This field is effectively required, but due to backwards compatibility is
+                          allowed to be empty. Instances of this type with an empty value here are
+                          almost certainly wrong.
+                          More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                        type: string
+                      optional:
+                        description: Specify whether the Secret or its key must be
+                          defined
+                        type: boolean
+                    required:
+                    - key
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  issuerURL:
+                    description: OIDC issuer URL
+                    type: string
+                required:
+                - clientID
+                - clientSecretRef
+                - issuerURL
                 type: object
             type: object
           status:
-            description: DashboardStatus defines the observed state of Dashboard
+            description: GatewayConfigStatus defines the observed state of GatewayConfig
             properties:
               conditions:
                 items:
@@ -144,13 +180,11 @@ spec:
                 type: integer
               phase:
                 type: string
-              url:
-                type: string
             type: object
         type: object
         x-kubernetes-validations:
-        - message: Dashboard name must be default-dashboard
-          rule: self.metadata.name == 'default-dashboard'
+        - message: GatewayConfig name must be default-gateway
+          rule: self.metadata.name == 'default-gateway'
     served: true
     storage: true
     subresources:

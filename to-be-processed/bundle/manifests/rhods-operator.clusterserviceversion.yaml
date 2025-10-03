@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2025-09-10T11:04:20Z"
+    createdAt: "2025-10-01T20:26:43Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -176,7 +176,7 @@ metadata:
               "managementState": "Managed"
             },
             "modelregistry": {
-              "managementState": "Removed",
+              "managementState": "Managed",
               "registriesNamespace": "rhoai-model-registries"
             },
             "ray": {
@@ -209,7 +209,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
-  name: rhods-operator.v2.24.0
+  name: rhods-operator.v3.0.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -253,6 +253,14 @@ spec:
       version: v1alpha1
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
+      version: v1
+    - description: GatewayConfig is the Schema for the gatewayconfigs API
+      displayName: Gateway Config
+      kind: GatewayConfig
+      name: gatewayconfigs.services.platform.opendatahub.io
+      version: v1alpha1
+    - kind: HardwareProfile
+      name: hardwareprofiles.infrastructure.opendatahub.io
       version: v1
     - description: HardwareProfile is the Schema for the hardwareprofiles API.
       displayName: Hardware Profile
@@ -348,11 +356,79 @@ spec:
         - apiGroups:
           - ""
           resources:
+          - clusterversions
           - nodes
+          - rhmis
           verbs:
           - get
           - list
           - watch
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps
+          - events
+          - namespaces
+          - secrets
+          - secrets/finalizers
+          - serviceaccounts
+          - services/finalizers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - configmaps/status
+          verbs:
+          - delete
+          - get
+          - patch
+          - update
+        - apiGroups:
+          - ""
+          resources:
+          - deployments
+          - persistentvolumeclaims
+          - persistentvolumes
+          - pods
+          - pods/exec
+          - pods/log
+          verbs:
+          - '*'
+        - apiGroups:
+          - ""
+          resources:
+          - endpoints
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - namespaces/finalizers
+          verbs:
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - services
+          verbs:
+          - '*'
         - apiGroups:
           - '*'
           resources:
@@ -647,89 +723,6 @@ spec:
           - update
           - watch
         - apiGroups:
-          - ""
-          resources:
-          - clusterversions
-          - nodes
-          - rhmis
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - configmaps
-          - events
-          - namespaces
-          - secrets
-          - secrets/finalizers
-          - serviceaccounts
-          - services/finalizers
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - configmaps/status
-          verbs:
-          - delete
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - ""
-          resources:
-          - deployments
-          - persistentvolumeclaims
-          - persistentvolumes
-          - pods
-          - pods/exec
-          - pods/log
-          verbs:
-          - '*'
-        - apiGroups:
-          - ""
-          resources:
-          - endpoints
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - update
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - namespaces/finalizers
-          verbs:
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - services
-          verbs:
-          - '*'
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
           - dashboard.opendatahub.io
           resources:
           - acceleratorprofiles
@@ -880,6 +873,20 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - gateway.networking.k8s.io
+          resources:
+          - gatewayclasses
+          - gateways
+          - httproutes
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - image.openshift.io
           resources:
@@ -1149,6 +1156,7 @@ spec:
         - apiGroups:
           - networking.istio.io
           resources:
+          - destinationrules
           - envoyfilters
           - gateways
           - virtualservices
@@ -1405,6 +1413,7 @@ spec:
           - services.platform.opendatahub.io
           resources:
           - auths/finalizers
+          - gatewayconfigs/finalizers
           - monitorings/finalizers
           verbs:
           - update
@@ -1412,11 +1421,23 @@ spec:
           - services.platform.opendatahub.io
           resources:
           - auths/status
+          - gatewayconfigs/status
           - monitorings/status
           verbs:
           - get
           - patch
           - update
+        - apiGroups:
+          - services.platform.opendatahub.io
+          resources:
+          - gatewayconfigs
+          verbs:
+          - create
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - serving.knative.dev
           resources:
@@ -1691,7 +1712,7 @@ spec:
   - llamastack
   links:
   - name: Red Hat OpenShift AI
-    url: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/2.23.0
+    url: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.0
   maintainers:
   - email: managed-open-data-hub@redhat.com
     name: Red Hat Openshift AI
@@ -1805,7 +1826,7 @@ spec:
     containerPort: 443
     deploymentName: rhods-operator
     failurePolicy: Fail
-    generateName: hardwareprofile-kserve-injector.opendatahub.io
+    generateName: hardwareprofile-isvc-injector.opendatahub.io
     rules:
     - apiGroups:
       - serving.kserve.io
@@ -1816,6 +1837,26 @@ spec:
       - UPDATE
       resources:
       - inferenceservices
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-hardware-profile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: hardwareprofile-llmisvc-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - serving.kserve.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - llminferenceservices
     sideEffects: None
     targetPort: 9443
     type: MutatingAdmissionWebhook
@@ -1845,7 +1886,7 @@ spec:
     containerPort: 443
     deploymentName: rhods-operator
     failurePolicy: Fail
-    generateName: kserve-kueuelabels-validator.opendatahub.io
+    generateName: kserve-isvc-kueuelabels-validator.opendatahub.io
     rules:
     - apiGroups:
       - serving.kserve.io
@@ -1856,6 +1897,26 @@ spec:
       - UPDATE
       resources:
       - inferenceservices
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-kueue
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: kserve-llmisvc-kueuelabels-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - serving.kserve.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - llminferenceservices
     sideEffects: None
     targetPort: 9443
     type: ValidatingAdmissionWebhook
