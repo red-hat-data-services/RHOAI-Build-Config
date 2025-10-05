@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2d4a856c0ad1fe298aee28f76355a7e949a4658c4bdc2ea5c78974f3b0bc019b"
-    createdAt: "2025-10-05T00:40:36Z"
+    createdAt: "2025-10-05T04:02:03Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1925,6 +1925,26 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /platform-connection-isvc
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: connection-llmisvc.opendatahub.io
+    rules:
+    - apiGroups:
+      - serving.kserve.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - llminferenceservices
+    sideEffects: NoneOnDryRun
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /platform-connection-llmisvc
   - admissionReviewVersions:
     - v1
     containerPort: 443
