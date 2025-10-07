@@ -133,7 +133,7 @@ jobs:
           
           CSV_META_MIN_OCP_VERSION=417
           CATALOG_DIR=main/pcc
-          
+          PREVIOUS_OCP_VERSION=
           while IFS= read -r OCP_VERSION;
           do
               CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
@@ -144,8 +144,16 @@ jobs:
                 CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
               fi
               opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
-              opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
-              opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
           done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
           
           ls -l main/pcc/
