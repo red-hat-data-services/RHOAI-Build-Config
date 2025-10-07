@@ -175,17 +175,17 @@ jobs:
           #Validate PCC
           python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
 
-      - name: Push latest PCC Cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main_3.0
-          message: "Regeneratd the PCC Cache"
-          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
-          directory: main
-          author_name: Openshift-AI DevOps
-          author_email: openshift-ai-devops@redhat.com
+#      - name: Push latest PCC Cache
+#        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+#        uses: actions-js/push@master
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          branch: main_3.0
+#          message: "Regeneratd the PCC Cache"
+#          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
+#          directory: main
+#          author_name: Openshift-AI DevOps
+#          author_email: openshift-ai-devops@redhat.com
 
 
 #      - name: Process FBC Fragment
