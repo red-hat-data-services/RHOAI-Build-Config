@@ -147,7 +147,8 @@ jobs:
                 CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
               fi
               opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
-              if [[ -e catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json ]]
+          
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
               then
                 opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
                 opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
