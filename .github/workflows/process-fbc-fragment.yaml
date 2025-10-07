@@ -31,7 +31,8 @@ jobs:
       - name: Git checkout RBC main
         uses: actions/checkout@v4
         with:
-          ref: main_3.0
+          ref: main
+#          ref: main_3.0
           path: main
           sparse-checkout: |
             pcc
@@ -135,7 +136,7 @@ jobs:
           
           CSV_META_MIN_OCP_VERSION=417
           CATALOG_DIR=main/pcc
-          
+          PREVIOUS_OCP_VERSION=
           while IFS= read -r OCP_VERSION;
           do
               CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
@@ -146,8 +147,15 @@ jobs:
                 CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
               fi
               opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
-              opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
-              opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              if [[ -e catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json ]]
+              then
+                opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
           done < <(yq e '.config.supported-ocp-versions[]' ${CONFIG_PATH})
           
           ls -l main/pcc/
@@ -179,104 +187,104 @@ jobs:
           author_email: openshift-ai-devops@redhat.com
 
 
-      - name: Process FBC Fragment
-        env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
-          OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
-          CLUSTER: p02
-          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
-          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
-          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
-        run: |
-          #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          RHOAI_VERSION=v${BRANCH/rhoai-/}
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          #OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
-          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
-          OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
-          OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
-          echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
-
-          #Generate the catalog for the latest bundle
-          #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
-          BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
-          mkdir ${HOME}/.docker
-          echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
-          APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
-          echo "APPLICATION_NAME = $APPLICATION_NAME"
-
-          #Invoke the FBC processor to extract the snapshot images
-          CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v rhoai-2.24 -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
-          LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
-          echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
-          yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
-          LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
-
-          #Generate the single bundle catalog === sbc
-          CSV_META_MIN_OCP_VERSION=417
-          WORK_DIR=utils/utils/fbc
-          mkdir -p ${WORK_DIR}
-          BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
-          CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/csv_meta_sbc_semver.yaml
-          CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
-
-          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
-          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
-
-          PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-
-          # BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
-          # CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
-
-          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
-
-          #Invoke FBC processor to patch the catalog
-          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-
-          while IFS= read -r value;
-          do
-              #Declare FBC processing variables
-              OPENSHIFT_VERSION=$value
-              NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-              echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-              OUTPUT_CATALOG_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
-              
-              PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
-              SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
-              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
-              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-              
-              #cat ${OUTPUT_CATALOG_PATH}
-          done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
-          
-          
-
-      - name: Validate Catalogs
-        id: validate-catalogs
-        env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
-        run: |
-          #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
-          CATALOG_FOLDER_PATH=${BRANCH}/catalog
-
-          #Validate Catalogs
-          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
-
-      - name: Commit and push the changes to release branch
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.get_branch.outputs.branch }}
-          message: "Updating the catalog.yaml with latest images and patches"
-          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
-          directory: ${{ steps.get_branch.outputs.branch }}
-          author_name: Openshift-AI DevOps
-          author_email: openshift-ai-devops@redhat.com
+#      - name: Process FBC Fragment
+#        env:
+#          BRANCH: ${{ steps.get_branch.outputs.branch }}
+#          OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
+#          CLUSTER: p02
+#          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+#          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
+#          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
+#        run: |
+#          #Declare basic variables
+#          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+#          RHOAI_VERSION=v${BRANCH/rhoai-/}
+#          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
+#          #OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
+#          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+#          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+#          OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
+#          OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
+#          echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
 #
+#          #Generate the catalog for the latest bundle
+#          #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
+#          BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
+#          mkdir ${HOME}/.docker
+#          echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
+#          APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
+#          echo "APPLICATION_NAME = $APPLICATION_NAME"
+#
+#          #Invoke the FBC processor to extract the snapshot images
+#          CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
+#          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v rhoai-2.24 -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+#          LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
+#          echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
+#          yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
+#          LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
+#
+#          #Generate the single bundle catalog === sbc
+#          CSV_META_MIN_OCP_VERSION=417
+#          WORK_DIR=utils/utils/fbc
+#          mkdir -p ${WORK_DIR}
+#          BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
+#          CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/csv_meta_sbc_semver.yaml
+#          CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+#
+#          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+#          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
+#
+#          PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
+#          PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
+#
+#          # BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
+#          # CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
+#
+#          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
+#
+#          #Invoke FBC processor to patch the catalog
+#          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+#          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+#
+#          while IFS= read -r value;
+#          do
+#              #Declare FBC processing variables
+#              OPENSHIFT_VERSION=$value
+#              NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
+#              echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
+#              OUTPUT_CATALOG_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
+#
+#              PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
+#              SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+#              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
+#              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+#
+#              #cat ${OUTPUT_CATALOG_PATH}
+#          done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+#
+#
+#
+#      - name: Validate Catalogs
+#        id: validate-catalogs
+#        env:
+#          BRANCH: ${{ steps.get_branch.outputs.branch }}
+#        run: |
+#          #Declare basic variables
+#          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+#          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+#          CATALOG_FOLDER_PATH=${BRANCH}/catalog
+#
+#          #Validate Catalogs
+#          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+#
+#      - name: Commit and push the changes to release branch
+#        uses: actions-js/push@master
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#          branch: ${{ steps.get_branch.outputs.branch }}
+#          message: "Updating the catalog.yaml with latest images and patches"
+#          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
+#          directory: ${{ steps.get_branch.outputs.branch }}
+#          author_name: Openshift-AI DevOps
+#          author_email: openshift-ai-devops@redhat.com
+##
