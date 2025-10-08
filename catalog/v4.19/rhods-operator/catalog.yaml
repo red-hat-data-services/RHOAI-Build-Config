@@ -22341,7 +22341,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:0fc055d1df9e93dfe2765d6699f34ef0cb588c4f227233fa0137774e14118f3f
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:7758474354c1685406eeaaa204f63ca10583bb4ee10473f73691018dcfb901d5
 name: rhods-operator.3.0.0
 package: rhods-operator
 properties:
@@ -22422,9 +22422,19 @@ properties:
     version: v1
 - type: olm.gvk
   value:
+    group: datasciencecluster.opendatahub.io
+    kind: DataScienceCluster
+    version: v2
+- type: olm.gvk
+  value:
     group: dscinitialization.opendatahub.io
     kind: DSCInitialization
     version: v1
+- type: olm.gvk
+  value:
+    group: dscinitialization.opendatahub.io
+    kind: DSCInitialization
+    version: v2
 - type: olm.gvk
   value:
     group: features.opendatahub.io
@@ -22535,7 +22545,99 @@ properties:
             }
           },
           {
+            "apiVersion": "datasciencecluster.opendatahub.io/v2",
+            "kind": "DataScienceCluster",
+            "metadata": {
+              "labels": {
+                "app.kubernetes.io/created-by": "rhods-operator",
+                "app.kubernetes.io/instance": "default-dsc",
+                "app.kubernetes.io/managed-by": "kustomize",
+                "app.kubernetes.io/name": "datasciencecluster",
+                "app.kubernetes.io/part-of": "rhods-operator"
+              },
+              "name": "default-dsc"
+            },
+            "spec": {
+              "components": {
+                "codeflare": {
+                  "managementState": "Managed"
+                },
+                "dashboard": {
+                  "managementState": "Managed"
+                },
+                "datasciencepipelines": {
+                  "managementState": "Managed"
+                },
+                "feastoperator": {
+                  "managementState": "Removed"
+                },
+                "kserve": {
+                  "managementState": "Managed",
+                  "nim": {
+                    "managementState": "Managed"
+                  },
+                  "rawDeploymentServiceConfig": "Headed",
+                  "serving": {
+                    "ingressGateway": {
+                      "certificate": {
+                        "type": "OpenshiftDefaultIngress"
+                      }
+                    },
+                    "managementState": "Managed",
+                    "name": "knative-serving"
+                  }
+                },
+                "ray": {
+                  "managementState": "Managed"
+                },
+                "trainingoperator": {
+                  "managementState": "Managed"
+                },
+                "trustyai": {
+                  "managementState": "Managed"
+                },
+                "workbenches": {
+                  "managementState": "Managed"
+                }
+              }
+            }
+          },
+          {
             "apiVersion": "dscinitialization.opendatahub.io/v1",
+            "kind": "DSCInitialization",
+            "metadata": {
+              "labels": {
+                "app.kubernetes.io/created-by": "rhods-operator",
+                "app.kubernetes.io/instance": "default-dsci",
+                "app.kubernetes.io/managed-by": "kustomize",
+                "app.kubernetes.io/name": "dscinitialization",
+                "app.kubernetes.io/part-of": "rhods-operator"
+              },
+              "name": "default-dsci"
+            },
+            "spec": {
+              "applicationsNamespace": "redhat-ods-applications",
+              "monitoring": {
+                "managementState": "Managed",
+                "metrics": {},
+                "namespace": "redhat-ods-monitoring"
+              },
+              "serviceMesh": {
+                "controlPlane": {
+                  "metricsCollection": "Istio",
+                  "name": "data-science-smcp",
+                  "namespace": "istio-system"
+                },
+                "managementState": "Managed"
+              },
+              "trustedCABundle": {
+                "customCABundle": "",
+                "managementState": "Managed"
+              }
+            }
+          },
+          {
+            "apiVersion": "dscinitialization.opendatahub.io/v2",
             "kind": "DSCInitialization",
             "metadata": {
               "labels": {
@@ -22573,8 +22675,8 @@ properties:
       capabilities: Full Lifecycle
       categories: AI/Machine Learning, Big Data
       certified: "False"
-      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:187e2dd84f463efc1b79211de97323cf196b1f6d550cf0fc62a3a8bb40b22b61
-      createdAt: "2025-10-08T04:39:18Z"
+      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:25a01d0cbb8fe06b79510389626dd84cc3a6ab28f370c873a9f84608bf14b49b
+      createdAt: "2025-10-08T13:00:50Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       feast-cronjob-image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
       features.operators.openshift.io/cnf: "false"
@@ -22708,6 +22810,12 @@ properties:
         kind: DataScienceCluster
         name: datascienceclusters.datasciencecluster.opendatahub.io
         version: v1
+      - description: DataScienceCluster is the Schema for the datascienceclusters
+          API.
+        displayName: Data Science Cluster
+        kind: DataScienceCluster
+        name: datascienceclusters.datasciencecluster.opendatahub.io
+        version: v2
       - description: DataSciencePipelines is the Schema for the datasciencepipelines
           API
         displayName: Data Science Pipelines
@@ -22719,6 +22827,11 @@ properties:
         kind: DSCInitialization
         name: dscinitializations.dscinitialization.opendatahub.io
         version: v1
+      - description: DSCInitialization is the Schema for the dscinitializations API.
+        displayName: DSCInitialization
+        kind: DSCInitialization
+        name: dscinitializations.dscinitialization.opendatahub.io
+        version: v2
       - description: FeastOperator is the Schema for the FeastOperator API
         displayName: Feast Operator
         kind: FeastOperator
@@ -22874,7 +22987,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:0fc055d1df9e93dfe2765d6699f34ef0cb588c4f227233fa0137774e14118f3f
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:7758474354c1685406eeaaa204f63ca10583bb4ee10473f73691018dcfb901d5
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
   name: dsp_proxyv2_image
@@ -23004,7 +23117,7 @@ relatedImages:
   name: odh_modelmesh_runtime_adapter_image
 - image: registry.redhat.io/rhoai/odh-modelmesh-serving-controller-rhel9@sha256:7e83c878a3c44718f4e31dfc853f28fe8153a72d930a7c0962676090c7ef68a9
   name: odh_modelmesh_controller_image
-- image: registry.redhat.io/rhoai/odh-must-gather-rhel9@sha256:04dcf6f85a8d7d16f0d1543160478e4fc7bef0066d448d61a65cbd14420a0c54
+- image: registry.redhat.io/rhoai/odh-must-gather-rhel9@sha256:88c3dac1ebec30d58c6dcf1b45b4cbb870446e9b6ebe892155df04e8034a77b9
   name: odh_must_gather_image
 - image: registry.redhat.io/rhoai/odh-notebook-controller-rhel9@sha256:1f6c733e864a164f383cb2cc607885dd90baf35962dfb14e9a4177780859ce9f
   name: odh_notebook_controller_image
@@ -23024,8 +23137,8 @@ relatedImages:
   name: odh_pipeline_runtime_tensorflow_cuda_py312_image
 - image: registry.redhat.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:5144bff58fafc6139b52e5fa7cb84eb1f7459be7f31520b069b35b26f6e42551
   name: odh_pipeline_runtime_tensorflow_rocm_py312_image
-- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:187e2dd84f463efc1b79211de97323cf196b1f6d550cf0fc62a3a8bb40b22b61
-  name: odh-rhel9-operator-187e2dd84f463efc1b79211de97323cf196b1f6d550cf0fc62a3a8bb40b22b61-annotation
+- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:25a01d0cbb8fe06b79510389626dd84cc3a6ab28f370c873a9f84608bf14b49b
+  name: odh-rhel9-operator-25a01d0cbb8fe06b79510389626dd84cc3a6ab28f370c873a9f84608bf14b49b-annotation
 - image: registry.redhat.io/rhoai/odh-ta-lmes-driver-rhel9@sha256:c2ec8e53eb998ef95f8306225d104d73597b756fa0c80124ef2972808b466a83
   name: odh_ta_lmes_driver_image
 - image: registry.redhat.io/rhoai/odh-ta-lmes-job-rhel9@sha256:4000a91132d67503a4691e76a7079f9140e3c8091fb1a59ad235446f96cb1a34
