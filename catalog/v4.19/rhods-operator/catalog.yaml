@@ -22341,7 +22341,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:d41c7bd504e65990b25d559549e452a3a1881d32d0cb712ce7d2576005c9cabd
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5e22266f947550d527b9e78af470c415a741d7ecc44885a40de07ee6b1586ba7
 name: rhods-operator.3.0.0
 package: rhods-operator
 properties:
@@ -22576,7 +22576,6 @@ properties:
                   "nim": {
                     "managementState": "Managed"
                   },
-                  "rawDeploymentServiceConfig": "Headed",
                   "serving": {
                     "ingressGateway": {
                       "certificate": {
@@ -22586,6 +22585,19 @@ properties:
                     "managementState": "Managed",
                     "name": "knative-serving"
                   }
+                },
+                "kueue": {
+                  "managementState": "Managed"
+                },
+                "llamastackoperator": {
+                  "managementState": "Removed"
+                },
+                "modelmeshserving": {
+                  "managementState": "Managed"
+                },
+                "modelregistry": {
+                  "managementState": "Managed",
+                  "registriesNamespace": "rhoai-model-registries"
                 },
                 "ray": {
                   "managementState": "Managed"
@@ -22676,7 +22688,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9c11621862f3ed5a1109795dfeb2ad604d959b8476aac4e42e5c09811301bf7b
-      createdAt: "2025-10-09T00:45:36Z"
+      createdAt: "2025-10-09T07:30:35Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       feast-cronjob-image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
       features.operators.openshift.io/cnf: "false"
@@ -22845,7 +22857,9 @@ properties:
         kind: GatewayConfig
         name: gatewayconfigs.services.platform.opendatahub.io
         version: v1alpha1
-      - kind: HardwareProfile
+      - description: HardwareProfile is the Schema for the hardwareprofiles API.
+        displayName: Hardware Profile
+        kind: HardwareProfile
         name: hardwareprofiles.infrastructure.opendatahub.io
         version: v1
       - description: HardwareProfile is the Schema for the hardwareprofiles API.
@@ -22987,7 +23001,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:d41c7bd504e65990b25d559549e452a3a1881d32d0cb712ce7d2576005c9cabd
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5e22266f947550d527b9e78af470c415a741d7ecc44885a40de07ee6b1586ba7
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
   name: dsp_proxyv2_image
