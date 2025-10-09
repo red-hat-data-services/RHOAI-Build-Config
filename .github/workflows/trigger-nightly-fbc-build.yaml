@@ -14,6 +14,7 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
+  PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   process-fbc:
     if: ${{ github.ref_name != 'main' }}
@@ -24,7 +25,8 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: | 
+          echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Git checkout RBC main
         uses: actions/checkout@v4
@@ -40,6 +42,11 @@ jobs:
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PREVIOUS_RELEASE }}
+          path: ${{ env.PREVIOUS_RELEASE }}
       - name: Git checkout utils
         uses: actions/checkout@v4
         with:
@@ -206,7 +213,7 @@ jobs:
 
           #Invoke the FBC processor to extract the snapshot images
           CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v rhoai-2.24 -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
           LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
           echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
