@@ -22341,7 +22341,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5e22266f947550d527b9e78af470c415a741d7ecc44885a40de07ee6b1586ba7
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:9b1045d64417b41a4916fe707364a9e08b7d7ba398de92d4dae14a39aaae7065
 name: rhods-operator.3.0.0
 package: rhods-operator
 properties:
@@ -22489,9 +22489,6 @@ properties:
             },
             "spec": {
               "components": {
-                "codeflare": {
-                  "managementState": "Managed"
-                },
                 "dashboard": {
                   "managementState": "Managed"
                 },
@@ -22559,9 +22556,6 @@ properties:
             },
             "spec": {
               "components": {
-                "codeflare": {
-                  "managementState": "Managed"
-                },
                 "dashboard": {
                   "managementState": "Managed"
                 },
@@ -22688,7 +22682,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9c11621862f3ed5a1109795dfeb2ad604d959b8476aac4e42e5c09811301bf7b
-      createdAt: "2025-10-09T07:30:35Z"
+      createdAt: "2025-10-10T04:02:14Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       feast-cronjob-image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
       features.operators.openshift.io/cnf: "false"
@@ -22704,7 +22698,7 @@ properties:
       odh-etcd-image: registry.redhat.io/rhel7/etcd@sha256:d3495b263b103681f1b09a558be43c21989bfc269eb90f84c2609042cebdc626
       operatorframework.io/initialization-resource: |-
         {
-          "apiVersion": "datasciencecluster.opendatahub.io/v1",
+          "apiVersion": "datasciencecluster.opendatahub.io/v2",
           "kind": "DataScienceCluster",
           "metadata": {
             "name": "default-dsc",
@@ -22718,9 +22712,6 @@ properties:
           },
           "spec": {
             "components": {
-              "codeflare": {
-                "managementState": "Managed"
-              },
               "dashboard": {
                 "managementState": "Managed"
               },
@@ -22776,13 +22767,13 @@ properties:
       operators.operatorframework.io/builder: operator-sdk-v1.39.2
       operators.operatorframework.io/internal-objects: |-
         ["featuretrackers.features.opendatahub.io",
-        "codeflares.components.platform.opendatahub.io", "dashboards.components.platform.opendatahub.io",
-        "datasciencepipelines.components.platform.opendatahub.io", "kserves.components.platform.opendatahub.io",
-        "kueues.components.platform.opendatahub.io", "modelmeshservings.components.platform.opendatahub.io",
-        "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
-        "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",  "workbenches.components.platform.opendatahub.io",
-        "monitorings.services.platform.opendatahub.io","modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-        "llamastackoperators.components.platform.opendatahub.io"]
+        "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
+        "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
+        "modelmeshservings.components.platform.opendatahub.io", "modelregistries.components.platform.opendatahub.io",
+        "rays.components.platform.opendatahub.io", "trainingoperators.components.platform.opendatahub.io",
+        "trustyais.components.platform.opendatahub.io", "workbenches.components.platform.opendatahub.io",
+        "monitorings.services.platform.opendatahub.io", "modelcontrollers.components.platform.opendatahub.io",
+        "feastoperators.components.platform.opendatahub.io", "llamastackoperators.components.platform.opendatahub.io"]
       operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
       ose-cli-etcd-image: registry.redhat.io/openshift4/ose-cli@sha256:4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677
       ose-cli-image: registry.redhat.io/openshift4/ose-cli@sha256:25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61
@@ -22805,11 +22796,6 @@ properties:
         displayName: Auth
         kind: Auth
         name: auths.services.platform.opendatahub.io
-        version: v1alpha1
-      - description: CodeFlare is the Schema for the codeflares API
-        displayName: Code Flare
-        kind: CodeFlare
-        name: codeflares.components.platform.opendatahub.io
         version: v1alpha1
       - description: Dashboard is the Schema for the dashboards API
         displayName: Dashboard
@@ -22940,7 +22926,7 @@ properties:
       * Model Serving using ModelMesh and Kserve.
       * Ability to use other runtimes for serving
       * Model Monitoring
-      * Distributed workloads (KubeRay, CodeFlare, Kueue, Training Operator)
+      * Distributed workloads (KubeRay, Kueue, Training Operator)
       * XAI explanations of predictive models (TrustyAI)
       * Index and manage models, versions, and artifacts metadata (Model Registry)
       * Feast - Feature Store is the fastest path to manage existing infrastructure to productionize analytic data for model training and online inference.
@@ -23001,7 +22987,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:5e22266f947550d527b9e78af470c415a741d7ecc44885a40de07ee6b1586ba7
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:9b1045d64417b41a4916fe707364a9e08b7d7ba398de92d4dae14a39aaae7065
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
   name: dsp_proxyv2_image
