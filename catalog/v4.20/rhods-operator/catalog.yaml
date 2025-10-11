@@ -22341,7 +22341,7 @@ relatedImages:
   name: ubi-minimal-5d2d4d4dbec470f8ffb679915e2a8ae25ad754cd9193fa966deee1ecb7b3ee00-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:79b7728514978117d1a02cf6430e423329bd6a21090ed78753d045fedf6c38e8
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:01ac5a060dd68b008000aa6368e6382f5f025b2edadad5b12d71d49694b26453
 name: rhods-operator.3.0.0
 package: rhods-operator
 properties:
@@ -22479,11 +22479,7 @@ properties:
             "kind": "DataScienceCluster",
             "metadata": {
               "labels": {
-                "app.kubernetes.io/created-by": "rhods-operator",
-                "app.kubernetes.io/instance": "default-dsc",
-                "app.kubernetes.io/managed-by": "kustomize",
-                "app.kubernetes.io/name": "datasciencecluster",
-                "app.kubernetes.io/part-of": "rhods-operator"
+                "app.kubernetes.io/name": "datasciencecluster"
               },
               "name": "default-dsc"
             },
@@ -22518,9 +22514,6 @@ properties:
                 },
                 "llamastackoperator": {
                   "managementState": "Removed"
-                },
-                "modelmeshserving": {
-                  "managementState": "Managed"
                 },
                 "modelregistry": {
                   "managementState": "Managed",
@@ -22546,11 +22539,7 @@ properties:
             "kind": "DataScienceCluster",
             "metadata": {
               "labels": {
-                "app.kubernetes.io/created-by": "rhods-operator",
-                "app.kubernetes.io/instance": "default-dsc",
-                "app.kubernetes.io/managed-by": "kustomize",
                 "app.kubernetes.io/name": "datasciencecluster",
-                "app.kubernetes.io/part-of": "rhods-operator"
               },
               "name": "default-dsc"
             },
@@ -22586,9 +22575,6 @@ properties:
                 "llamastackoperator": {
                   "managementState": "Removed"
                 },
-                "modelmeshserving": {
-                  "managementState": "Managed"
-                },
                 "modelregistry": {
                   "managementState": "Managed",
                   "registriesNamespace": "rhoai-model-registries"
@@ -22613,11 +22599,7 @@ properties:
             "kind": "DSCInitialization",
             "metadata": {
               "labels": {
-                "app.kubernetes.io/created-by": "rhods-operator",
-                "app.kubernetes.io/instance": "default-dsci",
-                "app.kubernetes.io/managed-by": "kustomize",
-                "app.kubernetes.io/name": "dscinitialization",
-                "app.kubernetes.io/part-of": "rhods-operator"
+                "app.kubernetes.io/name": "dscinitialization"
               },
               "name": "default-dsci"
             },
@@ -22647,11 +22629,7 @@ properties:
             "kind": "DSCInitialization",
             "metadata": {
               "labels": {
-                "app.kubernetes.io/created-by": "rhods-operator",
-                "app.kubernetes.io/instance": "default-dsci",
-                "app.kubernetes.io/managed-by": "kustomize",
-                "app.kubernetes.io/name": "dscinitialization",
-                "app.kubernetes.io/part-of": "rhods-operator"
+                "app.kubernetes.io/name": "dscinitialization"
               },
               "name": "default-dsci"
             },
@@ -22682,7 +22660,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:80406a3aaa53764dd3867985c119dc9e1228c0cb090332c8dd2367ee47c79779
-      createdAt: "2025-10-11T00:41:09Z"
+      createdAt: "2025-10-11T04:03:04Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       feast-cronjob-image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
       features.operators.openshift.io/cnf: "false"
@@ -22704,10 +22682,6 @@ properties:
             "name": "default-dsc",
             "labels": {
               "app.kubernetes.io/name": "datasciencecluster",
-              "app.kubernetes.io/instance": "default-dsc",
-              "app.kubernetes.io/part-of": "rhods-operator",
-              "app.kubernetes.io/managed-by": "kustomize",
-              "app.kubernetes.io/created-by": "rhods-operator"
             }
           },
           "spec": {
@@ -22739,9 +22713,6 @@ properties:
               "kueue": {
                 "managementState": "Managed"
               },
-              "modelmeshserving": {
-                "managementState": "Managed"
-              },
               "modelregistry": {
                 "managementState": "Managed",
                 "registriesNamespace": "rhoai-model-registries"
@@ -22765,15 +22736,14 @@ properties:
       operators.openshift.io/infrastructure-features: '["disconnected"]'
       operators.openshift.io/valid-subscription: '["OpenShift AI"]'
       operators.operatorframework.io/builder: operator-sdk-v1.39.2
-      operators.operatorframework.io/internal-objects: |-
-        ["featuretrackers.features.opendatahub.io",
-        "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
-        "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
-        "modelmeshservings.components.platform.opendatahub.io", "modelregistries.components.platform.opendatahub.io",
-        "rays.components.platform.opendatahub.io", "trainingoperators.components.platform.opendatahub.io",
-        "trustyais.components.platform.opendatahub.io", "workbenches.components.platform.opendatahub.io",
-        "monitorings.services.platform.opendatahub.io", "modelcontrollers.components.platform.opendatahub.io",
-        "feastoperators.components.platform.opendatahub.io", "llamastackoperators.components.platform.opendatahub.io"]
+      operators.operatorframework.io/internal-objects: "[\"featuretrackers.features.opendatahub.io\"\
+        ,\n\"dashboards.components.platform.opendatahub.io\", \"datasciencepipelines.components.platform.opendatahub.io\"\
+        ,\n\"kserves.components.platform.opendatahub.io\", \"kueues.components.platform.opendatahub.io\"\
+        ,\n\"modelregistries.components.platform.opendatahub.io\", \"rays.components.platform.opendatahub.io\"\
+        , \n\"trainingoperators.components.platform.opendatahub.io\", \"trustyais.components.platform.opendatahub.io\"\
+        , \n\"workbenches.components.platform.opendatahub.io\", \"monitorings.services.platform.opendatahub.io\"\
+        , \n\"modelcontrollers.components.platform.opendatahub.io\", \"feastoperators.components.platform.opendatahub.io\"\
+        , \n\"llamastackoperators.components.platform.opendatahub.io\"]"
       operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
       ose-cli-etcd-image: registry.redhat.io/openshift4/ose-cli@sha256:4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677
       ose-cli-image: registry.redhat.io/openshift4/ose-cli@sha256:25fef269ac6e7491cb8340119a9b473acbeb53bc6970ad029fdaae59c3d0ca61
@@ -22870,11 +22840,6 @@ properties:
         version: v1alpha1
       - kind: ModelController
         name: modelcontrollers.components.platform.opendatahub.io
-        version: v1alpha1
-      - description: ModelMeshServing is the Schema for the modelmeshservings API
-        displayName: Model Mesh Serving
-        kind: ModelMeshServing
-        name: modelmeshservings.components.platform.opendatahub.io
         version: v1alpha1
       - description: ModelRegistry is the Schema for the modelregistries API
         displayName: Model Registry
@@ -22987,7 +22952,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:79b7728514978117d1a02cf6430e423329bd6a21090ed78753d045fedf6c38e8
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:01ac5a060dd68b008000aa6368e6382f5f025b2edadad5b12d71d49694b26453
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:ab57c24b4ec39c376bce0e718deed8f0e629be231acfe3ba8f430215672e0efd
   name: dsp_proxyv2_image
