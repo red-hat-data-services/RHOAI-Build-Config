@@ -100,7 +100,7 @@ metadata:
                 }
               },
               "kueue": {
-                "managementState": "Managed"
+                "managementState": "Removed"
               },
               "llamastackoperator": {
                 "managementState": "Removed"
@@ -189,7 +189,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d0b128174c4797b2872af3e4197c7aaf0a3e9d8b5478d5c4b2500561ba457adf"
-    createdAt: "2025-10-13T00:41:44Z"
+    createdAt: "2025-10-13T04:02:34Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2308,6 +2308,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: datasciencecluster-v1-defaulter.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - datasciencecluster.opendatahub.io
@@ -2328,6 +2329,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: datasciencecluster-v1-validator.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - datasciencecluster.opendatahub.io
@@ -2335,6 +2337,7 @@ spec:
       - v1
       operations:
       - CREATE
+      - UPDATE
       resources:
       - datascienceclusters
     sideEffects: None
@@ -2347,6 +2350,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: datasciencecluster-v2-defaulter.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - datasciencecluster.opendatahub.io
@@ -2367,6 +2371,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: datasciencecluster-v2-validator.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - datasciencecluster.opendatahub.io
@@ -2386,6 +2391,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: dscinitialization-v1-validator.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - dscinitialization.opendatahub.io
@@ -2406,6 +2412,7 @@ spec:
     deploymentName: rhods-operator
     failurePolicy: Fail
     generateName: dscinitialization-v2-validator.opendatahub.io
+    matchPolicy: Exact
     rules:
     - apiGroups:
       - dscinitialization.opendatahub.io
