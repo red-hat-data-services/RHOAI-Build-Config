@@ -15,7 +15,7 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
-
+  PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   process-fbc:
     if: ${{ github.ref_name != 'main' }}
@@ -43,6 +43,11 @@ jobs:
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PREVIOUS_RELEASE }}
+          path: ${{ env.PREVIOUS_RELEASE }}
       - name: Git checkout utils
         uses: actions/checkout@v4
         with:
@@ -189,6 +194,7 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
@@ -197,11 +203,19 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
+          
           RHOAI_VERSION=v${BRANCH/rhoai-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          #OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
+          
+          PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
+          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION/./-}
+          
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+          
           PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
+          
           OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
           OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
           echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
@@ -222,6 +236,17 @@ jobs:
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
           LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
 
+          #Previous Release - Invoke the FBC processor to extract the snapshot images
+          cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH}
+          PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
+          echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_LATEST_BUNDLE_IMAGE="$PREVIOUS_LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(PREVIOUS_LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+
+          
+          
           #Generate the single bundle catalog === sbc
           CSV_META_MIN_OCP_VERSION=417
           WORK_DIR=utils/utils/fbc
@@ -233,17 +258,19 @@ jobs:
           DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
           DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
 
+          #Previous Release - Generate the single bundle catalog === sbc
+          PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_bundle_object_sbc_semver.yaml
+          PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_csv_meta_sbc_semver.yaml
+
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}
+
+
+
           PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
           PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
 
-          # BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
-          # CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
-
           PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
-
-          #Invoke FBC processor to patch the catalog
-          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-          # python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
 
           while IFS= read -r value;
           do
@@ -257,6 +284,11 @@ jobs:
               SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
               if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
               python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
               
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
