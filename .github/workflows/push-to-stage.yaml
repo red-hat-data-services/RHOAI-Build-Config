@@ -129,7 +129,7 @@ jobs:
           PREVIOUS_DIGEST=$(echo $META | jq -r .Digest)
           PREVIOUS_IMAGE_URI=${BASE_URI}@${PREVIOUS_DIGEST}
           echo "PREVIOUS_IMAGE_URI = ${PREVIOUS_IMAGE_URI}"
-          PREVIOUS_GIT_COMMIT=$(echo $META | jq -r '.Labels | ."git.commit"')
+          PREVIOUS_GIT_COMMIT=$(echo $META | jq -r '.Labels | ."rbc-release-branch.commit"')
           
           echo "previous_ref=${PREVIOUS_GIT_COMMIT}" >> $GITHUB_OUTPUT
           echo "previous_digest=${PREVIOUS_DIGEST}" >> $GITHUB_OUTPUT
