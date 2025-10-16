@@ -242,7 +242,7 @@ jobs:
         id: validate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
         env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          BRANCH: ${{ github.event.inputs.release_branch }}
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=main/config/config.yaml
@@ -328,7 +328,7 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=main/catalog/${BRANCH}
           
           #Validate Catalogs
