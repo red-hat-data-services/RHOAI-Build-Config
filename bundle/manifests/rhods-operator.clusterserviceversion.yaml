@@ -29,15 +29,7 @@ metadata:
                 "nim": {
                   "managementState": "Managed"
                 },
-                "serving": {
-                  "ingressGateway": {
-                    "certificate": {
-                      "type": "OpenshiftDefaultIngress"
-                    }
-                  },
-                  "managementState": "Managed",
-                  "name": "knative-serving"
-                }
+                "rawDeploymentServiceConfig": "Headed"
               },
               "kueue": {
                 "managementState": "Managed"
@@ -80,14 +72,6 @@ metadata:
               "metrics": {},
               "namespace": "redhat-ods-monitoring"
             },
-            "serviceMesh": {
-              "controlPlane": {
-                "metricsCollection": "Istio",
-                "name": "data-science-smcp",
-                "namespace": "istio-system"
-              },
-              "managementState": "Managed"
-            },
             "trustedCABundle": {
               "customCABundle": "",
               "managementState": "Managed"
@@ -99,7 +83,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:8756f913454c801f7bab62adaba5ff2402160edb0efde384d73ed50982a3ab3c"
-    createdAt: "2025-10-17T00:39:04Z"
+    createdAt: "2025-10-17T04:02:27Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -134,15 +118,6 @@ metadata:
             },
             "kserve": {
               "managementState": "Managed",
-              "serving": {
-                "ingressGateway": {
-                  "certificate": {
-                    "type": "OpenshiftDefaultIngress"
-                  }
-                },
-                "managementState": "Managed",
-                "name": "knative-serving"
-              }
             },
             "llamastackoperator": {
                 "managementState": "Removed"
@@ -509,12 +484,6 @@ spec:
           verbs:
           - create
           - get
-        - apiGroups:
-          - authorino.kuadrant.io
-          resources:
-          - authconfigs
-          verbs:
-          - '*'
         - apiGroups:
           - authorization.k8s.io
           resources:
@@ -1023,33 +992,6 @@ spec:
           verbs:
           - '*'
         - apiGroups:
-          - maistra.io
-          resources:
-          - servicemeshcontrolplanes
-          - servicemeshmemberrolls
-          - servicemeshmembers/finalizers
-          verbs:
-          - create
-          - get
-          - list
-          - patch
-          - update
-          - use
-          - watch
-        - apiGroups:
-          - maistra.io
-          resources:
-          - servicemeshmembers
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - use
-          - watch
-        - apiGroups:
           - metrics.k8s.io
           resources:
           - nodes
@@ -1171,14 +1113,6 @@ spec:
           resources:
           - destinationrules
           - envoyfilters
-          - gateways
-          - virtualservices
-          verbs:
-          - '*'
-        - apiGroups:
-          - networking.istio.io
-          resources:
-          - virtualservices/finalizers
           verbs:
           - create
           - delete
@@ -1187,15 +1121,6 @@ spec:
           - patch
           - update
           - watch
-        - apiGroups:
-          - networking.istio.io
-          resources:
-          - virtualservices/status
-          verbs:
-          - delete
-          - get
-          - patch
-          - update
         - apiGroups:
           - networking.k8s.io
           resources:
@@ -1258,26 +1183,6 @@ spec:
           resources:
           - instrumentations/status
           - opentelemetrycollectors/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - operator.authorino.kuadrant.io
-          resources:
-          - authorinos
-          verbs:
-          - '*'
-        - apiGroups:
-          - operator.knative.dev
-          resources:
-          - knativeservings
-          verbs:
-          - '*'
-        - apiGroups:
-          - operator.knative.dev
-          resources:
-          - knativeservings/finalizers
           verbs:
           - get
           - patch
@@ -1382,12 +1287,6 @@ spec:
           - update
           - watch
         - apiGroups:
-          - security.istio.io
-          resources:
-          - authorizationpolicies
-          verbs:
-          - '*'
-        - apiGroups:
           - security.openshift.io
           resources:
           - securitycontextconstraints
@@ -1451,28 +1350,6 @@ spec:
           - patch
           - update
           - watch
-        - apiGroups:
-          - serving.knative.dev
-          resources:
-          - services
-          - services/finalizers
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - serving.knative.dev
-          resources:
-          - services/status
-          verbs:
-          - delete
-          - get
-          - patch
-          - update
         - apiGroups:
           - serving.kserve.io
           resources:
