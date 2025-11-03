@@ -139,7 +139,7 @@ class operator_processor:
         git_labels_meta = {'map': {}}
         missing_images = []
         for image_entry in [image for image in self.operands_map_dict['relatedImages']  if 'FBC' not in image['name'] and 'BUNDLE' not in image['name'] and 'ODH_OPERATOR' not in image['name'] ]:
-            print(f'Processing Image Entry {image_entry}')
+            print(f'Processing image entry - {image_entry}')
             parts = image_entry['value'].split('@')[0].split('/')
             registry = parts[0]
             org = parts[1]
@@ -161,10 +161,13 @@ class operator_processor:
                     latest_images.append(image_entry)
 
                     manifest_digest = tag["manifest_digest"]
+                    print(f'manifest_digest = {manifest_digest}')
                     if tag['is_manifest_list'] == True:
+                        print('Found to be a multi-arch image..')
                         image_manifest_digests = qc.get_image_manifest_digests_for_all_the_supported_archs(repo, manifest_digest)
                         if image_manifest_digests:
                             manifest_digest = image_manifest_digests[0]
+                            print(f'will be using the image with manifest_digest {manifest_digest} to find the tags and lables')
 
 
                     labels = qc.get_git_labels(repo, manifest_digest)
