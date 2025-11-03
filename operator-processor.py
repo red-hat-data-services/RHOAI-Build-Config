@@ -257,7 +257,8 @@ class quay_controller:
 
 
     def get_git_labels(self, repo, tag):
-        url = f'{BASE_URL}/repository/{self.org}/{repo}/manifest/{tag}/labels?filter=git'
+        url = f'{BASE_URL}/repository/{self.org}/{repo}/manifest/{tag}/labels'
+        # ?filter=git, throwing 403 forbidden, due to this need to check, seems quay issue, disabling the fitler for now
         headers = {'Authorization': f'Bearer {os.environ[self.org.upper() + "_QUAY_API_TOKEN"]}',
                    'Accept': 'application/json'}
         response = requests.get(url, headers=headers)
