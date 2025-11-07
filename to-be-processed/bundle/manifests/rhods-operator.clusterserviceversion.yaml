@@ -82,7 +82,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2025-10-30T13:50:22Z"
+    createdAt: "2025-11-03T10:02:25Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -159,7 +159,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
-  name: rhods-operator.v3.0.0
+  name: rhods-operator.v3.2.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -288,8 +288,8 @@ spec:
     * Curated Workbench Images (including CUDA, PyTorch, TensorFlow, code-server, TrustyAI)
     * Ability to add Custom Images
     * Ability to leverage accelerators (such as NVIDIA GPUs, AMD GPUs, and Intel Gaudi AI accelerators)
-    * AI Pipelines (including Elyra notebook interface)
-    * Model Serving using Kserve.
+    * Data Science Pipelines (including Elyra notebook interface)
+    * Model Serving using ModelMesh and Kserve.
     * Ability to use other runtimes for serving
     * Model Monitoring
     * Distributed workloads (KubeRay, Kueue, Training Operator)
@@ -1536,6 +1536,8 @@ spec:
                   readOnly: true
               securityContext:
                 runAsNonRoot: true
+                seccompProfile:
+                  type: RuntimeDefault
               serviceAccountName: redhat-ods-operator-controller-manager
               terminationGracePeriodSeconds: 10
               volumes:
@@ -1595,7 +1597,7 @@ spec:
   relatedImages:
   - image: quay.io/rhoai/odh-kube-auth-proxy-rhel9:latest
     name: odh-kube-auth-proxy-image
-  version: 3.0.0
+  version: 3.2.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
