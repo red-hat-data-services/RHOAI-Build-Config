@@ -1,0 +1,20 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  labels:
+    appstudio.openshift.io/application: rhoai-v3-0
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: stage
+    konflux-release-data/rbc-release-commit: 17c0f453e4af90935f41aa45b31f1eabae888601
+  name: rhoai-v3-0-stage-1762443115-6
+  namespace: rhoai-tenant
+spec:
+  data:
+    version: 3.0.0
+    releaseNotes:
+      cves:
+        - key: 'CVE-2025-12103' # https://issues.redhat.com/browse/RHOAIENG-36992
+          component: 'odh-trustyai-service-operator-v3-0'
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v3-0-components-stage
+  snapshot: rhoai-v3-0-1762443115
