@@ -112,8 +112,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c"
-    createdAt: "2025-11-11T11:49:31Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:930253f76ce3f668c8b14acff275f0347b3f2e3f5d0e2f9442568cb42dae1423"
+    createdAt: "2025-11-11T15:00:34Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1778,6 +1778,14 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-rhel9@sha256:87e4b6ad9283b31304ed320078d8d5c33ffaa56e357e40e67e39bada97652db7"
                 - name: RELATED_IMAGE_ODH_MODEL_METADATA_COLLECTION_IMAGE
                   value: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:cde081c963abbee0dd9c4d97e7ba81d76b3b680bf4e560c8b72d6c7fdee642fb"
+                - name: RELATED_IMAGE_ODH_TRAINING_CUDA121_TORCH24_PY311_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-training-cuda121-torch24-py311-rhel9@sha256:d2bd749821b99e8bd2aac7c580775463621408ce84f232b0599354040dc45acd"
+                - name: RELATED_IMAGE_ODH_TRAINING_CUDA124_TORCH25_PY311_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-training-cuda124-torch25-py311-rhel9@sha256:72dde9a02c53cc3b253cecb562459da67c82d5476b3c9d0cadd084e2b711a03a"
+                - name: RELATED_IMAGE_ODH_TRAINING_ROCM62_TORCH24_PY311_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-training-rocm62-torch24-py311-rhel9@sha256:3d479f51056dbf3d266e1d9b86410be6395c3dbd54cdabaa302bd7bff0be98fb"
+                - name: RELATED_IMAGE_ODH_TRAINING_ROCM62_TORCH25_PY311_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-training-rocm62-torch25-py311-rhel9@sha256:72128508aaa105b2ffece5ec076fb0bf49371e570e8d503f6490f081f63ee6a9"
                 - name: RELATED_IMAGE_DSP_TOOLBOX_IMAGE
                   value: registry.redhat.io/ubi9/toolbox@sha256:668ae64b30c95862377fc2414e48714f1aceff9d23a1d8c4141e3e83a4d4fc2a
                 - name: RELATED_IMAGE_DSP_INSTRUCTLAB_NVIDIA_IMAGE
@@ -1796,7 +1804,7 @@ spec:
                   value: registry.redhat.io/rhaiis/vllm-cuda-rhel9@sha256:ad756c01ec99a99cc7d93401c41b8d92ca96fb1ab7c5262919d818f2be4f3768
                 - name: RELATED_IMAGE_RHAIIS_VLLM_SPYRE_IMAGE
                   value: registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:4a035bb354c4a0e4040c277b2f1a1ffdc7e61f6f505c5fa5d032d22f50c4fa29
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:930253f76ce3f668c8b14acff275f0347b3f2e3f5d0e2f9442568cb42dae1423"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2097,8 +2105,8 @@ spec:
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-kueue
   relatedImages:
-  - name: odh-rhel9-operator-4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c"
+  - name: odh-rhel9-operator-930253f76ce3f668c8b14acff275f0347b3f2e3f5d0e2f9442568cb42dae1423-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:930253f76ce3f668c8b14acff275f0347b3f2e3f5d0e2f9442568cb42dae1423"
   - name: ose-cli-bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5-annotation
     image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
   - name: ose-cli-75bf9b911b6481dcf29f7942240d1555adaa607eec7fc61bedb7f624f87c36d4-annotation
@@ -2271,6 +2279,14 @@ spec:
     image: "registry.redhat.io/rhoai/odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-rhel9@sha256:87e4b6ad9283b31304ed320078d8d5c33ffaa56e357e40e67e39bada97652db7"
   - name: odh_model_metadata_collection_image
     image: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:cde081c963abbee0dd9c4d97e7ba81d76b3b680bf4e560c8b72d6c7fdee642fb"
+  - name: odh_training_cuda121_torch24_py311_image
+    image: "registry.redhat.io/rhoai/odh-training-cuda121-torch24-py311-rhel9@sha256:d2bd749821b99e8bd2aac7c580775463621408ce84f232b0599354040dc45acd"
+  - name: odh_training_cuda124_torch25_py311_image
+    image: "registry.redhat.io/rhoai/odh-training-cuda124-torch25-py311-rhel9@sha256:72dde9a02c53cc3b253cecb562459da67c82d5476b3c9d0cadd084e2b711a03a"
+  - name: odh_training_rocm62_torch24_py311_image
+    image: "registry.redhat.io/rhoai/odh-training-rocm62-torch24-py311-rhel9@sha256:3d479f51056dbf3d266e1d9b86410be6395c3dbd54cdabaa302bd7bff0be98fb"
+  - name: odh_training_rocm62_torch25_py311_image
+    image: "registry.redhat.io/rhoai/odh-training-rocm62-torch25-py311-rhel9@sha256:72128508aaa105b2ffece5ec076fb0bf49371e570e8d503f6490f081f63ee6a9"
   - name: dsp_toolbox_image
     image: registry.redhat.io/ubi9/toolbox@sha256:668ae64b30c95862377fc2414e48714f1aceff9d23a1d8c4141e3e83a4d4fc2a
   - name: dsp_instructlab_nvidia_image
