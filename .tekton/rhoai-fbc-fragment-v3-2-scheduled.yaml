@@ -14,6 +14,9 @@ metadata:
   name: rhoai-fbc-fragment-v3-2-on-schedule
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 8h
+    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -61,18 +64,6 @@ spec:
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-2
-  timeouts:
-    pipeline: 8h
-    tasks: 6h
-  taskRunSpecs:
-    - pipelineTaskName: fbc-fips-check-oci-ta
-      computeResources:
-        requests:
-          cpu: '8'
-          memory: 16Gi
-        limits:
-          cpu: '32'
-          memory: 64Gi
   workspaces:
   - name: git-auth
     secret:
