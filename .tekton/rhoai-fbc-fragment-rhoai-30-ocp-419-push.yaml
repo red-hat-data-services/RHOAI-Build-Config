@@ -35,15 +35,18 @@ spec:
       default: "ci"
     tasks:
     - name: test
-      params:
-      - name: build-type
-        value: $(params.build-type)
       taskSpec:
-      steps:
-      - name: noop
-        image: quay.io/rhoai-konflux/alpine:latest
-        script: |
-          echo "Parameter value: $(params.build-type)"
+        params:
+        - name: build-type
+          type: string
+        steps:
+        - name: noop
+          image: quay.io/rhoai-konflux/alpine:latest
+          script: |
+            echo "Parameter value: $(params.build-type)"
+  params:
+  - name: build-type
+    value: $(params.build-type)
     workspaces:
     - name: git-auth
       optional: true
