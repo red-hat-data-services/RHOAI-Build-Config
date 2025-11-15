@@ -47,13 +47,15 @@ spec:
     value: "3.2.0"
   - name: ocp-version
     value: "4.19"
+  - name: fbc-pipeline-branch
+    value: "rhoai-3.2"
   pipelineRef:
     resolver: git
     params:
     - name: url
       value: https://github.com/red-hat-data-services/konflux-central.git
     - name: revision
-      value: '{{ target_branch }}'
+      value: "$(params.fbc-pipeline-branch)"
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
