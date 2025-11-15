@@ -26,9 +26,6 @@ spec:
     value:
     - '{{target_branch}}-{{revision}}'
     - '{{target_branch}}-nightly'
-  - name: additional-labels
-    value:
-    - version=v3.2.0
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -45,10 +42,10 @@ spec:
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: true
+  - name: build-type
+    value: "stage"   # Possible values: 'nightly', 'stage', 'ci'
+  - name: rhoai-release-version
+    value: "3.2.0"
   - name: workflow_url
     value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   - name: smoke_url
