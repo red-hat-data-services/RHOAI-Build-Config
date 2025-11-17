@@ -6,8 +6,10 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-3.2" && "schedule/catalog-tekton-trigger.txt".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged()
+      && event == "push" && target_branch == "rhoai-3.2" && ( "catalog/**".pathChanged()
+      || ".tekton/rhoai-fbc-fragment-v3-2-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
+      && !".github/workflows/**".pathChanged()'
   labels:
     appstudio.openshift.io/application: rhoai-v3-2
     appstudio.openshift.io/component: rhoai-fbc-fragment-v3-2
@@ -26,6 +28,9 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+  - name: additional-labels
+    value:
+    - version=v3.2.0
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -42,10 +47,10 @@ spec:
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-type
-    value: "ci"
-  - name: rhoai-version
-    value: "3.2.0"
+  - name: build-source-image
+    value: false
+  - name: is_nightly
+    value: false
   pipelineRef:
     resolver: git
     params:
