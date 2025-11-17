@@ -28,9 +28,6 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
-  - name: additional-labels
-    value:
-    - version=v3.2.0
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -47,10 +44,10 @@ spec:
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: false
+  - name: build-type
+    value: "ci"
+  - name: rhoai-version
+    value: "3.2.0"
   pipelineRef:
     resolver: git
     params:
