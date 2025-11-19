@@ -7,7 +7,6 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-2.22" && "schedule/catalog-tekton-trigger.txt".pathChanged()
-  creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-22
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-22
@@ -15,6 +14,9 @@ metadata:
   name: rhoai-fbc-fragment-v2-22-on-schedule
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 8h
+    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -24,9 +26,6 @@ spec:
     value:
     - '{{target_branch}}-{{revision}}'
     - '{{target_branch}}-nightly'
-  - name: additional-labels
-    value:
-    - version=v2.22.3
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -38,15 +37,15 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: path-context
-    value: catalog/v4.17
+    value: catalog/v4.19
   - name: build-args-file
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: true
+  - name: build-type
+    value: "nightly"   # Possible values: 'nightly', 'stage', 'ci'
+  - name: rhoai-version
+    value: "3.2.0"
   - name: workflow_url
     value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   - name: smoke_url
