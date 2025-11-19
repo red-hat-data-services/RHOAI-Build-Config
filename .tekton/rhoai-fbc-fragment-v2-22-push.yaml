@@ -9,7 +9,6 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
       == "rhoai-2.22" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-22-push.yaml".pathChanged()
       ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
-  creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-22
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-22
@@ -17,6 +16,9 @@ metadata:
   name: rhoai-fbc-fragment-v2-22-on-push
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 8h
+    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -25,9 +27,6 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
-  - name: additional-labels
-    value:
-    - version=v2.22.3
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -39,25 +38,15 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: path-context
-    value: catalog/v4.17
+    value: catalog/v4.19
   - name: build-args-file
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: false
-  - name: sealights-config
-    value:
-      build: "true"
-      build-platform: "linux/x86_64"
-      build-type: "fbc"
-      output-image: quay.io/rhoai-sealights/rhoai-fbc-fragment:{{target_branch}}
-  - name: sealights-integrated-repos
-    value:
-    - odh-dashboard-rhel9
-    - odh-operator-bundle
+  - name: build-type
+    value: "ci"
+  - name: rhoai-version
+    value: "3.2.0"
   pipelineRef:
     resolver: git
     params:
