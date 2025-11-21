@@ -1,0 +1,36 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  labels:
+    konflux-release-data/artifact-type: components
+    konflux-release-data/rbc-release-commit: 2daf1bcbf288d40e22ab19f865f3214c1d7affa2
+    test.appstudio.openshift.io/type: override
+  name: rhoai-v2-16-1758794212
+  namespace: rhoai-tenant
+spec:
+  application: rhoai-v2-16
+  components:
+  - containerImage: quay.io/rhoai/odh-operator-bundle@sha256:83f193823c6e8f1c4772c46db78e29d3a186f4d8b41eceeba405ec519c1bcbff
+    name: odh-operator-bundle-v2-16
+    source:
+      git:
+        revision: 1d174d2fdd9398544681a222311785418332412a
+        url: https://github.com/red-hat-data-services/RHOAI-Build-Config
+  - containerImage: quay.io/rhoai/odh-dashboard-rhel8@sha256:2eedd1e2465d2e78fafb39e234dbb413a82713f187c64d70a80340ec94807d30
+    name: odh-dashboard-v2-16
+    source:
+      git:
+        revision: 487b41c86e757594dbd67e4a22cbaa451a9b72b5
+        url: https://gitlab.cee.redhat.com/rhoai/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-modelmesh-rhel8@sha256:97e2bd9b587f08e135a9aeb9b3e0dc6eafa1a9bdacbb5ecb681ce9bd5aa37fc9
+    name: odh-modelmesh-v2-16
+    source:
+      git:
+        revision: 8b45993d154da3d17d3ab491cd2f5937443f1e27
+        url: https://gitlab.cee.redhat.com/rhoai/odh-modelmesh
+  - containerImage: quay.io/rhoai/odh-rhel8-operator@sha256:cebc8815e03b772343b15d0a7dce8fad6fcc71dd437d871db5a3691472350803
+    name: odh-operator-v2-16
+    source:
+      git:
+        revision: b730ad71e8d2fa4d77352cf7d7c94ce54924da13
+        url: https://gitlab.cee.redhat.com/rhoai/rhods-operator
