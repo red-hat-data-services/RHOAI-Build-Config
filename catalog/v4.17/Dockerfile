@@ -56,6 +56,14 @@ ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_URL=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT=
 ARG ODH_OPERATOR_BUNDLE_GIT_COMMIT
 ARG ODH_OPERATOR_BUNDLE_GIT_URL
+ARG ODH_FEAST_OPERATOR_GIT_URL=
+ARG ODH_FEAST_OPERATOR_GIT_COMMIT=
+ARG ODH_FEATURE_SERVER_GIT_URL=
+ARG ODH_FEATURE_SERVER_GIT_COMMIT=
+ARG ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_URL=
+ARG ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_COMMIT=
+ARG NOTEBOOKS_GIT_URL=
+ARG NOTEBOOKS_GIT_COMMIT=
 
 
 # Configure the entrypoint and command
@@ -123,7 +131,15 @@ LABEL \
       odh-model-registry-operator.git.url="${ODH_MODEL_REGISTRY_OPERATOR_GIT_URL}" \
       odh-model-registry-operator.git.commit="${ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT}" \
       odh-operator-bundle.git.url="${ODH_OPERATOR_BUNDLE_GIT_URL}" \
-      odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}"
+      odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}" \
+      odh-feast-operator.git.url="${ODH_FEAST_OPERATOR_GIT_URL}" \
+      odh-feast-operator.git.commit="${ODH_FEAST_OPERATOR_GIT_COMMIT}" \
+      odh-feature-server.git.url="${ODH_FEATURE_SERVER_GIT_URL}" \
+      odh-feature-server.git.commit="${ODH_FEATURE_SERVER_GIT_COMMIT}" \
+      odh-ml-pipelines-runtime-generic.git.url="${ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_URL}" \
+      odh-ml-pipelines-runtime-generic.git.commit="${ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_COMMIT}" \
+      notebooks.git.url="${NOTEBOOKS_GIT_URL}" \
+      notebooks.git.commit="${NOTEBOOKS_GIT_COMMIT}"
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \

@@ -52,6 +52,14 @@ ARG ODH_MODEL_REGISTRY_GIT_URL=
 ARG ODH_MODEL_REGISTRY_GIT_COMMIT=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_URL=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT=
+ARG ODH_FEAST_OPERATOR_GIT_URL=
+ARG ODH_FEAST_OPERATOR_GIT_COMMIT=
+ARG ODH_FEATURE_SERVER_GIT_URL=
+ARG ODH_FEATURE_SERVER_GIT_COMMIT=
+ARG ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_URL=
+ARG ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_COMMIT=
+ARG NOTEBOOKS_GIT_URL=
+ARG NOTEBOOKS_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -118,7 +126,15 @@ LABEL \
       odh-model-registry.git.url="${ODH_MODEL_REGISTRY_GIT_URL}" \
       odh-model-registry.git.commit="${ODH_MODEL_REGISTRY_GIT_COMMIT}" \
       odh-model-registry-operator.git.url="${ODH_MODEL_REGISTRY_OPERATOR_GIT_URL}" \
-      odh-model-registry-operator.git.commit="${ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT}"
+      odh-model-registry-operator.git.commit="${ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT}" \
+      odh-feast-operator.git.url="${ODH_FEAST_OPERATOR_GIT_URL}" \
+      odh-feast-operator.git.commit="${ODH_FEAST_OPERATOR_GIT_COMMIT}" \
+      odh-feature-server.git.url="${ODH_FEATURE_SERVER_GIT_URL}" \
+      odh-feature-server.git.commit="${ODH_FEATURE_SERVER_GIT_COMMIT}" \
+      odh-ml-pipelines-runtime-generic.git.url="${ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_URL}" \
+      odh-ml-pipelines-runtime-generic.git.commit="${ODH_ML_PIPELINES_RUNTIME_GENERIC_GIT_COMMIT}" \
+      notebooks.git.url="${NOTEBOOKS_GIT_URL}" \
+      notebooks.git.commit="${NOTEBOOKS_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
