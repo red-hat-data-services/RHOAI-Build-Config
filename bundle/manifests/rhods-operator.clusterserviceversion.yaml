@@ -82,7 +82,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d8d5490367ea59d339774508bd260a63f776e4f2b5e90d693c024f0df3f42f2f"
-    createdAt: "2025-11-25T09:20:17Z"
+    createdAt: "2025-11-25T11:16:24Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -928,6 +928,14 @@ spec:
           - update
           - watch
         - apiGroups:
+          - kuadrant.io
+          resources:
+          - kuadrants
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
           - kubeflow.org
           resources:
           - notebooks
@@ -1194,6 +1202,14 @@ spec:
           - get
           - list
           - patch
+          - watch
+        - apiGroups:
+          - operator.openshift.io
+          resources:
+          - leaderworkersetoperators
+          verbs:
+          - get
+          - list
           - watch
         - apiGroups:
           - operators.coreos.com
