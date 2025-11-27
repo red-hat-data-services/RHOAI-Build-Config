@@ -23979,7 +23979,7 @@ relatedImages:
   name: ubi9-770cf07083e1c85ae69c25181a205b7cdef63c11b794c89b3b487d4670b4c328-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:2e4f0db19cef21f671172a46bbb57aa03e7cb0ae3dfdfc841ad84281d00a75e9
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:3e2cf395846f2655320b37ad263602368addd0e2a3dabd7406e87a55837767f1
 name: rhods-operator.3.2.0
 package: rhods-operator
 properties:
@@ -24037,6 +24037,11 @@ properties:
   value:
     group: components.platform.opendatahub.io
     kind: Ray
+    version: v1alpha1
+- type: olm.gvk
+  value:
+    group: components.platform.opendatahub.io
+    kind: Trainer
     version: v1alpha1
 - type: olm.gvk
   value:
@@ -24151,6 +24156,9 @@ properties:
                 "ray": {
                   "managementState": "Managed"
                 },
+                "trainer": {
+                  "managementState": "Removed"
+                },
                 "trainingoperator": {
                   "managementState": "Managed"
                 },
@@ -24190,7 +24198,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2bb55a2899571ca7f32dfec7bde2d28bfb378e60b951bd529e8147980a535d2e
-      createdAt: "2025-11-27T18:21:36Z"
+      createdAt: "2025-11-27T21:14:26Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       features.operators.openshift.io/cnf: "false"
       features.operators.openshift.io/cni: "false"
@@ -24364,6 +24372,9 @@ properties:
         kind: Ray
         name: rays.components.platform.opendatahub.io
         version: v1alpha1
+      - kind: Trainer
+        name: trainers.components.platform.opendatahub.io
+        version: v1alpha1
       - description: TrainingOperator is the Schema for the trainingoperators API
         displayName: Training Operator
         kind: TrainingOperator
@@ -24384,7 +24395,7 @@ properties:
 
       When using Red Hat OpenShift AI, your users will find all the tools they would expect from a modern AI/ML platform in an interface that is intuitive, requires no local install, and is backed by the power of your OpenShift cluster.
 
-      Your Data Scientists will feel right at home with quick and simple access to the Notebook interface they are used to. They can leverage the default Notebook Images (including PyTorch, TensorFlow, and CUDA), or add custom ones. Your MLOps engineers will be able to leverage Data Science Pipelines to easily parallelize and/or schedule the required workloads. They can then quickly serve, monitor, and update the created AI/ML models. They can do that by either using the provided out-of-the-box OpenVino Server Model Runtime or by adding their own custom serving runtime instead. These activities are tied together with the concept of Data Science Projects, simplifying both organization and collaboration.
+      Your Data Scientists will feel right at home with quick and simple access to the Notebook interface they are used to. They can leverage the default Notebook Images (Including PyTorch, tensorflow, and CUDA), or add custom ones. Your MLOps engineers will be able to leverage Data Science Pipelines to easily parallelize and/or schedule the required workloads. They can then quickly serve, monitor, and update the created AI/ML models. They can do that by either using the provided out-of-the-box OpenVino Server Model Runtime or by adding their own custom serving runtime instead. These activities are tied together with the concept of Data Science Projects, simplifying both organization and collaboration.
 
       But beyond the individual features, one of the key aspects of this platform is its flexibility. Not only can you augment it with your own Customer Workbench Image and Custom Model Serving Runtime Images, but you will also have a consistent experience across any infrastructure footprint. Be it in the public cloud, private cloud, on-premises, and even in disconnected clusters. Red Hat OpenShift AI can be installed on any supported OpenShift. It can scale out or in depending on the size of your team and its computing requirements.
 
@@ -24460,7 +24471,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:2e4f0db19cef21f671172a46bbb57aa03e7cb0ae3dfdfc841ad84281d00a75e9
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:3e2cf395846f2655320b37ad263602368addd0e2a3dabd7406e87a55837767f1
   name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:fe1e78971352ddd76ee6f88aa0f4e4ac6d1298da8c960f877ae9f883c291dfd6
   name: dsp_proxyv2_image
@@ -24480,9 +24491,9 @@ relatedImages:
   name: rhaiis_vllm_s390x_spyre_image
 - image: registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:4a035bb354c4a0e4040c277b2f1a1ffdc7e61f6f505c5fa5d032d22f50c4fa29
   name: rhaiis_vllm_amd64_spyre_image
-- image: registry.redhat.io/rhel9/mariadb-105@sha256:e1a32e8e475d579b45ec8f41478123172868d4d3b7edb6473b09fd51812c179b
+- image: registry.redhat.io/rhel9/mariadb-105@sha256:76809232b2a43bea36919f76d07b111c410f8ce1aa08dd93783f3de60b28fad8
   name: dsp_mariadb_image
-- image: registry.redhat.io/rhel9/postgresql-16@sha256:a40fdc2a5db536383e837ced2070af83196b09b2676b078cad3d113767b17eb9
+- image: registry.redhat.io/rhel9/postgresql-16@sha256:684ff665e4d0408565be6bb5472094bb07e114d84e5ff454b4ae838722fcc1aa
   name: postgresql_16_image
 - image: registry.redhat.io/rhelai1/instructlab-nvidia-rhel9@sha256:e6e68c4cbab408b87ae76dda7590b1855e499c83f48306c0390c843b9acc1e1a
   name: dsp_instructlab_nvidia_image
@@ -24634,6 +24645,6 @@ relatedImages:
   name: odh_workbench_jupyter_tensorflow_rocm_py312_image
 - image: registry.redhat.io/rhoai/odh-workbench-jupyter-trustyai-cpu-py312-rhel9@sha256:30f8f9fcdac3a5a2479d8c47e36b517a1dee541284a6a6551c47abbd34f75574
   name: odh_workbench_jupyter_trustyai_cpu_py312_image
-- image: registry.redhat.io/ubi9/toolbox@sha256:3128d73153fa3e1875e29cd1468d2dda7876bebe4590260813f7ffaad4acbf28
+- image: registry.redhat.io/ubi9/toolbox@sha256:bcdaf1259ee774a56f543c9b2d0d35cb35bc7e592889cde58cb0ec64d79fd35c
   name: dsp_toolbox_image
 schema: olm.bundle
