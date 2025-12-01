@@ -175,8 +175,7 @@ spec:
                         type: object
                     type: object
                     x-kubernetes-validations:
-                    - message: Replicas can only be set to non-zero value when either
-                        is configured
+                    - message: Non-zero replicas require metrics.storage to be configured
                       rule: has(self.storage) || !has(self.replicas) || self.replicas
                         == 0
                   namespace:
@@ -637,8 +636,7 @@ spec:
                         type: object
                     type: object
                     x-kubernetes-validations:
-                    - message: Replicas can only be set to non-zero value when either
-                        is configured
+                    - message: Non-zero replicas require metrics.storage to be configured
                       rule: has(self.storage) || !has(self.replicas) || self.replicas
                         == 0
                   namespace:
