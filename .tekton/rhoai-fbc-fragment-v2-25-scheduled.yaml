@@ -14,6 +14,9 @@ metadata:
   name: rhoai-fbc-fragment-v2-25-on-schedule
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 8h
+    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -23,9 +26,6 @@ spec:
     value:
     - '{{target_branch}}-{{revision}}'
     - '{{target_branch}}-nightly'
-  - name: additional-labels
-    value:
-    - version=v2.25.1
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -37,15 +37,15 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: path-context
-    value: catalog/v4.17
+    value: catalog/v4.19
   - name: build-args-file
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: true
+  - name: build-type
+    value: "nightly"   # Possible values: 'nightly', 'stage', 'ci'
+  - name: rhoai-version
+    value: "2.25.1"
   - name: workflow_url
     value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
   - name: smoke_url
@@ -61,18 +61,6 @@ spec:
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-v2-25
-  timeouts:
-    pipeline: 8h
-    tasks: 6h
-  taskRunSpecs:
-    - pipelineTaskName: fbc-fips-check-oci-ta
-      computeResources:
-        requests:
-          cpu: '8'
-          memory: 16Gi
-        limits:
-          cpu: '32'
-          memory: 64Gi
   workspaces:
   - name: git-auth
     secret:
