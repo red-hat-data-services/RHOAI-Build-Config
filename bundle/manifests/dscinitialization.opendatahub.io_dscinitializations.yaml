@@ -210,7 +210,7 @@ spec:
                         type: string
                       storage:
                         description: TracesStorage defines the storage configuration
-                          for tracing.
+                          for tracing
                         properties:
                           backend:
                             default: pv
@@ -243,7 +243,8 @@ spec:
                         x-kubernetes-validations:
                         - message: When backend is s3 or gcs, the 'secret' field must
                             be specified and non-empty
-                          rule: 'self.backend != ''pv'' ? has(self.secret) : true'
+                          rule: 'self.backend != ''pv'' ? (has(self.secret) && self.secret
+                            != '''') : true'
                         - message: Size is supported when backend is pv only
                           rule: 'self.backend != ''pv'' ? !has(self.size) : true'
                       tls:
@@ -260,8 +261,9 @@ spec:
                               If not specified, OpenShift service serving certificates will be used
                             type: string
                           enabled:
-                            default: true
-                            description: Enabled enables TLS for Tempo gRPC connections
+                            description: |-
+                              Enabled enables TLS for Tempo OTLP ingestion (gRPC/HTTP) and query APIs (HTTP)
+                              TLS is disabled by default to maintain backward compatibility
                             type: boolean
                         type: object
                     required:
@@ -671,7 +673,7 @@ spec:
                         type: string
                       storage:
                         description: TracesStorage defines the storage configuration
-                          for tracing.
+                          for tracing
                         properties:
                           backend:
                             default: pv
@@ -704,7 +706,8 @@ spec:
                         x-kubernetes-validations:
                         - message: When backend is s3 or gcs, the 'secret' field must
                             be specified and non-empty
-                          rule: 'self.backend != ''pv'' ? has(self.secret) : true'
+                          rule: 'self.backend != ''pv'' ? (has(self.secret) && self.secret
+                            != '''') : true'
                         - message: Size is supported when backend is pv only
                           rule: 'self.backend != ''pv'' ? !has(self.size) : true'
                       tls:
@@ -721,8 +724,9 @@ spec:
                               If not specified, OpenShift service serving certificates will be used
                             type: string
                           enabled:
-                            default: true
-                            description: Enabled enables TLS for Tempo gRPC connections
+                            description: |-
+                              Enabled enables TLS for Tempo OTLP ingestion (gRPC/HTTP) and query APIs (HTTP)
+                              TLS is disabled by default to maintain backward compatibility
                             type: boolean
                         type: object
                     required:
