@@ -87,8 +87,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c00d53101d728cbf746f0866ea139aac3254386758d983f1db933e7590125638"
-    createdAt: "2025-12-12T18:26:01Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4811c2046279e5dd87293a9841259ac3860d58782810915c3dd71aea7b36c9b"
+    createdAt: "2025-12-12T20:39:21Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1233,6 +1233,7 @@ spec:
         - apiGroups:
           - operator.openshift.io
           resources:
+          - jobsetoperators
           - leaderworkersetoperators
           verbs:
           - get
@@ -1681,7 +1682,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_PYTORCH_CUDA_PY312_IMAGE
                   value: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-cuda-py312-rhel9@sha256:cdc8b6e5ac813be04af9b13dee720ae0b09cbe5b9204e15abf701c78f274eb43"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_PYTORCH_ROCM_PY312_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:4239da58a2f745012525fcc4fd5ee21acabb3f2cfd94b52ff4a8396886638315"
+                  value: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:b3a7f948ed8cc26a2011604fae9546f631ec4437254be77bb927a9cb1673a2a9"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_TENSORFLOW_CUDA_PY312_IMAGE
                   value: "registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:a970e11caa9247cba15c9c5d3d82f4c12f4277fefc766ffa94f83291f8d10c3b"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_TENSORFLOW_ROCM_PY312_IMAGE
@@ -1760,7 +1761,7 @@ spec:
                   value: registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:80ae3e435a5be2c1f117f36599103ab05357917dd6e37f0df6613cb3ac2c13ea
                 - name: RELATED_IMAGE_RHAIIS_VLLM_S390X_SPYRE_IMAGE
                   value: registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:80ae3e435a5be2c1f117f36599103ab05357917dd6e37f0df6613cb3ac2c13ea
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c00d53101d728cbf746f0866ea139aac3254386758d983f1db933e7590125638"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4811c2046279e5dd87293a9841259ac3860d58782810915c3dd71aea7b36c9b"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2243,8 +2244,8 @@ spec:
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-kueue
   relatedImages:
-  - name: odh-rhel9-operator-c00d53101d728cbf746f0866ea139aac3254386758d983f1db933e7590125638-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c00d53101d728cbf746f0866ea139aac3254386758d983f1db933e7590125638"
+  - name: odh-rhel9-operator-d4811c2046279e5dd87293a9841259ac3860d58782810915c3dd71aea7b36c9b-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4811c2046279e5dd87293a9841259ac3860d58782810915c3dd71aea7b36c9b"
   - name: odh_kf_notebook_controller_image
     image: "registry.redhat.io/rhoai/odh-kf-notebook-controller-rhel9@sha256:444af2dc18d66ef1cd50995b38047fefcffb6b82998dd7f81ad0bcafb6097c24"
   - name: odh_dashboard_image
@@ -2338,7 +2339,7 @@ spec:
   - name: odh_workbench_jupyter_pytorch_cuda_py312_image
     image: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-cuda-py312-rhel9@sha256:cdc8b6e5ac813be04af9b13dee720ae0b09cbe5b9204e15abf701c78f274eb43"
   - name: odh_workbench_jupyter_pytorch_rocm_py312_image
-    image: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:4239da58a2f745012525fcc4fd5ee21acabb3f2cfd94b52ff4a8396886638315"
+    image: "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:b3a7f948ed8cc26a2011604fae9546f631ec4437254be77bb927a9cb1673a2a9"
   - name: odh_workbench_jupyter_tensorflow_cuda_py312_image
     image: "registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:a970e11caa9247cba15c9c5d3d82f4c12f4277fefc766ffa94f83291f8d10c3b"
   - name: odh_workbench_jupyter_tensorflow_rocm_py312_image
