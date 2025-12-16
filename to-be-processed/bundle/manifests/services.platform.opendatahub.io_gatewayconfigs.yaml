@@ -110,6 +110,15 @@ spec:
                   Example: *.example.com, example.com, apps.example.com
                 pattern: ^(\*\.)?([a-z0-9]([-a-z0-9]*[a-z0-9])?\.)*[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                 type: string
+              ingressMode:
+                description: |-
+                  IngressMode specifies how the Gateway is exposed externally.
+                  "OcpRoute" uses ClusterIP with standard OpenShift Routes (default for new deployments).
+                  "LoadBalancer" uses a LoadBalancer service type (requires cloud or MetalLB).
+                enum:
+                - OcpRoute
+                - LoadBalancer
+                type: string
               networkPolicy:
                 description: NetworkPolicy configuration for kube-auth-proxy
                 properties:
