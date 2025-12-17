@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e407178715ec9a256f9f0b1bc705db8d8f074d267671ae302fdf32f090aacc8c"
-    createdAt: "2025-12-17T13:45:14Z"
+    createdAt: "2025-12-17T14:06:40Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1308,6 +1308,18 @@ spec:
           - get
           - patch
           - update
+        - apiGroups:
+          - policy
+          resources:
+          - poddisruptionbudgets
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - ray.io
           resources:
