@@ -320,9 +320,9 @@ LABEL \
       odh-workbench-jupyter-trustyai-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_URL}" \
       odh-workbench-jupyter-trustyai-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_COMMIT}" \
       ose-kube-rbac-proxy.git.url="${OSE_KUBE_RBAC_PROXY_GIT_URL}" \
-      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}"
+      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-trustyai-garak-lls-provider-dsp.git.url="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL}" \
-      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}" \
+      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
