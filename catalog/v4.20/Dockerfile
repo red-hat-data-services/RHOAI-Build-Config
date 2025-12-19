@@ -154,7 +154,10 @@ ARG OSE_KUBE_RBAC_PROXY_GIT_URL=
 ARG OSE_KUBE_RBAC_PROXY_GIT_COMMIT=
 ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL=
 ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT=
-
+ARG ODH_MLFLOW_GIT_URL=
+ARG ODH_MLFLOW_GIT_COMMIT=
+ARG ODH_MLFLOW_OPERATOR_URL=
+ARG ODH_MLFLOW_OPERATOR_COMMIT=
 
 
 
@@ -214,6 +217,10 @@ LABEL \
       odh-llm-d-routing-sidecar.git.commit="${ODH_LLM_D_ROUTING_SIDECAR_GIT_COMMIT}" \
       odh-maas-api.git.url="${ODH_MAAS_API_GIT_URL}" \
       odh-maas-api.git.commit="${ODH_MAAS_API_GIT_COMMIT}" \
+      odh-mlflow.git.url="${ODH_MLFLOW_GIT_URL}" \
+      odh-mlflow.git.commit="${ODH_MLFLOW_GIT_COMMIT}" \
+      odh-mlflow-operator.git.url="${ODH_MLFLOW_OPERATOR_GIT_URL}" \
+      odh-mlflow-operator.git.commit="${ODH_MLFLOW_OPERATOR_GIT_COMMIT}" \
       odh-ml-pipelines-api-server-v2.git.url="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_URL}" \
       odh-ml-pipelines-api-server-v2.git.commit="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_COMMIT}" \
       odh-ml-pipelines-driver.git.url="${ODH_ML_PIPELINES_DRIVER_GIT_URL}" \
