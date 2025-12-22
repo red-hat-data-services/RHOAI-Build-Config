@@ -6,12 +6,14 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "rhoai-3.2" && "schedule/catalog-tekton-trigger.txt".pathChanged()
+    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
+      == "rhoai-3.3" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-3-push.yaml".pathChanged()
+      ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
   labels:
-    appstudio.openshift.io/application: rhoai-v3-2
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-2
+    appstudio.openshift.io/application: rhoai-v3-3
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-3
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v3-2-on-schedule
+  name: rhoai-fbc-fragment-v3-3-on-push
   namespace: rhoai-tenant
 spec:
   timeouts:
@@ -25,7 +27,6 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
-    - '{{target_branch}}-nightly'
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -43,13 +44,9 @@ spec:
   - name: skip-checks
     value: false
   - name: build-type
-    value: "nightly"   # Possible values: 'nightly', 'stage', 'ci'
+    value: "ci"
   - name: rhoai-version
-    value: "3.2.0"
-  - name: workflow_url
-    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
-  - name: smoke_url
-    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/smoke-trigger.yaml"
+    value: "3.3.0"
   pipelineRef:
     resolver: git
     params:
@@ -60,7 +57,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-2
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-3
   workspaces:
   - name: git-auth
     secret:
