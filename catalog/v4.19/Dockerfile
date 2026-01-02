@@ -116,6 +116,8 @@ ARG ODH_TRAINING_ROCM62_TORCH25_PY311_GIT_URL=
 ARG ODH_TRAINING_ROCM62_TORCH25_PY311_GIT_COMMIT=
 ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_URL=
 ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_COMMIT=
+ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_URL=
+ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_OPERATOR_GIT_URL=
@@ -315,9 +317,9 @@ LABEL \
       odh-workbench-jupyter-trustyai-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_URL}" \
       odh-workbench-jupyter-trustyai-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_COMMIT}" \
       ose-kube-rbac-proxy.git.url="${OSE_KUBE_RBAC_PROXY_GIT_URL}" \
-      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}"
+      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-trustyai-garak-lls-provider-dsp.git.url="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL}" \
-      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}" \
+      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}"
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \
