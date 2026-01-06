@@ -47,10 +47,10 @@ metadata:
                 "managementState": "Managed"
               },
               "trainer": {
-                "managementState": "Removed"
+                "managementState": "Managed"
               },
               "trainingoperator": {
-                "managementState": "Managed"
+                "managementState": "Removed"
               },
               "trustyai": {
                 "managementState": "Managed"
@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2025-12-17T14:06:04Z"
+    createdAt: "2026-01-06T16:44:39Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -591,6 +591,7 @@ spec:
           - modelcontrollers
           - modelmeshservings
           - modelregistries
+          - modelsasservices
           - rays
           - trainers
           - trainingoperators
@@ -629,6 +630,7 @@ spec:
           - modelcontrollers/status
           - modelmeshservings/status
           - modelregistries/status
+          - modelsasservices/status
           - rays/status
           - trainers/status
           - trainingoperators/status
@@ -650,6 +652,7 @@ spec:
           - modelcontrollers/finalizers
           - modelmeshservings/finalizers
           - modelregistries/finalizers
+          - modelsasservices/finalizers
           - rays/finalizers
           - trainers/finalizers
           - trainingoperators/finalizers
@@ -830,6 +833,18 @@ spec:
           - patch
           - watch
         - apiGroups:
+          - extensions.kuadrant.io
+          resources:
+          - telemetrypolicies
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
           - features.opendatahub.io
           resources:
           - featuretrackers
@@ -940,6 +955,21 @@ spec:
           - keda.sh
           resources:
           - triggerauthentications
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - kuadrant.io
+          resources:
+          - authpolicies
+          - ratelimitpolicies
+          - telemetrypolicies
+          - tokenratelimitpolicies
           verbs:
           - create
           - delete
