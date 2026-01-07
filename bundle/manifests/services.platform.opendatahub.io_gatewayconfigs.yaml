@@ -110,6 +110,15 @@ spec:
                   Example: *.example.com, example.com, apps.example.com
                 pattern: ^(\*\.)?([a-z0-9]([-a-z0-9]*[a-z0-9])?\.)*[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                 type: string
+              ingressMode:
+                description: |-
+                  IngressMode specifies how the Gateway is exposed externally.
+                  "OcpRoute" uses ClusterIP with standard OpenShift Routes (default for new deployments).
+                  "LoadBalancer" uses a LoadBalancer service type (requires cloud or MetalLB).
+                enum:
+                - OcpRoute
+                - LoadBalancer
+                type: string
               networkPolicy:
                 description: NetworkPolicy configuration for kube-auth-proxy
                 properties:
@@ -173,6 +182,12 @@ spec:
                 - clientSecretRef
                 - issuerURL
                 type: object
+              providerCASecretName:
+                description: |-
+                  ProviderCASecretName is the name of the secret containing the CA certificate for the authentication provider
+                  Used when the OAuth/OIDC provider uses a self-signed or custom CA certificate.
+                  Secret must exist in the openshift-ingress namespace and contain a 'ca.crt' key with the PEM-encoded CA certificate.
+                type: string
               subdomain:
                 description: |-
                   Subdomain configuration for the GatewayConfig
@@ -180,6 +195,15 @@ spec:
                 maxLength: 63
                 pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)$
                 type: string
+              verifyProviderCertificate:
+                default: true
+                description: |-
+                  VerifyProviderCertificate controls TLS certificate verification for the authentication provider.
+                  When true (default), certificates are verified against the system trust store and providerCASecretName.
+                  When false, certificate verification is disabled (development/testing only).
+                  WARNING: Setting this to false disables security and should only be used in non-production environments.
+                  For production use with self-signed certificates, use ProviderCASecretName instead.
+                type: boolean
             type: object
           status:
             description: GatewayConfigStatus defines the observed state of GatewayConfig

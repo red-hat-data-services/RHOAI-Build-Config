@@ -112,8 +112,6 @@ ARG ODH_TRAINING_ROCM62_TORCH25_PY311_GIT_URL=
 ARG ODH_TRAINING_ROCM62_TORCH25_PY311_GIT_COMMIT=
 ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_URL=
 ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_COMMIT=
-ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_URL=
-ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_OPERATOR_GIT_URL=
@@ -148,6 +146,12 @@ ARG ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_URL=
 ARG ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_COMMIT=
 ARG OSE_KUBE_RBAC_PROXY_GIT_URL=
 ARG OSE_KUBE_RBAC_PROXY_GIT_COMMIT=
+ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL=
+ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT=
+ARG ODH_MLFLOW_GIT_URL=
+ARG ODH_MLFLOW_GIT_COMMIT=
+ARG ODH_MLFLOW_OPERATOR_URL=
+ARG ODH_MLFLOW_OPERATOR_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -205,6 +209,10 @@ LABEL \
       odh-llm-d-routing-sidecar.git.commit="${ODH_LLM_D_ROUTING_SIDECAR_GIT_COMMIT}" \
       odh-maas-api.git.url="${ODH_MAAS_API_GIT_URL}" \
       odh-maas-api.git.commit="${ODH_MAAS_API_GIT_COMMIT}" \
+      odh-mlflow.git.url="${ODH_MLFLOW_GIT_URL}" \
+      odh-mlflow.git.commit="${ODH_MLFLOW_GIT_COMMIT}" \
+      odh-mlflow-operator.git.url="${ODH_MLFLOW_OPERATOR_GIT_URL}" \
+      odh-mlflow-operator.git.commit="${ODH_MLFLOW_OPERATOR_GIT_COMMIT}" \
       odh-ml-pipelines-api-server-v2.git.url="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_URL}" \
       odh-ml-pipelines-api-server-v2.git.commit="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_COMMIT}" \
       odh-ml-pipelines-driver.git.url="${ODH_ML_PIPELINES_DRIVER_GIT_URL}" \
@@ -275,8 +283,6 @@ LABEL \
       odh-training-rocm62-torch25-py311.git.commit="${ODH_TRAINING_ROCM62_TORCH25_PY311_GIT_COMMIT}" \
       odh-training-rocm64-torch28-py312.git.url="${ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_URL}" \
       odh-training-rocm64-torch28-py312.git.commit="${ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_COMMIT}" \
-      odh-trustyai-ragas-lls-provider-dsp.git.url="${ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_URL}" \
-      odh-trustyai-ragas-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_COMMIT}" \
       odh-trustyai-service.git.url="${ODH_TRUSTYAI_SERVICE_GIT_URL}" \
       odh-trustyai-service.git.commit="${ODH_TRUSTYAI_SERVICE_GIT_COMMIT}" \
       odh-trustyai-service-operator.git.url="${ODH_TRUSTYAI_SERVICE_OPERATOR_GIT_URL}" \
@@ -310,7 +316,9 @@ LABEL \
       odh-workbench-jupyter-trustyai-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_URL}" \
       odh-workbench-jupyter-trustyai-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_TRUSTYAI_CPU_PY312_GIT_COMMIT}" \
       ose-kube-rbac-proxy.git.url="${OSE_KUBE_RBAC_PROXY_GIT_URL}" \
-      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}"
+      ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}" \
+      odh-trustyai-garak-lls-provider-dsp.git.url="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL}" \
+      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
