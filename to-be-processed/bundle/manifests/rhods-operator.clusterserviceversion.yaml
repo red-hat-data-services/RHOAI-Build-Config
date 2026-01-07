@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2026-01-06T16:44:39Z"
+    createdAt: "2026-01-07T00:50:55Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -340,11 +340,16 @@ spec:
           - ""
           resources:
           - configmaps
+          - deployments
           - events
           - namespaces
+          - persistentvolumeclaims
+          - persistentvolumes
+          - pods
           - secrets
           - secrets/finalizers
           - serviceaccounts
+          - services
           - services/finalizers
           verbs:
           - create
@@ -363,17 +368,6 @@ spec:
           - get
           - patch
           - update
-        - apiGroups:
-          - ""
-          resources:
-          - deployments
-          - persistentvolumeclaims
-          - persistentvolumes
-          - pods
-          - pods/exec
-          - pods/log
-          verbs:
-          - '*'
         - apiGroups:
           - ""
           resources:
@@ -399,20 +393,20 @@ spec:
         - apiGroups:
           - ""
           resources:
-          - services
+          - pods/exec
           verbs:
-          - '*'
+          - create
+        - apiGroups:
+          - ""
+          resources:
+          - pods/log
+          verbs:
+          - get
         - apiGroups:
           - '*'
           resources:
           - deployments
-          - replicasets
           - services
-          verbs:
-          - '*'
-        - apiGroups:
-          - '*'
-          resources:
           - statefulsets
           verbs:
           - create
@@ -421,6 +415,16 @@ spec:
           - list
           - patch
           - update
+          - watch
+        - apiGroups:
+          - '*'
+          - apps
+          - extensions
+          resources:
+          - replicasets
+          verbs:
+          - get
+          - list
           - watch
         - apiGroups:
           - admissionregistration.k8s.io
@@ -466,16 +470,27 @@ spec:
           resources:
           - deployments
           - deployments/finalizers
-          - replicasets
           - statefulsets
           verbs:
-          - '*'
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - argoproj.io
           resources:
           - workflows
           verbs:
-          - '*'
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - authentication.k8s.io
           resources:
@@ -517,6 +532,7 @@ spec:
           - batch
           resources:
           - cronjobs
+          - jobs
           - jobs/status
           verbs:
           - create
@@ -526,12 +542,6 @@ spec:
           - patch
           - update
           - watch
-        - apiGroups:
-          - batch
-          resources:
-          - jobs
-          verbs:
-          - '*'
         - apiGroups:
           - build.openshift.io
           resources:
@@ -819,9 +829,14 @@ spec:
           - extensions
           resources:
           - deployments
-          - replicasets
           verbs:
-          - '*'
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - extensions
           resources:
@@ -1046,7 +1061,9 @@ spec:
           resources:
           - seldondeployments
           verbs:
-          - '*'
+          - get
+          - list
+          - watch
         - apiGroups:
           - metrics.k8s.io
           resources:
@@ -1407,7 +1424,12 @@ spec:
           resources:
           - securitycontextconstraints
           verbs:
-          - '*'
+          - create
+          - get
+          - list
+          - patch
+          - use
+          - watch
         - apiGroups:
           - security.openshift.io
           resourceNames:
@@ -1415,7 +1437,12 @@ spec:
           resources:
           - securitycontextconstraints
           verbs:
-          - '*'
+          - create
+          - get
+          - list
+          - patch
+          - use
+          - watch
         - apiGroups:
           - security.openshift.io
           resourceNames:
@@ -1423,7 +1450,12 @@ spec:
           resources:
           - securitycontextconstraints
           verbs:
-          - '*'
+          - create
+          - get
+          - list
+          - patch
+          - use
+          - watch
         - apiGroups:
           - services.platform.opendatahub.io
           resources:
@@ -1466,6 +1498,7 @@ spec:
           - inferenceservices/finalizers
           - llminferenceserviceconfigs
           - predictors
+          - servingruntimes
           - servingruntimes/finalizers
           - trainedmodels
           verbs:
@@ -1509,12 +1542,6 @@ spec:
           - list
           - watch
         - apiGroups:
-          - serving.kserve.io
-          resources:
-          - servingruntimes
-          verbs:
-          - '*'
-        - apiGroups:
           - snapshot.storage.k8s.io
           resources:
           - volumesnapshots
@@ -1528,7 +1555,13 @@ spec:
           resources:
           - templates
           verbs:
-          - '*'
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - tempo.grafana.com
           resources:
