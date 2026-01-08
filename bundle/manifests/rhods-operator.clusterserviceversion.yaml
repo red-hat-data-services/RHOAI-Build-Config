@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4fb816be6b51cdb969602b9621beb6200ce5faa9384c99027b52e8cff2689207"
-    createdAt: "2026-01-08T14:43:44Z"
+    createdAt: "2026-01-08T14:54:28Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -143,8 +143,11 @@ metadata:
             "workbenches": {
               "managementState": "Managed"
             },
-            "trainingoperator": {
+            "trainer": {
               "managementState": "Managed"
+            },
+            "trainingoperator": {
+              "managementState": "Removed"
             },
             "trustyai": {
               "managementState": "Managed"
@@ -160,6 +163,7 @@ metadata:
       "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
       "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
+      "trainers.components.platform.opendatahub.io",
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
       "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
       "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
@@ -280,7 +284,9 @@ spec:
       kind: Ray
       name: rays.components.platform.opendatahub.io
       version: v1alpha1
-    - kind: Trainer
+    - description: Trainer is the Schema for the trainers API
+      displayName: Trainer
+      kind: Trainer
       name: trainers.components.platform.opendatahub.io
       version: v1alpha1
     - description: TrainingOperator is the Schema for the trainingoperators API
