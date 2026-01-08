@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2026-01-07T00:50:55Z"
+    createdAt: "2026-01-08T14:54:04Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -144,8 +144,11 @@ metadata:
             "workbenches": {
               "managementState": "Managed"
             },
-            "trainingoperator": {
+            "trainer": {
               "managementState": "Managed"
+            },
+            "trainingoperator": {
+              "managementState": "Removed"
             },
             "trustyai": {
               "managementState": "Managed"
@@ -161,6 +164,7 @@ metadata:
       "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
       "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
+      "trainers.components.platform.opendatahub.io",
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
       "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
       "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
@@ -274,7 +278,9 @@ spec:
       kind: Ray
       name: rays.components.platform.opendatahub.io
       version: v1alpha1
-    - kind: Trainer
+    - description: Trainer is the Schema for the trainers API
+      displayName: Trainer
+      kind: Trainer
       name: trainers.components.platform.opendatahub.io
       version: v1alpha1
     - description: TrainingOperator is the Schema for the trainingoperators API
