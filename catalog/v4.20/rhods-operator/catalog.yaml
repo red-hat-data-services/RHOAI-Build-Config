@@ -24739,7 +24739,7 @@ relatedImages:
   name: ubi9-770cf07083e1c85ae69c25181a205b7cdef63c11b794c89b3b487d4670b4c328-annotation
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:b7d81acfbeed0f490e5f49678474ca1abd57450cd3d6efbf1c8f960bc1e12421
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:2ea4893b46cc6d0204b402a45fdde8dc2d8ec779926152ad3f6d9ea73e721197
 name: rhods-operator.3.3.0
 package: rhods-operator
 properties:
@@ -24970,8 +24970,8 @@ properties:
       capabilities: Full Lifecycle
       categories: AI/Machine Learning, Big Data
       certified: "False"
-      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9db87ab833df1eba6f63cb4477487aa755a567995e1e62157282f94efaee21df
-      createdAt: "2026-01-08T14:07:41Z"
+      containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4fb816be6b51cdb969602b9621beb6200ce5faa9384c99027b52e8cff2689207
+      createdAt: "2026-01-08T14:54:28Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       features.operators.openshift.io/cnf: "false"
       features.operators.openshift.io/cni: "false"
@@ -25026,8 +25026,11 @@ properties:
               "workbenches": {
                 "managementState": "Managed"
               },
-              "trainingoperator": {
+              "trainer": {
                 "managementState": "Managed"
+              },
+              "trainingoperator": {
+                "managementState": "Removed"
               },
               "trustyai": {
                 "managementState": "Managed"
@@ -25044,6 +25047,7 @@ properties:
         "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
         "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
         "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
+        "trainers.components.platform.opendatahub.io",
         "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
         "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
         "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
@@ -25156,7 +25160,9 @@ properties:
         kind: Ray
         name: rays.components.platform.opendatahub.io
         version: v1alpha1
-      - kind: Trainer
+      - description: Trainer is the Schema for the trainers API
+        displayName: Trainer
+        kind: Trainer
         name: trainers.components.platform.opendatahub.io
         version: v1alpha1
       - description: TrainingOperator is the Schema for the trainingoperators API
@@ -25257,7 +25263,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:b7d81acfbeed0f490e5f49678474ca1abd57450cd3d6efbf1c8f960bc1e12421
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:2ea4893b46cc6d0204b402a45fdde8dc2d8ec779926152ad3f6d9ea73e721197
   name: ""
 - image: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
   name: perses_image
@@ -25381,8 +25387,8 @@ relatedImages:
   name: odh_pipeline_runtime_tensorflow_cuda_py312_image
 - image: registry.redhat.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:2f7fc4f5a8adb9f5a34dfd8c4230b5e49b3dbd1f51cb1e42f17d35e84cdbad01
   name: odh_pipeline_runtime_tensorflow_rocm_py312_image
-- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9db87ab833df1eba6f63cb4477487aa755a567995e1e62157282f94efaee21df
-  name: odh-rhel9-operator-9db87ab833df1eba6f63cb4477487aa755a567995e1e62157282f94efaee21df-annotation
+- image: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4fb816be6b51cdb969602b9621beb6200ce5faa9384c99027b52e8cff2689207
+  name: odh-rhel9-operator-4fb816be6b51cdb969602b9621beb6200ce5faa9384c99027b52e8cff2689207-annotation
 - image: registry.redhat.io/rhoai/odh-ta-lmes-driver-rhel9@sha256:a51943f94a52d34789e738e1915ce4ffe03225b394339e344faa23602e99754f
   name: odh_ta_lmes_driver_image
 - image: registry.redhat.io/rhoai/odh-ta-lmes-job-rhel9@sha256:c2d60f5c1c3f9c11d6331f0ede49a9435de83a7d374f4971bf875f4c2714160a
@@ -25437,9 +25443,9 @@ relatedImages:
   name: odh_workbench_jupyter_pytorch_cuda_py312_image
 - image: registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-rhel9@sha256:0c7a3c9e916c219dee4f72bf7292a682463940292b4caea3b976e8b0878083ae
   name: odh_workbench_jupyter_pytorch_llmcompressor_cuda_py312_image
-- image: registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:bbc22c13aed6dde58d3ed9cbe1005dcd2ec982267d82c57afd0ee3e5260e0179
+- image: registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:dfce06f6c964b2093b7061a292f589c9a6ef8833d6c2ec58ce3a23846de4323c
   name: odh_workbench_jupyter_pytorch_rocm_py312_image
-- image: registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:7e9d304316a5a88888bb985994c48738640715b80942a85a904e65ee011a65e1
+- image: registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:2d00f5b7b3b009eade9821a4e022ce62bab9a46c00240f5058ca0cb92be1422e
   name: odh_workbench_jupyter_tensorflow_cuda_py312_image
 - image: registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-rocm-py312-rhel9@sha256:71d9ac4ca0220eeaccebc7c7bc2afd0e5f99bbd464878454bbc9282b7ed2367b
   name: odh_workbench_jupyter_tensorflow_rocm_py312_image
