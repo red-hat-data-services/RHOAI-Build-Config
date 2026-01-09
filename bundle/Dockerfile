@@ -56,6 +56,8 @@ ARG ODH_MLFLOW_GIT_URL=
 ARG ODH_MLFLOW_GIT_COMMIT=
 ARG ODH_MLFLOW_OPERATOR_URL=
 ARG ODH_MLFLOW_OPERATOR_COMMIT=
+ARG ODH_MLSERVER_GIT_URL=
+ARG ODH_MLSERVER_GIT_COMMIT=
 ARG ODH_MLMD_GRPC_SERVER_GIT_URL=
 ARG ODH_MLMD_GRPC_SERVER_GIT_COMMIT=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_URL=
@@ -219,6 +221,8 @@ LABEL \
       odh-mlflow.git.commit="${ODH_MLFLOW_GIT_COMMIT}" \
       odh-mlflow-operator.git.url="${ODH_MLFLOW_OPERATOR_GIT_URL}" \
       odh-mlflow-operator.git.commit="${ODH_MLFLOW_OPERATOR_GIT_COMMIT}" \
+      odh-mlserver.git.url="${ODH_MLSERVER_GIT_URL}" \
+      odh-mlserver.git.commit="${ODH_MLSERVER_GIT_COMMIT}" \
       odh-ml-pipelines-api-server-v2.git.url="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_URL}" \
       odh-ml-pipelines-api-server-v2.git.commit="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_COMMIT}" \
       odh-ml-pipelines-driver.git.url="${ODH_ML_PIPELINES_DRIVER_GIT_URL}" \
