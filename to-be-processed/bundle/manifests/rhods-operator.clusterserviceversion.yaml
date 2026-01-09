@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2026-01-08T14:54:04Z"
+    createdAt: "2026-01-09T20:40:09Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -159,16 +159,14 @@ metadata:
     operatorframework.io/suggested-namespace: redhat-ods-operator
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
-    operators.operatorframework.io/internal-objects: |-
-      ["featuretrackers.features.opendatahub.io",
-      "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
-      "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
-      "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
-      "trainers.components.platform.opendatahub.io",
-      "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
-      "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
-      "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "llamastackoperators.components.platform.opendatahub.io", "mlflowoperators.components.platform.opendatahub.io"]
+    operators.operatorframework.io/internal-objects: "[\"featuretrackers.features.opendatahub.io\",\n\"dashboards.components.platform.opendatahub.io\",
+      \"datasciencepipelines.components.platform.opendatahub.io\",\n\"kserves.components.platform.opendatahub.io\",
+      \"kueues.components.platform.opendatahub.io\",\n\"modelregistries.components.platform.opendatahub.io\",
+      \"rays.components.platform.opendatahub.io\",\n\"trainers.components.platform.opendatahub.io\",\n\"trainingoperators.components.platform.opendatahub.io\",
+      \"trustyais.components.platform.opendatahub.io\",\n\"workbenches.components.platform.opendatahub.io\",
+      \"monitorings.services.platform.opendatahub.io\",\n\"modelcontrollers.components.platform.opendatahub.io\",
+      \"feastoperators.components.platform.opendatahub.io\",\n\"llamastackoperators.components.platform.opendatahub.io\",
+      \"mlflowoperators.components.platform.opendatahub.io\", \n\"modelsasservices.components.platform.opendatahub.io\"]"
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -265,7 +263,9 @@ spec:
       kind: ModelRegistry
       name: modelregistries.components.platform.opendatahub.io
       version: v1alpha1
-    - kind: ModelsAsService
+    - description: ModelsAsService is the Schema for the modelsasservices API
+      displayName: Models As Service
+      kind: ModelsAsService
       name: modelsasservices.components.platform.opendatahub.io
       version: v1alpha1
     - description: Monitoring is the Schema for the monitorings API
