@@ -1,5 +1,7 @@
 FROM scratch
 
+ARG ODH_RHEL9_OPERATOR_GIT_URL=
+ARG ODH_RHEL9_OPERATOR_GIT_COMMIT=
 ARG ODH_BUILT_IN_DETECTOR_GIT_URL=
 ARG ODH_BUILT_IN_DETECTOR_GIT_COMMIT=
 ARG ODH_DASHBOARD_GIT_URL=
@@ -167,6 +169,8 @@ LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
 LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
 
 LABEL \
+      odh-rhel9-operator.git.url="${ODH_RHEL9_OPERATOR_GIT_URL}" \
+      odh-rhel9-operator.git.commit="${ODH_RHEL9_OPERATOR_GIT_COMMIT}" \
       odh-built-in-detector.git.url="${ODH_BUILT_IN_DETECTOR_GIT_URL}" \
       odh-built-in-detector.git.commit="${ODH_BUILT_IN_DETECTOR_GIT_COMMIT}" \
       odh-dashboard.git.url="${ODH_DASHBOARD_GIT_URL}" \
