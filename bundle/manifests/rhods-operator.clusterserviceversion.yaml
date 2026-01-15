@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:98dbf3eb1e2e948eba588abc6d3199bc2ff8ddb407de4eddd673532d5efc6303"
-    createdAt: "2026-01-15T20:29:08Z"
+    createdAt: "2026-01-15T20:41:52Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -935,6 +935,14 @@ spec:
           - registry/metrics
           verbs:
           - get
+        - apiGroups:
+          - inference.networking.k8s.io
+          resources:
+          - inferencepools
+          verbs:
+          - get
+          - list
+          - watch
         - apiGroups:
           - inference.networking.x-k8s.io
           resources:
