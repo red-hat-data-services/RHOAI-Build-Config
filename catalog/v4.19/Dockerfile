@@ -2,6 +2,8 @@
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
 FROM brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.19
 
+ARG ODH_RHEL9_OPERATOR_GIT_URL=
+ARG ODH_RHEL9_OPERATOR_GIT_COMMIT=
 ARG ODH_OPERATOR_BUNDLE_GIT_COMMIT
 ARG ODH_OPERATOR_BUNDLE_GIT_URL
 ARG ODH_BUILT_IN_DETECTOR_GIT_URL=
@@ -178,6 +180,8 @@ RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"]
 LABEL operators.operatorframework.io.index.configs.v1=/configs
 
 LABEL \
+      odh-rhel9-operator.git.url="${ODH_RHEL9_OPERATOR_GIT_URL}" \
+      odh-rhel9-operator.git.commit="${ODH_RHEL9_OPERATOR_GIT_COMMIT}" \
       odh-operator-bundle.git.url="${ODH_OPERATOR_BUNDLE_GIT_URL}" \
       odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}" \
       odh-built-in-detector.git.url="${ODH_BUILT_IN_DETECTOR_GIT_URL}" \
