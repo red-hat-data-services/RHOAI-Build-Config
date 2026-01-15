@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2026-01-09T20:40:09Z"
+    createdAt: "2026-01-15T20:41:24Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -927,6 +927,14 @@ spec:
           - registry/metrics
           verbs:
           - get
+        - apiGroups:
+          - inference.networking.k8s.io
+          resources:
+          - inferencepools
+          verbs:
+          - get
+          - list
+          - watch
         - apiGroups:
           - inference.networking.x-k8s.io
           resources:
