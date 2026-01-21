@@ -47,6 +47,26 @@ spec:
             type: object
           spec:
             description: ModelsAsServiceSpec defines the desired state of ModelsAsService
+            properties:
+              gatewayRef:
+                description: |-
+                  GatewayRef specifies which Gateway (Gateway API) to use for exposing model endpoints.
+                  If omitted, defaults to openshift-ingress/maas-default-gateway.
+                properties:
+                  name:
+                    default: maas-default-gateway
+                    description: Name is the name of the Gateway resource.
+                    maxLength: 63
+                    pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$
+                    type: string
+                  namespace:
+                    default: openshift-ingress
+                    description: Namespace is the namespace where the Gateway resource
+                      is located.
+                    maxLength: 63
+                    pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$
+                    type: string
+                type: object
             type: object
           status:
             description: ModelsAsServiceStatus defines the observed state of ModelsAsService
