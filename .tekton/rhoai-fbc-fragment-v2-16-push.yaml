@@ -10,7 +10,6 @@ metadata:
       && event == "push" && target_branch == "rhoai-2.16" && ( "catalog/**".pathChanged()
       || ".tekton/rhoai-fbc-fragment-v2-16-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
       && !".github/workflows/**".pathChanged()'
-  creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-16
     appstudio.openshift.io/component: rhoai-fbc-fragment-v2-16
@@ -20,7 +19,7 @@ metadata:
 spec:
   timeouts:
     pipeline: 8h
-    tasks: 4h
+    tasks: 6h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -29,9 +28,6 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
-  - name: additional-labels
-    value:
-    - version=v2.16.4
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: build-platforms
@@ -45,10 +41,10 @@ spec:
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
-  - name: build-source-image
-    value: false
-  - name: is_nightly
-    value: false
+  - name: build-type
+    value: "ci"
+  - name: rhoai-version
+    value: "2.16.4"
   pipelineRef:
     resolver: git
     params:
