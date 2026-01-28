@@ -19,7 +19,6 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: red-hat-data-services
-  LOG_FILE_DIR: ${{ github.workspace }}
   LOG_FILE_NAME: bundle-processor.log
 
 jobs:
@@ -57,12 +56,19 @@ jobs:
           cp $yq_filename /usr/local/bin/yq
 
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
+
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
+          # NOTE: LOG_FILE_DIR is set at step level (not workflow level) for container jobs.
+          # At workflow level, ${{ github.workspace }} resolves to the HOST path (e.g., /home/runner/work/REPO/REPO),
+          # which doesn't exist inside the container. Using '.' writes to the current working directory,
+          # which is correctly set to the container's mounted workspace.
+          LOG_FILE_DIR: .
+          LOG_FILE_NAME: ${{ env.LOG_FILE_NAME }}
         run: |
           #Declare basic variables
           OPENSHIFT_VERSION=v4.13
@@ -96,15 +102,16 @@ jobs:
             -x enable
 
           cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle
+
       - name: Print debug logs
         if: always()
         run: |
-          LOG_FILE="${{ env.LOG_FILE_DIR }}/${{ env.LOG_FILE_NAME }}"
-          if [ -f "$LOG_FILE" ]; then
-            cat "$LOG_FILE"
+          if [ -f "${{ env.LOG_FILE_NAME }}" ]; then
+            cat "${{ env.LOG_FILE_NAME }}"
           else
-            echo "Log file not found at $LOG_FILE"
+            echo "Log file not found: ${{ env.LOG_FILE_NAME }}"
           fi
+
       - name: Upload processed output files
         if: always()
         uses: actions/upload-artifact@v4
@@ -115,6 +122,6 @@ jobs:
             ${{ steps.get_branch.outputs.branch }}/bundle/metadata/annotations.yaml
             ${{ steps.get_branch.outputs.branch }}/bundle/bundle_build_args.map
             ${{ steps.get_branch.outputs.branch }}/.tekton/*-push.yaml
-            ${{ env.LOG_FILE_DIR }}/${{ env.LOG_FILE_NAME }}
+            ${{ env.LOG_FILE_NAME }}
           if-no-files-found: warn
           retention-days: 30
