@@ -25,10 +25,6 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
-  - name: additional-labels
-    value:
-    - version=v3.3.0
-    - io.openshift.tags=odh-operator-bundle
   - name: output-image
     value: quay.io/rhoai/odh-operator-bundle:{{target_branch}}
   - name: dockerfile
@@ -43,6 +39,8 @@ spec:
     value: true
   - name: build-image-index
     value: false
+  - name: rhoai-version
+    value: "3.3.0"
   pipelineRef:
     resolver: git
     params:
