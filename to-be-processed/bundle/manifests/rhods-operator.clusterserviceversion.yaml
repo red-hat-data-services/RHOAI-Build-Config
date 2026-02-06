@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:latest
-    createdAt: "2026-02-05T05:11:41Z"
+    createdAt: "2026-02-06T20:25:35Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1088,6 +1088,32 @@ spec:
           - get
           - list
           - watch
+        - apiGroups:
+          - mlflow.opendatahub.io
+          resources:
+          - mlflows
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - mlflow.opendatahub.io
+          resources:
+          - mlflows/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - mlflow.opendatahub.io
+          resources:
+          - mlflows/status
+          verbs:
+          - get
+          - patch
+          - update
         - apiGroups:
           - modelregistry.opendatahub.io
           resources:
