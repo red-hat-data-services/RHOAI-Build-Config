@@ -162,6 +162,8 @@ ARG OSE_KUBE_RBAC_PROXY_GIT_URL=
 ARG OSE_KUBE_RBAC_PROXY_GIT_COMMIT=
 ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL=
 ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT=
+ARG ODH_SPARK_OPERATOR_GIT_URL=
+ARG ODH_SPARK_OPERATOR_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -340,7 +342,9 @@ LABEL \
       ose-kube-rbac-proxy.git.url="${OSE_KUBE_RBAC_PROXY_GIT_URL}" \
       ose-kube-rbac-proxy.git.commit="${OSE_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-trustyai-garak-lls-provider-dsp.git.url="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL}" \
-      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}"
+      odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}" \
+      odh-spark-operator.git.url="${ODH_SPARK_OPERATOR_GIT_URL}" \
+      odh-spark-operator.git.commit="${ODH_SPARK_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
