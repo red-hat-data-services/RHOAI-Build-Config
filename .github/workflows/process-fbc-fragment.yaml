@@ -294,6 +294,65 @@ jobs:
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
+      - name: Debug - Inspect generated catalogs
+        if: always()
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+        run: |
+          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          CATALOG_FOLDER_PATH=${BRANCH}/catalog
+          echo "=== Generated catalog paths ==="
+          for f in $(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH); do
+            path="${CATALOG_FOLDER_PATH}/${f}/rhods-operator/catalog.yaml"
+            if [[ -f "$path" ]]; then
+              echo "--- $path ($(wc -l < "$path") lines) ---"
+              echo "First 3 YAML docs (schema/name only):"
+              python3 -c '
+          import yaml, sys
+          path = sys.argv[1]
+          with open(path) as f:
+              for i, doc in enumerate(yaml.safe_load_all(f)):
+                  if doc is None:
+                      print("  doc[%s]: (null)" % i)
+                  elif not isinstance(doc, dict):
+                      print(f'  doc[{i}]: type={type(doc).__name__}')
+                  else:
+                      s = doc.get('schema', '<no schema>')
+                      n = doc.get('name', '<no name>')
+                      print(f'  doc[{i}]: schema={s!r} name={n!r}')
+                  if i >= 2:
+                      break
+          ' "$path" || true
+            else
+              echo "--- $path (missing)"
+            fi
+          done
+
+      - name: Debug - Check for documents missing schema/name
+        if: always()
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+        run: |
+          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          CATALOG_FOLDER_PATH=${BRANCH}/catalog
+          for ocp in $(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH); do
+            path="${CATALOG_FOLDER_PATH}/${ocp}/rhods-operator/catalog.yaml"
+            [[ -f "$path" ]] || continue
+            echo "=== Checking $path for docs without schema/name ==="
+            python3 -c '
+          import yaml, sys
+          path = sys.argv[1]
+          with open(path) as f:
+              docs = list(yaml.safe_load_all(f))
+          bad = [(i, d) for i, d in enumerate(docs) if d is None or not isinstance(d, dict) or "schema" not in d or "name" not in d]
+          if bad:
+              for i, d in bad[:5]:
+                  print(f"  doc[{i}]: {type(d).__name__ if d is not None else None} keys={list(d.keys())[:10] if isinstance(d, dict) else None}")
+          else:
+              print("  All docs have schema and name.")
+          ' "$path" || true
+          done
+
       - name: Validate Catalogs
         id: validate-catalogs
         env:
@@ -304,8 +363,18 @@ jobs:
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
 
-          #Validate Catalogs
-          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          #Validate Catalogs (unbuffered so tracebacks show immediately)
+          python3 -u utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+
+      - name: Upload catalog sample on failure
+        if: failure() && steps.validate-catalogs.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-debug-${{ steps.get_branch.outputs.branch }}
+          path: |
+            ${{ steps.get_branch.outputs.branch }}/catalog/*/rhods-operator/catalog.yaml
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Commit and push the changes to release branch
         uses: actions-js/push@master
