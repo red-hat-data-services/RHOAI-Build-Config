@@ -3,13 +3,13 @@ patch:
     name: rhods-operator
     defaultChannel: stable
   olm.channels:
-    - name: fast-3.x
+    - name: alpha
       package: rhods-operator
       schema: olm.channel
       entries:
       - name: rhods-operator.3.4.0-ea.1
-        replaces: rhods-operator.3.2.0
-        skipRange: '>=3.0.0 <3.4.0'
+        replaces: rhods-operator.3.2.0 # should replace rhods-operator.3.3.0 once 3.3.0 is released
+        skipRange: '>=3.3.0 <3.4.0'
   
   olm.bundle:
     - quay.io/rhoai/odh-operator-bundle@sha256:59f82a3334b751b566e8f4d6619a5bec8d63f969a3a957cc8f63c5b8e25ce8ab
