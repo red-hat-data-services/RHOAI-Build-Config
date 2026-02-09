@@ -13,7 +13,7 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
-
+  PREVIOUS_RELEASE: rhoai-2.15
 jobs:
   process-fbc:
     if: ${{ github.ref_name != 'main' }}
@@ -34,17 +34,23 @@ jobs:
           sparse-checkout: |
             pcc
             catalog/${{ steps.get_branch.outputs.branch }}
+            config
           sparse-checkout-cone-mode: false
       - name: Git checkout RBC release
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.PREVIOUS_RELEASE }}
+          path: ${{ env.PREVIOUS_RELEASE }}
       - name: Git checkout utils
         uses: actions/checkout@v4
         with:
           repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
-          ref: main
+          ref: '3.0'
           path: utils
       - name: Install dependencies
         env:
@@ -82,22 +88,23 @@ jobs:
         run: |
           microdnf install -y coreutils-single && \
               microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
           PCC_CACHE_VALID=YES
           skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > latest_shipped_rhoai_versions.txt
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "latest_shipped_rhoai_versions = "
-          cat latest_shipped_rhoai_versions.txt
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions.txt
+          cat main/pcc/shipped_rhoai_versions_granular.txt
           
-          #diff=$(cmp --silent latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
           
           if [[ $diff -gt 0 ]]
           then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
+            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
             echo "following new versions are shipped - $diff"
-            cp latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
             PCC_CACHE_VALID=NO
           fi
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
@@ -127,38 +134,35 @@ jobs:
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
 
           #Declare FBC processing variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          CONFIG_PATH=main/config/config.yaml
           
-          CATALOG_GENERATION_REF_OCP_VERSION=v4.17
           CSV_META_MIN_OCP_VERSION=417
-          BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-          
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:${CATALOG_GENERATION_REF_OCP_VERSION} ./catalog-migrate
-          opm alpha convert-template basic catalog-migrate/rhods-operator/catalog.json -o yaml > catalog-template.yaml
-          opm alpha render-template basic catalog-template.yaml -o yaml > ${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          opm alpha render-template basic catalog-template.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > ${CSV_META_CATALOG_YAML_PATH}
-          
-          #while IFS= read -r value;
-          #do
-          #    OPENSHIFT_VERSION=$value
-          #    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          #    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-          #
-          #    CATALOG_YAML_PATH=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          #    CATALOG_DIR=main/pcc/${OPENSHIFT_VERSION}/rhods-operator
-          #    mkdir -p ${CATALOG_DIR}
-          #
-          #    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-          #    then
-          #      CATALOG_YAML_PATH=${CSV_META_CATALOG_YAML_PATH}
-          #    fi
-          #    cp ${CATALOG_YAML_PATH} ${CATALOG_DIR}/catalog.yaml
-          #done < <(find main/pcc/ -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
+          CATALOG_DIR=main/pcc
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
           
           ls -l main/pcc/
-          
+
 
       - name: Validate PCC Cache
         id: validate-pcc-cache
@@ -167,8 +171,8 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           PCC_FOLDER_PATH=main/pcc
           
           #Validate PCC
@@ -190,6 +194,7 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
@@ -198,15 +203,23 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
+          
           RHOAI_VERSION=v${BRANCH/rhoai-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          #OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
+          
+          PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
+          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION/./-}
+          
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+          
           PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
+          
           OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
           OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
           echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
-          
+
           #Generate the catalog for the latest bundle
           #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
           BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
@@ -214,7 +227,7 @@ jobs:
           echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
           APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
           echo "APPLICATION_NAME = $APPLICATION_NAME"
-          
+
           #Invoke the FBC processor to extract the snapshot images
           CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
           python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
@@ -222,6 +235,17 @@ jobs:
           echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
           LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
+
+          #Previous Release - Invoke the FBC processor to extract the snapshot images
+          cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH}
+          PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
+          echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_LATEST_BUNDLE_IMAGE="$PREVIOUS_LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(PREVIOUS_LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+
+          
           
           #Generate the single bundle catalog === sbc
           CSV_META_MIN_OCP_VERSION=417
@@ -230,21 +254,24 @@ jobs:
           BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
           CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/csv_meta_sbc_semver.yaml
           CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
-          
+
           DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
           DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
-          
+
+          #Previous Release - Generate the single bundle catalog === sbc
+          PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_bundle_object_sbc_semver.yaml
+          PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_csv_meta_sbc_semver.yaml
+
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}
+
+
+
           PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
           PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-          
-          BUNDLE_OBJECT_CATALOG_YAML_PATH=${WORK_DIR}/bundle_object_catalog.yaml
-          CSV_META_CATALOG_YAML_PATH=${WORK_DIR}/csv_meta_catalog.yaml
-          
+
           PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
-          
-          #Invoke FBC processor to patch the catalog
-          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH} -o ${BUNDLE_OBJECT_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-          python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CSV_META_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${CSV_META_SINGLE_BUNDLE_PATH} -o ${CSV_META_CATALOG_YAML_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+          PREVIOUS_PUSH_PIPELINE_PATH=${PREVIOUS_BRANCH}/.tekton/rhoai-fbc-fragment-${PREVIOUS_COMPONENT_SUFFIX}-push.yaml
           
           while IFS= read -r value;
           do
@@ -254,12 +281,16 @@ jobs:
               echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
               OUTPUT_CATALOG_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
               
-              SOURCE_CATALOG=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-              then
-                SOURCE_CATALOG=${CSV_META_CATALOG_YAML_PATH}
-              fi
-              cp ${SOURCE_CATALOG} ${OUTPUT_CATALOG_PATH}
+              PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
+              SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
@@ -270,9 +301,9 @@ jobs:
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
-          
+
           #Validate Catalogs
           python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
 
