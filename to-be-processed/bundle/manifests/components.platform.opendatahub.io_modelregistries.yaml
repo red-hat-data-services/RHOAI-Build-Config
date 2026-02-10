@@ -47,7 +47,23 @@ spec:
             type: object
           spec:
             description: ModelRegistrySpec defines the desired state of ModelRegistry
+              (ModelRegistry CR only).
             properties:
+              gateway:
+                description: Gateway configuration for model registry ingress (synced
+                  from GatewayConfig by the DSC controller when creating the ModelRegistry
+                  CR).
+                properties:
+                  domain:
+                    description: |-
+                      Domain is the fully qualified domain name for the gateway.
+                      Example: "rhods-dashboard.apps.example.com"
+                    maxLength: 253
+                    pattern: ^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$
+                    type: string
+                required:
+                - domain
+                type: object
               registriesNamespace:
                 default: rhoai-model-registries
                 description: Namespace for model registries to be installed, configurable
