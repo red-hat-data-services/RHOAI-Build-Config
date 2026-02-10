@@ -110,6 +110,13 @@ spec:
                   Example: *.example.com, example.com, apps.example.com
                 pattern: ^(\*\.)?([a-z0-9]([-a-z0-9]*[a-z0-9])?\.)*[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                 type: string
+              enableK8sTokenValidation:
+                default: true
+                description: |-
+                  EnableK8sTokenValidation enables Kubernetes service account token validation via TokenReview API.
+                  When enabled, kube-auth-proxy validates bearer tokens as service account tokens alongside OAuth/OIDC authentication.
+                  This allows service accounts to authenticate via bearer tokens while human users authenticate via OAuth/OIDC.
+                type: boolean
               ingressMode:
                 description: |-
                   IngressMode specifies how the Gateway is exposed externally.
