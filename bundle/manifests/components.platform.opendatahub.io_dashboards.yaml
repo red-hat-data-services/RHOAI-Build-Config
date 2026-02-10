@@ -50,7 +50,24 @@ spec:
           metadata:
             type: object
           spec:
-            description: DashboardSpec defines the desired state of Dashboard
+            description: DashboardSpec defines the desired state of Dashboard (Dashboard
+              CR only).
+            properties:
+              gateway:
+                description: Gateway configuration for dashboard ingress (synced from
+                  GatewayConfig by the DSC controller when creating the Dashboard
+                  CR).
+                properties:
+                  domain:
+                    description: |-
+                      Domain is the fully qualified domain name for the gateway.
+                      Example: "rhods-dashboard.apps.example.com"
+                    maxLength: 253
+                    pattern: ^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)*[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$
+                    type: string
+                required:
+                - domain
+                type: object
             type: object
           status:
             description: DashboardStatus defines the observed state of Dashboard
