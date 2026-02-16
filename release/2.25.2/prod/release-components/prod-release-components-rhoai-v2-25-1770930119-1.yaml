@@ -1,0 +1,582 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  name: rhoai-v2-25-prod-1770930119-1
+  namespace: rhoai-tenant
+  labels:
+    konflux-release-data/rbc-release-commit: c55f4f02d7240fafd015d190f35fd5b6ff4602ad
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: prod
+    appstudio.openshift.io/application: rhoai-v2-25
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v2-25-components-prod
+  snapshot: rhoai-v2-25-1770911968
+  data:
+    version: 2.25.2
+    releaseNotes:
+      cves:
+        - key: 'CVE-2026-24049' # https://issues.redhat.com/browse/RHOAIENG-46960
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45074
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45072
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45070
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45068
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45066
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45064
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45062
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45059
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45057
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45055
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45053
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45052
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45049
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45045
+          component: 'odh-training-rocm62-torch25-py311-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45043
+          component: 'odh-training-rocm62-torch24-py311-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45041
+          component: 'odh-training-cuda124-torch25-py311-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45039
+          component: 'odh-training-cuda121-torch24-py311-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45031
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45016
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-45001
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44993
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44991
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44989
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44987
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44962
+          component: 'odh-modelmesh-runtime-adapter-v2-25'
+        - key: 'CVE-2026-21441' # https://issues.redhat.com/browse/RHOAIENG-44958
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44340
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44339
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44338
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44337
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44336
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44335
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44334
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44333
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44332
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44331
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44330
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44329
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44327
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44322
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44321
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44320
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44319
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44318
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44317
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44316
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44313
+          component: 'odh-modelmesh-runtime-adapter-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44307
+          component: 'odh-kserve-storage-initializer-v2-25'
+        - key: 'CVE-2025-66471' # https://issues.redhat.com/browse/RHOAIENG-44306
+          component: 'odh-kserve-router-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43632
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43631
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43630
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43629
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43628
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43627
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43626
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43625
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43624
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43623
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43622
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43620
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43614
+          component: 'odh-ta-lmes-job-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43613
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43612
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43611
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43610
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43609
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43608
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43607
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43606
+          component: 'odh-openvino-model-server-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43604
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2025-69223' # https://issues.redhat.com/browse/RHOAIENG-43602
+          component: 'odh-kserve-storage-initializer-v2-25'
+        - key: 'CVE-2025-68476' # https://issues.redhat.com/browse/RHOAIENG-43030
+          component: 'odh-model-controller-v2-25'
+        - key: 'CVE-2025-68476' # https://issues.redhat.com/browse/RHOAIENG-43028
+          component: 'odh-kserve-controller-v2-25'
+        - key: 'CVE-2025-14925' # https://issues.redhat.com/browse/RHOAIENG-42643
+          component: 'odh-openvino-model-server-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42561
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42560
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42559
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42558
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42557
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42556
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42555
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42554
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42553
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42552
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42551
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42550
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42549
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42548
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42547
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42546
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42545
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42544
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42543
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42542
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42541
+          component: 'odh-must-gather-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42540
+          component: 'odh-model-registry-job-async-upload-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42539
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2025-52881' # https://issues.redhat.com/browse/RHOAIENG-42538
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42397
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42396
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42395
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42394
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42393
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42392
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42391
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42390
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42389
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42388
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42387
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42386
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42385
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42384
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42383
+          component: 'odh-openvino-model-server-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42382
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42381
+          component: 'odh-kserve-storage-initializer-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42380
+          component: 'odh-kserve-router-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42379
+          component: 'odh-kserve-controller-v2-25'
+        - key: 'CVE-2025-66034' # https://issues.redhat.com/browse/RHOAIENG-42378
+          component: 'odh-kserve-agent-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42297
+          component: 'odh-model-registry-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42296
+          component: 'odh-model-controller-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42295
+          component: 'odh-ml-pipelines-scheduledworkflow-v2-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42294
+          component: 'odh-ml-pipelines-persistenceagent-v2-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42293
+          component: 'odh-ml-pipelines-launcher-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42292
+          component: 'odh-ml-pipelines-driver-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42291
+          component: 'odh-ml-pipelines-api-server-v2-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42290
+          component: 'odh-kserve-router-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42289
+          component: 'odh-kserve-controller-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42288
+          component: 'odh-kserve-agent-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42287
+          component: 'odh-data-science-pipelines-argo-workflowcontroller-v2-25'
+        - key: 'CVE-2025-68156' # https://issues.redhat.com/browse/RHOAIENG-42286
+          component: 'odh-data-science-pipelines-argo-argoexec-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42241
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42240
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42239
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42238
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42237
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42236
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42235
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42234
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42233
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42232
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42231
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42230
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42229
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42228
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42227
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42226
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42225
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42224
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42223
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42222
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42221
+          component: 'odh-must-gather-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42220
+          component: 'odh-model-registry-job-async-upload-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42219
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2025-66506' # https://issues.redhat.com/browse/RHOAIENG-42218
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42088
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42087
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42086
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42085
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42084
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42083
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42082
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42081
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42080
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42079
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42078
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42077
+          component: 'odh-vllm-rocm-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42075
+          component: 'odh-vllm-cuda-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42073
+          component: 'odh-trustyai-service-operator-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42072
+          component: 'odh-ta-lmes-job-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42071
+          component: 'odh-ta-lmes-driver-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42070
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42069
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42068
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42067
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42066
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42065
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42064
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42063
+          component: 'odh-openvino-model-server-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42062
+          component: 'odh-must-gather-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42061
+          component: 'odh-modelmesh-runtime-adapter-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42060
+          component: 'odh-model-registry-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42059
+          component: 'odh-model-registry-job-async-upload-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42058
+          component: 'odh-ml-pipelines-runtime-generic-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42057
+          component: 'odh-llm-d-routing-sidecar-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42056
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42055
+          component: 'odh-kserve-storage-initializer-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42054
+          component: 'odh-kserve-router-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42053
+          component: 'odh-kserve-controller-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42052
+          component: 'odh-kserve-agent-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42051
+          component: 'odh-guardrails-detector-huggingface-runtime-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42050
+          component: 'odh-feature-server-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42049
+          component: 'odh-dashboard-v2-25'
+        - key: 'CVE-2025-66418' # https://issues.redhat.com/browse/RHOAIENG-42047
+          component: 'odh-caikit-nlp-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41908
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41906
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41905
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41904
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41903
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41902
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41901
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41900
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41899
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41898
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41897
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41896
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41895
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41894
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41893
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41892
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41891
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41890
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41889
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41888
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41887
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41886
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41885
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41884
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41883
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41882
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41881
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41880
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41879
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41878
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41877
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41876
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41875
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41874
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41873
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-67726' # https://issues.redhat.com/browse/RHOAIENG-41872
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41871
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-67725' # https://issues.redhat.com/browse/RHOAIENG-41870
+          component: 'odh-llama-stack-core-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41813
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41811
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41809
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41807
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41805
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41803
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41801
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41799
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41797
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41795
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41793
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41791
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41789
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41787
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41785
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41783
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41781
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41779
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41777
+          component: 'odh-mod-arch-model-registry-v2-25'
+        - key: 'CVE-2025-12816' # https://issues.redhat.com/browse/RHOAIENG-41775
+          component: 'odh-dashboard-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41698
+          component: 'odh-ml-pipelines-scheduledworkflow-v2-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41697
+          component: 'odh-ml-pipelines-persistenceagent-v2-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41696
+          component: 'odh-ml-pipelines-launcher-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41695
+          component: 'odh-ml-pipelines-driver-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41694
+          component: 'odh-ml-pipelines-api-server-v2-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41693
+          component: 'odh-data-science-pipelines-argo-workflowcontroller-v2-25'
+        - key: 'CVE-2025-66626' # https://issues.redhat.com/browse/RHOAIENG-41692
+          component: 'odh-data-science-pipelines-argo-argoexec-v2-25'
+        - key: 'CVE-2025-12805' # https://issues.redhat.com/browse/RHOAIENG-38781
+          component: 'odh-llama-stack-k8s-operator-v2-25'
+      issues:
+          fixed:
+            - id: RHOAIENG-49027
+              source: issues.redhat.com
+            - id: RHOAIENG-48858
+              source: issues.redhat.com
+            - id: RHOAIENG-47677
+              source: issues.redhat.com
+            - id: RHOAIENG-47439
+              source: issues.redhat.com
+            - id: RHOAIENG-45786
+              source: issues.redhat.com
+            - id: RHOAIENG-45145
+              source: issues.redhat.com
+            - id: RHOAIENG-44556
+              source: issues.redhat.com
+            - id: RHOAIENG-39030
+              source: issues.redhat.com
+            - id: RHOAIENG-38328
+              source: issues.redhat.com
+            - id: RHOAIENG-36947
+              source: issues.redhat.com
+            - id: RHOAIENG-35024
+              source: issues.redhat.com
+            - id: RHOAIENG-33688
+              source: issues.redhat.com
+            - id: RHAIENG-2502
+              source: issues.redhat.com
+            - id: RHAIENG-2494
+              source: issues.redhat.com
+            - id: RHAIENG-2476
+              source: issues.redhat.com
+            - id: RHAIENG-2457
+              source: issues.redhat.com
+            - id: RHAIENG-2449
+              source: issues.redhat.com
+            - id: RHAIENG-2447
+              source: issues.redhat.com
+            - id: RHAIENG-2440
+              source: issues.redhat.com
+            - id: RHAIENG-1638
+              source: issues.redhat.com
