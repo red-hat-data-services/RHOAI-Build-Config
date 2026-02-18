@@ -1,4 +1,3 @@
-#trigger
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -6,11 +5,15 @@ metadata:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
-    pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-3.4-ea-1" && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-4-ea-1-push.yaml".pathChanged()
-      ) && !"bundle/bundle-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch == "rhoai-3.4-ea-1"
+      && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-4-ea-1-push.yaml".pathChanged() )
+      && !"bundle/bundle-patch.yaml".pathChanged()
+      && !".github/workflows/**".pathChanged()
   labels:
     appstudio.openshift.io/application: rhoai-v3-4-ea-1
     appstudio.openshift.io/component: odh-operator-bundle-v3-4-ea-1
@@ -28,10 +31,10 @@ spec:
     - '{{target_branch}}-{{revision}}'
   - name: output-image
     value: quay.io/rhoai/odh-operator-bundle:{{target_branch}}
+  - name: rhoai-version
+    value: "3.4.0-ea.1"
   - name: dockerfile
     value: bundle/Dockerfile
-  - name: build-args-file
-    value: bundle/bundle_build_args.map
   - name: path-context
     value: .
   - name: hermetic
@@ -39,9 +42,15 @@ spec:
   - name: build-source-image
     value: true
   - name: build-image-index
-    value: false
-  - name: rhoai-version
-    value: "3.4.0-ea.1"
+    value: true
+  - name: build-platforms
+    value:
+    - linux/x86_64
+    - linux/ppc64le
+    - linux/s390x
+    - linux-m2xlarge/arm64
+  - name: build-args-file
+    value: bundle/bundle_build_args.map
   pipelineRef:
     resolver: git
     params:
