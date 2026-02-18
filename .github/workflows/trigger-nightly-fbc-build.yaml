@@ -6,9 +6,10 @@ on:
     paths:
       - schedule/catalog-github-trigger.txt
     branches:
-      - 'rhoai-2.1[6-9]+'
-      - 'rhoai-2.2[0-9]+' # Trigger the workflow on pushes to any rhoai-2.20 branch
-      - 'rhoai-3.[0-9]+' # Trigger the workflow on pushes to any rhoai-3.x branch
+      - 'rhoai-3.[0-9]'  # e.g. rhoai-3.1, rhoai-3.4
+      - 'rhoai-3.[0-9][0-9]'  # e.g. rhoai-3.10, rhoai-3.22
+      - 'rhoai-3.[0-9]-ea.[0-9]'  # e.g. rhoai-3.4-ea.1, rhoai-3.5-ea.2
+      - 'rhoai-3.[0-9][0-9]-ea.[0-9]'  # e.g. rhoai-3.10-ea.3
 permissions:
   contents: write
 env:
@@ -131,7 +132,7 @@ jobs:
               microdnf clean all && rm -rf /var/cache/dnf/*
           
           #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
+          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
 
           #Declare FBC processing variables
@@ -206,10 +207,10 @@ jobs:
           PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
           
           RHOAI_VERSION=v${BRANCH/rhoai-/}
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
+          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
 
           PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
-          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION/./-}
+          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION//./-}
           
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
           

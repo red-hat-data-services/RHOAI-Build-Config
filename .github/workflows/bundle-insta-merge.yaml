@@ -3,9 +3,10 @@ name: Insta Merge Bundle Nudges
 on:
   pull_request_target:
     branches:
-      - 'rhoai-2.1[6-9]+'  # Trigger the workflow on pushes to any rhoai-2.16 branch
-      - 'rhoai-2.2[0-9]+' # Trigger the workflow on pushes to any rhoai-2.20 branch
-      - 'rhoai-3.[0-9]+' # Trigger the workflow on pushes to any rhoai-3.x branch
+      - 'rhoai-3.[0-9]'  # e.g. rhoai-3.1, rhoai-3.4
+      - 'rhoai-3.[0-9][0-9]'  # e.g. rhoai-3.10, rhoai-3.22
+      - 'rhoai-3.[0-9]-ea.[0-9]'  # e.g. rhoai-3.4-ea.1, rhoai-3.5-ea.2
+      - 'rhoai-3.[0-9][0-9]-ea.[0-9]'  # e.g. rhoai-3.10-ea.3
     types:
       - opened
       - reopened
@@ -53,7 +54,7 @@ jobs:
           BASE_BRANCH=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}
           HEAD_BRANCH=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
           VERSION=v${BASE_BRANCH/rhoai-/}
-          SUFFIX=${VERSION/./-}
+          SUFFIX=${VERSION//./-}
           echo "SUFFIX=$SUFFIX"
           echo "HEAD_BRANCH=$HEAD_BRANCH"
           TITLE="${{ github.event.pull_request.title }}"

@@ -7,13 +7,13 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: 'event == "push" && target_branch
-      == "rhoai-3.4" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-4-push.yaml".pathChanged()
+      == "rhoai-3.4-ea.1" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-4-ea-1-push.yaml".pathChanged()
       ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()'
   labels:
-    appstudio.openshift.io/application: rhoai-v3-4
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-4
+    appstudio.openshift.io/application: rhoai-v3-4-ea-1
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-4-ea-1
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v3-4-on-push
+  name: rhoai-fbc-fragment-v3-4-ea-1-on-push
   namespace: rhoai-tenant
 spec:
   timeouts:
@@ -46,7 +46,7 @@ spec:
   - name: build-type
     value: "ci"
   - name: rhoai-version
-    value: "3.4.0-ea.1"
+    value: "3.4-ea.1.0-ea.1"
   pipelineRef:
     resolver: git
     params:
@@ -57,7 +57,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-4
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-4-ea-1
   workspaces:
   - name: git-auth
     secret:
