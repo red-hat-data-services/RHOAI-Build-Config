@@ -6,12 +6,12 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ("catalog/rhoai-3.4-ea.1/v4.19/rhods-operator/catalog.yaml".pathChanged() || "builds/force-trigger-rhoai-3.4-ea.1.txt".pathChanged())
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ("catalog/rhoai-3.4-ea.1/v4.20/rhods-operator/catalog.yaml".pathChanged() || "builds/force-trigger-rhoai-3.4-ea.1.txt".pathChanged())
   labels:
-    appstudio.openshift.io/application: rhoai-fbc-fragment-ocp-419
-    appstudio.openshift.io/component: rhoai-fbc-fragment-ocp-419
+    appstudio.openshift.io/application: rhoai-fbc-fragment-ocp-420
+    appstudio.openshift.io/component: rhoai-fbc-fragment-ocp-420
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-rhoai-34-ea-1-ocp-419-on-push
+  name: rhoai-fbc-fragment-rhoai-34-ea1-ocp-420-on-push
   namespace: rhoai-tenant
 spec:
   timeouts:
@@ -24,9 +24,9 @@ spec:
     value: '{{revision}}'
   - name: additional-tags
     value:
-    - 'ocp-4.19-rhoai-3.4-ea.1'
+    - 'ocp-4.20-rhoai-3.4-ea.1'
   - name: output-image
-    value: quay.io/rhoai/rhoai-fbc-fragment:ocp-4.19-rhoai-3.4-ea.1-{{revision}}
+    value: quay.io/rhoai/rhoai-fbc-fragment:ocp-4.20-rhoai-3.4-ea.1-{{revision}}
   - name: build-platforms
     value:
     - linux/x86_64
@@ -36,7 +36,7 @@ spec:
   - name: dockerfile
     value: Dockerfile
   - name: path-context
-    value: catalog/rhoai-3.4-ea.1/v4.19
+    value: catalog/rhoai-3.4-ea.1/v4.20
   - name: build-args-file
     value: catalog/rhoai-3.4-ea.1/catalog_build_args.map
   - name: skip-checks
@@ -46,9 +46,9 @@ spec:
   - name: build-type
     value: "stage"   # Possible values: 'nightly', 'stage', 'ci'
   - name: rhoai-version
-    value: "3.4-ea.1"
+    value: "3.4.0-ea.1"
   - name: ocp-version
-    value: "4.19"
+    value: "4.20"
   - name: fbc-pipeline-branch
     value: "rhoai-3.4-ea.1"
   pipelineRef:
@@ -61,7 +61,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-ocp-419
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-ocp-420
   workspaces:
   - name: git-auth
     secret:
