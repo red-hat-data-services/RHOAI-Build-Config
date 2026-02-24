@@ -170,6 +170,8 @@ ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL=
 ARG ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT=
 ARG ODH_SPARK_OPERATOR_GIT_URL=
 ARG ODH_SPARK_OPERATOR_GIT_COMMIT=
+ARG ODH_CLI_GIT_URL=
+ARG ODH_CLI_GIT_COMMIT=
 
 
 
@@ -352,7 +354,9 @@ LABEL \
       odh-trustyai-garak-lls-provider-dsp.git.url="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_URL}" \
       odh-trustyai-garak-lls-provider-dsp.git.commit="${ODH_TRUSTYAI_GARAK_LLS_PROVIDER_DSP_GIT_COMMIT}" \
       odh-spark-operator.git.url="${ODH_SPARK_OPERATOR_GIT_URL}" \
-      odh-spark-operator.git.commit="${ODH_SPARK_OPERATOR_GIT_COMMIT}"
+      odh-spark-operator.git.commit="${ODH_SPARK_OPERATOR_GIT_COMMIT}" \
+      odh-cli.git.url="${ODH_CLI_GIT_URL}" \
+      odh-cli.git.commit="${ODH_CLI_GIT_COMMIT}"
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \
