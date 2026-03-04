@@ -3,23 +3,22 @@ patch:
     name: rhods-operator
     defaultChannel: stable
   olm.channels:
-    - name: fast-3.x
-      package: rhods-operator
-      schema: olm.channel
-      entries:
-      - name: rhods-operator.3.3.0
-        replaces: rhods-operator.3.2.0
-        skipRange: '>=3.2.0 <3.3.0'
     - name: stable-3.3
       package: rhods-operator
       schema: olm.channel
       entries:
       - name: rhods-operator.3.3.0
+      - name: rhods-operator.3.3.1
+        replaces: rhods-operator.3.3.0
+        skipRange: '>=2.25.3 <2.26.0 || >=3.3.0 <3.3.1'
     - name: stable-3.x
       package: rhods-operator
       schema: olm.channel
       entries:
       - name: rhods-operator.3.3.0
+      - name: rhods-operator.3.3.1
+        replaces: rhods-operator.3.3.0
+        skipRange: '>=2.25.3 <2.26.0 || >=3.3.0 <3.3.1'
 
   olm.bundle:
     - quay.io/rhoai/odh-operator-bundle@sha256:a35e124afe9d452cfb6d80a1334579120baf477a154229420d5c9cac9cf9b156
