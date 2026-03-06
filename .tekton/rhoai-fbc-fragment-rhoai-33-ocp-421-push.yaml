@@ -6,7 +6,7 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "non-existent-branch" && ("catalog/rhoai-3.3/v4.21/rhods-operator/catalog.yaml".pathChanged() || "builds/force-trigger-rhoai-3.3.txt".pathChanged())
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ("catalog/rhoai-3.3/v4.21/rhods-operator/catalog.yaml".pathChanged() || "builds/force-trigger-rhoai-3.3.txt".pathChanged())
   labels:
     appstudio.openshift.io/application: rhoai-fbc-fragment-ocp-421
     appstudio.openshift.io/component: rhoai-fbc-fragment-ocp-421
@@ -46,7 +46,7 @@ spec:
   - name: build-type
     value: "stage"   # Possible values: 'nightly', 'stage', 'ci'
   - name: rhoai-version
-    value: "3.3.0"
+    value: "3.3.1"
   - name: ocp-version
     value: "4.21"
   - name: fbc-pipeline-branch
