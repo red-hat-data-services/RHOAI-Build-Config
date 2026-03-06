@@ -68,6 +68,8 @@ ARG ODH_MLSERVER_GIT_URL=
 ARG ODH_MLSERVER_GIT_COMMIT=
 ARG ODH_MLMD_GRPC_SERVER_GIT_URL=
 ARG ODH_MLMD_GRPC_SERVER_GIT_COMMIT=
+ARG ODH_MOD_ARCH_EVAL_HUB_GIT_URL=
+ARG ODH_MOD_ARCH_EVAL_HUB_GIT_COMMIT=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_URL=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_COMMIT=
 ARG ODH_MOD_ARCH_MAAS_GIT_URL=
@@ -257,6 +259,8 @@ LABEL \
       odh-ml-pipelines-scheduledworkflow-v2.git.commit="${ODH_ML_PIPELINES_SCHEDULEDWORKFLOW_V2_GIT_COMMIT}" \
       odh-mlmd-grpc-server.git.url="${ODH_MLMD_GRPC_SERVER_GIT_URL}" \
       odh-mlmd-grpc-server.git.commit="${ODH_MLMD_GRPC_SERVER_GIT_COMMIT}" \
+      odh-mod-arch-eval-hub.git.url="${ODH_MOD_ARCH_EVAL_HUB_GIT_URL}" \
+      odh-mod-arch-eval-hub.git.commit="${ODH_MOD_ARCH_EVAL_HUB_GIT_COMMIT}" \
       odh-mod-arch-gen-ai.git.url="${ODH_MOD_ARCH_GEN_AI_GIT_URL}" \
       odh-mod-arch-gen-ai.git.commit="${ODH_MOD_ARCH_GEN_AI_GIT_COMMIT}" \
       odh-mod-arch-maas.git.url="${ODH_MOD_ARCH_MAAS_GIT_URL}" \
