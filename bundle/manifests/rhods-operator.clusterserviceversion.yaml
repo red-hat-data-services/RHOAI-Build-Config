@@ -91,7 +91,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:75808f7cfaab82dd7956741ae32f88f4a396ce91f71852b5fb88235f21ad5ce6"
-    createdAt: "2026-03-10T00:46:06Z"
+    createdAt: "2026-03-10T00:54:55Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -194,6 +194,12 @@ spec:
       displayName: Auth
       kind: Auth
       name: auths.services.platform.opendatahub.io
+      version: v1alpha1
+    - kind: AzureKubernetesEngine
+      name: azurekubernetesengines.infrastructure.opendatahub.io
+      version: v1alpha1
+    - kind: CoreWeaveKubernetesEngine
+      name: coreweavekubernetesengines.infrastructure.opendatahub.io
       version: v1alpha1
     - description: Dashboard is the Schema for the dashboards API
       displayName: Dashboard
@@ -970,6 +976,8 @@ spec:
         - apiGroups:
           - infrastructure.opendatahub.io
           resources:
+          - azurekubernetesengines
+          - coreweavekubernetesengines
           - hardwareprofiles
           verbs:
           - create
@@ -982,12 +990,16 @@ spec:
         - apiGroups:
           - infrastructure.opendatahub.io
           resources:
+          - azurekubernetesengines/finalizers
+          - coreweavekubernetesengines/finalizers
           - hardwareprofiles/finalizers
           verbs:
           - update
         - apiGroups:
           - infrastructure.opendatahub.io
           resources:
+          - azurekubernetesengines/status
+          - coreweavekubernetesengines/status
           - hardwareprofiles/status
           verbs:
           - get
@@ -1326,6 +1338,18 @@ spec:
         - apiGroups:
           - operator.openshift.io
           resources:
+          - certmanagers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - operator.openshift.io
+          resources:
           - consoles
           - ingresscontrollers
           verbs:
@@ -1451,11 +1475,113 @@ spec:
           - rbac.authorization.k8s.io
           resources:
           - clusterrolebindings
-          - clusterroles
           - rolebindings
+          verbs:
+          - '*'
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
+          - clusterroles
+          verbs:
+          - '*'
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - cert-manager-operator-controller-manager-clusterrole
+          - cert-manager-operator-metrics-reader
+          resources:
+          - clusterroles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - metrics-reader
+          - servicemesh-operator3-clusterrole
+          resources:
+          - clusterroles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - openshift-lws-operator-clusterrole
+          resources:
+          - clusterroles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resources:
           - roles
           verbs:
           - '*'
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - cert-manager-operator-controller-manager-role
+          resources:
+          - roles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - openshift-lws-operator-role
+          resources:
+          - roles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - rbac.authorization.k8s.io
+          resourceNames:
+          - servicemesh-operator3-role
+          resources:
+          - roles
+          verbs:
+          - bind
+          - delete
+          - escalate
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - route.openshift.io
           resources:
@@ -1483,6 +1609,18 @@ spec:
           - create
           - patch
           - update
+        - apiGroups:
+          - sail-operator.io
+          resources:
+          - istios
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
         - apiGroups:
           - security.openshift.io
           resources:
