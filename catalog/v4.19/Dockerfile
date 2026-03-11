@@ -68,6 +68,8 @@ ARG ODH_MLSERVER_GIT_URL=
 ARG ODH_MLSERVER_GIT_COMMIT=
 ARG ODH_MLMD_GRPC_SERVER_GIT_URL=
 ARG ODH_MLMD_GRPC_SERVER_GIT_COMMIT=
+ARG ODH_MOD_ARCH_EVAL_HUB_GIT_URL=
+ARG ODH_MOD_ARCH_EVAL_HUB_GIT_COMMIT=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_URL=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_COMMIT=
 ARG ODH_MOD_ARCH_MAAS_GIT_URL=
@@ -180,6 +182,8 @@ ARG ODH_SPARK_OPERATOR_GIT_URL=
 ARG ODH_SPARK_OPERATOR_GIT_COMMIT=
 ARG ODH_CLI_GIT_URL=
 ARG ODH_CLI_GIT_COMMIT=
+ARG ODH_LLM_D_KV_CACHE_GIT_URL=
+ARG ODH_LLM_D_KV_CACHE_GIT_COMMIT=
 
 
 # Configure the entrypoint and command
@@ -260,6 +264,8 @@ LABEL \
       odh-ml-pipelines-scheduledworkflow-v2.git.commit="${ODH_ML_PIPELINES_SCHEDULEDWORKFLOW_V2_GIT_COMMIT}" \
       odh-mlmd-grpc-server.git.url="${ODH_MLMD_GRPC_SERVER_GIT_URL}" \
       odh-mlmd-grpc-server.git.commit="${ODH_MLMD_GRPC_SERVER_GIT_COMMIT}" \
+      odh-mod-arch-eval-hub.git.url="${ODH_MOD_ARCH_EVAL_HUB_GIT_URL}" \
+      odh-mod-arch-eval-hub.git.commit="${ODH_MOD_ARCH_EVAL_HUB_GIT_COMMIT}" \
       odh-mod-arch-gen-ai.git.url="${ODH_MOD_ARCH_GEN_AI_GIT_URL}" \
       odh-mod-arch-gen-ai.git.commit="${ODH_MOD_ARCH_GEN_AI_GIT_COMMIT}" \
       odh-mod-arch-maas.git.url="${ODH_MOD_ARCH_MAAS_GIT_URL}" \
@@ -371,7 +377,10 @@ LABEL \
       odh-spark-operator.git.url="${ODH_SPARK_OPERATOR_GIT_URL}" \
       odh-spark-operator.git.commit="${ODH_SPARK_OPERATOR_GIT_COMMIT}" \
       odh-cli.git.url="${ODH_CLI_GIT_URL}" \
-      odh-cli.git.commit="${ODH_CLI_GIT_COMMIT}"
+      odh-cli.git.commit="${ODH_CLI_GIT_COMMIT}" \
+      odh-llm-d-kv-cache.git.url="${ODH_LLM_D_KV_CACHE_GIT_URL}" \
+      odh-llm-d-kv-cache.git.commit="${ODH_LLM_D_KV_CACHE_GIT_COMMIT}"
+
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \

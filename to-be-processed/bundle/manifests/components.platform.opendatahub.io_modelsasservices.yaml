@@ -48,6 +48,19 @@ spec:
           spec:
             description: ModelsAsServiceSpec defines the desired state of ModelsAsService
             properties:
+              apiKeys:
+                description: APIKeys contains configuration for API key management.
+                properties:
+                  maxExpirationDays:
+                    description: |-
+                      MaxExpirationDays is the maximum allowed expiration in days for API keys.
+                      When set, users cannot create API keys with expiration longer than this value.
+                      Examples: 30 (one month), 90 (three months), 365 (one year).
+                      If not set, no expiration limit is enforced.
+                    format: int32
+                    minimum: 1
+                    type: integer
+                type: object
               gatewayRef:
                 description: |-
                   GatewayRef specifies which Gateway (Gateway API) to use for exposing model endpoints.
