@@ -91,7 +91,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6c9f1c5e138059d55e89e080f311e7f33bfc7880e5b86ca3a59762c06de43dbf"
-    createdAt: "2026-03-11T13:37:26Z"
+    createdAt: "2026-03-11T16:52:42Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -602,6 +602,18 @@ spec:
           - cert-manager.io
           resources:
           - certificates
+          - clusterissuers
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - cert-manager.io
+          resources:
           - issuers
           verbs:
           - create
