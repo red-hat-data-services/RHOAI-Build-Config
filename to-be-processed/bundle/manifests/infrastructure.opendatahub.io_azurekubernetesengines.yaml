@@ -14,7 +14,20 @@ spec:
     singular: azurekubernetesengine
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Ready
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+      name: Ready
+      type: string
+    - description: Reason
+      jsonPath: .status.conditions[?(@.type=="Ready")].reason
+      name: Reason
+      type: string
+    - description: DependenciesAvailable
+      jsonPath: .status.conditions[?(@.type=="DependenciesAvailable")].status
+      name: Deps Available
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: |-
