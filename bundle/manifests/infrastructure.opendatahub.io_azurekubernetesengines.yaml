@@ -75,6 +75,23 @@ spec:
                         - Unmanaged
                         type: string
                     type: object
+                  gatewayAPI:
+                    description: GatewayAPI defines the Gateway API dependency.
+                    properties:
+                      configuration:
+                        description: Configuration for the Gateway API.
+                        type: object
+                      managementPolicy:
+                        default: Managed
+                        description: |-
+                          ManagementPolicy determines whether the operator manages this dependency.
+                          Managed: the operator installs and reconciles the dependency.
+                          Unmanaged: the operator does not manage the dependency; the user is responsible.
+                        enum:
+                        - Managed
+                        - Unmanaged
+                        type: string
+                    type: object
                   lws:
                     description: LWS defines the LeaderWorkerSet operator dependency.
                     properties:
