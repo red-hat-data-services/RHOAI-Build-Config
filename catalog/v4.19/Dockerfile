@@ -74,6 +74,8 @@ ARG ODH_MOD_ARCH_MAAS_GIT_URL=
 ARG ODH_MOD_ARCH_MAAS_GIT_COMMIT=
 ARG ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL=
 ARG ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT=
+ARG ODH_MOD_ARCH_MLFLOW_GIT_URL=
+ARG ODH_MOD_ARCH_MLFLOW_GIT_COMMIT=
 ARG ODH_MODEL_CONTROLLER_GIT_URL=
 ARG ODH_MODEL_CONTROLLER_GIT_COMMIT=
 ARG ODH_MODEL_METADATA_COLLECTION_GIT_URL=
@@ -260,6 +262,8 @@ LABEL \
       odh-mod-arch-maas.git.commit="${ODH_MOD_ARCH_MAAS_GIT_COMMIT}" \
       odh-mod-arch-model-registry.git.url="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL}" \
       odh-mod-arch-model-registry.git.commit="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT}" \
+      odh-mod-arch-mlflow.git.url="${ODH_MOD_ARCH_MLFLOW_GIT_URL}" \
+      odh-mod-arch-mlflow.git.commit="${ODH_MOD_ARCH_MLFLOW_GIT_COMMIT}" \
       odh-model-controller.git.url="${ODH_MODEL_CONTROLLER_GIT_URL}" \
       odh-model-controller.git.commit="${ODH_MODEL_CONTROLLER_GIT_COMMIT}" \
       odh-model-metadata-collection.git.url="${ODH_MODEL_METADATA_COLLECTION_GIT_URL}" \
