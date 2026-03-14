@@ -28,6 +28,9 @@ metadata:
                 "managementState": "Managed",
                 "nim": {
                   "managementState": "Managed"
+                },
+                "wva": {
+                  "managementState": "Removed"
                 }
               },
               "kueue": {
@@ -91,7 +94,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:fcf10eb532f0805d2a4abd6a4c1123abe58a1a8a4920732cb2ad794dfd9f72b4"
-    createdAt: "2026-03-14T00:54:10Z"
+    createdAt: "2026-03-14T05:02:24Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1026,6 +1029,14 @@ spec:
           - get
           - list
           - patch
+          - watch
+        - apiGroups:
+          - keda.sh
+          resources:
+          - kedacontrollers
+          verbs:
+          - get
+          - list
           - watch
         - apiGroups:
           - keda.sh

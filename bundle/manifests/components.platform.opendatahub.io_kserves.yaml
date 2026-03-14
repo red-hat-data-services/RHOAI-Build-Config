@@ -88,6 +88,18 @@ spec:
                 - Headless
                 - Headed
                 type: string
+              wva:
+                description: Configures and enables workload-variant-autoscaler (WVA)
+                  integration
+                properties:
+                  managementState:
+                    default: Removed
+                    enum:
+                    - Managed
+                    - Removed
+                    pattern: ^(Managed|Unmanaged|Force|Removed)$
+                    type: string
+                type: object
             type: object
           status:
             description: KserveStatus defines the observed state of Kserve
