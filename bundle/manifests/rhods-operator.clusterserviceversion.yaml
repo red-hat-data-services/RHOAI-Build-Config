@@ -94,7 +94,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:261cee966198a37c973cfe8cfa81f6a68eb5c265e6eb7036d6b790f17f3961db"
-    createdAt: "2026-03-17T13:57:54Z"
+    createdAt: "2026-03-17T16:53:54Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2495,6 +2495,46 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-hardware-profile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: podmonitor-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - monitoring.coreos.com
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - podmonitors
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-prometheus-monitors
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: servicemonitor-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - monitoring.coreos.com
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - servicemonitors
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-prometheus-monitors
   relatedImages:
   - name: odh-rhel9-operator-261cee966198a37c973cfe8cfa81f6a68eb5c265e6eb7036d6b790f17f3961db-annotation
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:261cee966198a37c973cfe8cfa81f6a68eb5c265e6eb7036d6b790f17f3961db"
