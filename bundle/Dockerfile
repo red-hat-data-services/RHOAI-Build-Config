@@ -70,6 +70,8 @@ ARG ODH_MOD_ARCH_GEN_AI_GIT_URL=
 ARG ODH_MOD_ARCH_GEN_AI_GIT_COMMIT=
 ARG ODH_MOD_ARCH_MAAS_GIT_URL=
 ARG ODH_MOD_ARCH_MAAS_GIT_COMMIT=
+ARG ODH_MOD_ARCH_MLFLOW_GIT_URL=
+ARG ODH_MOD_ARCH_MLFLOW_GIT_COMMIT=
 ARG ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL=
 ARG ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT=
 ARG ODH_MODEL_CONTROLLER_GIT_URL=
@@ -263,6 +265,8 @@ LABEL \
       odh-mod-arch-gen-ai.git.commit="${ODH_MOD_ARCH_GEN_AI_GIT_COMMIT}" \
       odh-mod-arch-maas.git.url="${ODH_MOD_ARCH_MAAS_GIT_URL}" \
       odh-mod-arch-maas.git.commit="${ODH_MOD_ARCH_MAAS_GIT_COMMIT}" \
+      odh-mod-arch-mlflow.git.url="${ODH_MOD_ARCH_MLFLOW_GIT_URL}" \
+      odh-mod-arch-mlflow.git.commit="${ODH_MOD_ARCH_MLFLOW_GIT_COMMIT}" \
       odh-mod-arch-model-registry.git.url="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL}" \
       odh-mod-arch-model-registry.git.commit="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT}" \
       odh-model-controller.git.url="${ODH_MODEL_CONTROLLER_GIT_URL}" \
