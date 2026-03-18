@@ -4,7 +4,9 @@
 #        - COMPONENT_NAME (optional): Name of the component which uses the image. Omit if the image is shared by multiple components.
 #        - IMAGE_NAME: A descriptive, uppercase identifier for the image (omit version details to keep it generic)
 #
-# value: Must follow the format registry.redhat.io/<ORG>/<REPO>:<TAG>@<SHA256_DIGEST>
+# value: Must follow the format <REGISTRY>/<ORG>/<REPO>:<TAG>@<SHA256_DIGEST>
+#        - ALLOWED REGISTRIES: registry.redhat.io and registry.stage.redhat.io
+#        - registry.stage.redhat.io entries are automatically replaced with registry.redhat.io during processing
 #        - Use the full image reference including both tag and SHA digest
 #        - This ensures updates are tied to a specific tag, avoiding unintended major or minor version bumps
 additionalImages:
@@ -43,4 +45,4 @@ additionalImages:
   - name: RELATED_IMAGE_RHAIIS_VLLM_CPU_IMAGE
     value: "registry.redhat.io/rhaiis/vllm-cpu-rhel9:3.3.0@sha256:f05e773647dddd37ec6c2215cb14bec87e4ab5a7d37f2e110d16cd92355427d3"
   - name: RELATED_IMAGE_TEST_IMAGE
-    value: "registry.stage.redhat.io/rhoai/odh-rhel9-operator:v2.25.3@sha256:6c408db7dcc4236e2955a9a33c607424a107de3282049c4f34c65d71b1c522d2"
+    value: "registry.stage.redhat.io/rhoai/odh-rhel9-operator:v2.25@sha256:6c408db7dcc4236e2955a9a33c607424a107de3282049c4f34c65d71b1c522d2"
