@@ -5,11 +5,14 @@ metadata:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: '"non-existent-file.non-existent-ext".pathChanged()
-      && event == "push" && target_branch == "rhoai-3.4" && ( "catalog/**".pathChanged()
-      || ".tekton/rhoai-fbc-fragment-v3-4-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
-      && !".github/workflows/**".pathChanged()'
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch == "rhoai-3.4"
+      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-4-push.yaml".pathChanged() )
+      && !"catalog/catalog-patch.yaml".pathChanged()
+      && !".github/workflows/**".pathChanged()
   labels:
     appstudio.openshift.io/application: rhoai-v3-4
     appstudio.openshift.io/component: rhoai-fbc-fragment-v3-4
@@ -18,8 +21,8 @@ metadata:
   namespace: rhoai-tenant
 spec:
   timeouts:
-    pipeline: 8h
-    tasks: 6h
+    pipeline: 10h
+    tasks: 8h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -30,24 +33,30 @@ spec:
     - '{{target_branch}}-{{revision}}'
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
+  - name: rhoai-version
+    value: "3.4.0"
+  - name: dockerfile
+    value: Dockerfile
+  - name: path-context
+    value: catalog/v4.19
+  - name: hermetic
+    value: true
+  - name: build-source-image
+    value: true
+  - name: build-image-index
+    value: true
   - name: build-platforms
     value:
     - linux/x86_64
     - linux/ppc64le
     - linux/s390x
     - linux/arm64
-  - name: dockerfile
-    value: Dockerfile
-  - name: path-context
-    value: catalog/v4.19
   - name: build-args-file
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
   - name: build-type
     value: "ci"
-  - name: rhoai-version
-    value: "3.4.0"
   pipelineRef:
     resolver: git
     params:
