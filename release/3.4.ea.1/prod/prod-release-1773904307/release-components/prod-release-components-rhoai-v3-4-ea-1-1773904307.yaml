@@ -1,0 +1,22 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  name: rhoai-v3-4-ea-1-prod-1773904307
+  namespace: rhoai-tenant
+  labels:
+    konflux-release-data/rbc-release-commit: 53e5bac751564c53fe44d00c2d28b6661d9ca912
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: prod
+    appstudio.openshift.io/application: rhoai-v3-4-ea-1
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v3-4-ea-1-components-prod
+  snapshot: rhoai-v3-4-ea-1-1773400439
+  data:
+    version: 3.4.0-ea.1
+    releaseNotes:
+      cves:
+      - key: 'CVE-2026-24049' #https://redhat.atlassian.net/browse/RHOAIENG-47043
+        component: 'odh-feature-server-v3-4-ea-1'
+      - key: 'CVE-2026-22807' #https://redhat.atlassian.net/browse/RHOAIENG-46801
+        component: 'odh-vllm-gaudi-v3-4-ea-1'
