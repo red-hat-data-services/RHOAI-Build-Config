@@ -57,6 +57,12 @@ jobs:
   
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
+          microdnf install -y skopeo golang && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+
+          # cosign v3.0.5 (commit 479147a4df05f31be48aeb2b3a9d32dfc35ba877)
+          GOBIN=/usr/local/bin go install github.com/sigstore/cosign/v3/cmd/cosign@479147a4df05f31be48aeb2b3a9d32dfc35ba877
+
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
@@ -102,6 +108,20 @@ jobs:
             -x enable
 
           cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle
+
+      - name: Inject vLLM versions from SBOMs
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
+          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
+        run: |
+          skopeo login registry.redhat.io \
+            -u "${RHOAI_CATALOG_SA_USERNAME}" \
+            -p "${RHOAI_CATALOG_SA_TOKEN}"
+
+          chmod +x "${BRANCH}/bundle/inject-vllm-versions.sh"
+          bash "${BRANCH}/bundle/inject-vllm-versions.sh" \
+            "${BRANCH}/bundle/manifests/rhods-operator.clusterserviceversion.yaml"
 
       - name: Print debug logs
         if: always()
