@@ -80,6 +80,38 @@ spec:
                     pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$
                     type: string
                 type: object
+              telemetry:
+                description: Telemetry contains configuration for telemetry and metrics
+                  collection.
+                properties:
+                  metrics:
+                    description: Metrics contains configuration for optional metric
+                      dimensions/labels.
+                    properties:
+                      captureGroup:
+                        default: false
+                        description: |-
+                          CaptureGroup enables the group label on metrics for team-based chargeback.
+                          Note: This is a high-cardinality dimension and is disabled by default.
+                        type: boolean
+                      captureModelUsage:
+                        default: true
+                        description: CaptureModelUsage enables the model label on
+                          metrics.
+                        type: boolean
+                      captureOrganization:
+                        default: true
+                        description: CaptureOrganization enables the organization_id
+                          label on metrics.
+                        type: boolean
+                      captureUser:
+                        default: false
+                        description: |-
+                          CaptureUser enables the user label on metrics.
+                          Disabled by default for privacy/GDPR compliance.
+                        type: boolean
+                    type: object
+                type: object
             type: object
           status:
             description: ModelsAsServiceStatus defines the observed state of ModelsAsService
