@@ -1,0 +1,126 @@
+# Enable/disable all resource creation
+enabled: true
+
+# Install CRDs or not using the chart
+installCRDs: true
+
+# Common labels applied to all resources
+labels: {}
+
+# RHAI Operator configuration
+rhaiOperator:
+  # Operator namespace
+  namespace: redhat-ods-operator
+  applicationsNamespace: redhat-ods-applications
+  # Manager container image
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5d481b30a76dfcdaf9034752d19bdfcdd566de5badf087e2c70f1ed5b57b9363"
+  # Image pull policy
+  imagePullPolicy: Always
+  # Related images env vars (RELATED_IMAGE_*)
+  relatedImages:
+    - name: RELATED_IMAGE_ODH_KSERVE_AGENT_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:3d979f41c11178bc4f9c0955b1d40c5991711691333b5080a526e0a08a7d6897"
+    - name: RELATED_IMAGE_ODH_KSERVE_CONTROLLER_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:11ff5b83eef7b79a3462393584d5d950a6ce2e8bf1a59fe3c985124c5cf32a3c"
+    - name: RELATED_IMAGE_ODH_KSERVE_LLMISVC_CONTROLLER_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:c4931256e8e092ced20baeb86f2167830e3efec0644904e98773376c202211e3"
+    - name: RELATED_IMAGE_ODH_KSERVE_ROUTER_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kserve-router-rhel9@sha256:6c58d769d3058a71a9662523f0d7cbea7972dd885918fd119ab4153b5b77bb0a"
+    - name: RELATED_IMAGE_ODH_KSERVE_STORAGE_INITIALIZER_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kserve-storage-initializer-rhel9@sha256:eec49cf92c1d4dfacc34fddce089fdc44c030cc170987f9ed241399431d8cdba"
+    - name: RELATED_IMAGE_RHAIIS_VLLM_CUDA_IMAGE
+      value: "registry.redhat.io/rhaiis/vllm-cuda-rhel9@sha256:ec799bb5eeb7e25b4b25a8917ab5161da6b6f1ab830cbba61bba371cffb0c34d"
+    - name: RELATED_IMAGE_RHAIIS_VLLM_ROCM_IMAGE
+      value: "registry.redhat.io/rhaiis/vllm-rocm-rhel9@sha256:e345cf9453afae0d3c2afe2f7fb9be8fac772f46593b873e925d38ae2b3ee537"
+    - name: RELATED_IMAGE_RHAIIS_VLLM_SPYRE_IMAGE
+      value: "registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:75f0ea05a92661a33b40efe2a662d976d53c767db18990b433d4a00dd6693aae"
+    - name: RELATED_IMAGE_ODH_LLM_D_INFERENCE_SCHEDULER_IMAGE
+      value: "registry.redhat.io/rhoai/odh-llm-d-inference-scheduler-rhel9@sha256:905b704f7d9c68af1827bba7c6eefec22d269a9084791952221eb1a1d10e32c7"
+    - name: RELATED_IMAGE_ODH_LLM_D_ROUTING_SIDECAR_IMAGE
+      value: "registry.redhat.io/rhoai/odh-llm-d-routing-sidecar-rhel9@sha256:a18e0c92de04c6079dcf4fec8a13bc6b924a182b3113e85e81dfaa203001d3f9"
+    - name: RELATED_IMAGE_OSE_KUBE_RBAC_PROXY_IMAGE
+      value: "registry.redhat.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:dee44a850cc5b595fbd4221c9cb70fe0e9fbd75d9dd569e3d2922928b3268e87"
+    - name: RELATED_IMAGE_ODH_LLM_D_KV_CACHE_IMAGE
+      value: "registry.redhat.io/rhoai/odh-llm-d-kv-cache-rhel9@sha256:b03558f7bc91fae5115062a33f4235da484b00f9f0c6a3a021ad56f6f55e84f8"
+
+  # Example:
+  # relatedImages:
+  #   RELATED_IMAGE_ODH_KSERVE_CONTROLLER_IMAGE: quay.io/opendatahub/kserve-controller:latest
+
+# Components configuration
+components:
+  kserve:
+    # Create Kserve CR via post-install hook
+    enabled: true
+    spec: {}
+
+# Azure cloud configuration
+azure:
+  enabled: false
+  cloudManager:
+    # Cloud Manager operator namespace
+    namespace: rhai-cloudmanager-system
+    # Cloud Manager container image
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5d481b30a76dfcdaf9034752d19bdfcdd566de5badf087e2c70f1ed5b57b9363"
+    # Image pull policy
+    imagePullPolicy: Always
+  kubernetesEngine:
+    # Create AzureKubernetesEngine CR via post-install hook
+    enabled: true
+    spec:
+      dependencies:
+        certManager:
+          configuration: {}
+          managementPolicy: Managed
+        gatewayAPI:
+          configuration: {}
+          managementPolicy: Managed
+        lws:
+          configuration: {}
+          managementPolicy: Managed
+        sailOperator:
+          configuration: {}
+          managementPolicy: Managed
+
+# CoreWeave cloud configuration
+coreweave:
+  enabled: false
+  cloudManager:
+    # Cloud Manager operator namespace
+    namespace: rhai-cloudmanager-system
+    # Cloud Manager container image
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5d481b30a76dfcdaf9034752d19bdfcdd566de5badf087e2c70f1ed5b57b9363"
+    # Image pull policy
+    imagePullPolicy: Always
+  kubernetesEngine:
+    # Create CoreWeaveKubernetesEngine CR via post-install hook
+    enabled: true
+    spec:
+      dependencies:
+        certManager:
+          configuration: {}
+          managementPolicy: Managed
+        gatewayAPI:
+          configuration: {}
+          managementPolicy: Managed
+        lws:
+          configuration: {}
+          managementPolicy: Managed
+        sailOperator:
+          configuration: {}
+          managementPolicy: Managed
+
+# Pull secret for private registries
+# Use --set-file imagePullSecret.dockerConfigJson=path/to/auth.json
+imagePullSecret:
+  # Name of the pull secret to create in target namespaces. This name MUST not be changed
+  # as it is referred also in other installed dependencies and not yet configurable.
+  name: rhaii-pull-secret
+  # Docker config JSON content (populated via --set-file)
+  dockerConfigJson: ""
+  # Namespaces created by dependency operators where pull secrets should be injected
+  dependencyNamespaces:
+    - cert-manager-operator
+    - cert-manager
+    - openshift-lws-operator
+    - istio-system
