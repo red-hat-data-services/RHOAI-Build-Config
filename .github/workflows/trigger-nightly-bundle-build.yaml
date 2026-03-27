@@ -71,11 +71,17 @@ jobs:
           RHOAI_VERSION=v${BRANCH/rhoai-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
+          HELM_CHART_COMPONENT_NAME=rhaii-helm-chart-${COMPONENT_SUFFIX}
 
           #copy all the raw content to tmp location
           RAW_INPUTS_DIR=utils/tmp/bundle
           mkdir -p $RAW_INPUTS_DIR
           cp -r ${BRANCH}/to-be-processed/bundle/* $RAW_INPUTS_DIR
+
+          #copy helm raw content to tmp location
+          HELM_RAW_INPUTS_DIR=utils/tmp/helm
+          mkdir -p $HELM_RAW_INPUTS_DIR
+          cp -r ${BRANCH}/to-be-processed/helm/* $HELM_RAW_INPUTS_DIR
 
           #Declare Bundle processing variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
@@ -83,7 +89,12 @@ jobs:
           PATCH_YAML_PATH=${BRANCH}/bundle/bundle-patch.yaml
           OUTPUT_FILE_PATH=${RAW_INPUTS_DIR}/manifests/rhods-operator.clusterserviceversion.yaml
           ANNOTATION_YAML_PATH=${RAW_INPUTS_DIR}/metadata/annotations.yaml
-          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${OPERATOR_BUNDLE_COMPONENT_NAME}-push.yaml
+          BUNDLE_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${OPERATOR_BUNDLE_COMPONENT_NAME}-push.yaml
+
+          #Declare Helm processing variables
+          HELM_PATCH_YAML_PATH=${BRANCH}/helm/values-patch.yaml
+          HELM_VALUES_YAML_PATH=${HELM_RAW_INPUTS_DIR}/rhaii-helm-chart/values.yaml
+          HELM_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${HELM_CHART_COMPONENT_NAME}-push.yaml
 
           #Invoke Bundle processor to patch the catalog
           python3 utils/utils/processors/bundle-processor.py \
@@ -94,11 +105,15 @@ jobs:
             -o ${OUTPUT_FILE_PATH} \
             -v ${BRANCH} \
             -a ${ANNOTATION_YAML_PATH} \
-            -y ${PUSH_PIPELINE_PATH} \
+            -hp ${HELM_PATCH_YAML_PATH} \
+            -hv ${HELM_VALUES_YAML_PATH} \
+            -hpp ${HELM_PUSH_PIPELINE_PATH} \
+            -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x disable \
             -t nightly
 
           cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle
+          cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
 
           # Update the schedule file to trigger the nightly build
           echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > ${BRANCH}/schedule/bundle-tekton-trigger.txt
@@ -118,7 +133,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ steps.get_branch.outputs.branch }}
-          message: "Updating the bundle-csv with latest images"
+          message: "Updating the bundle-csv and helm chart values with latest images"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: ${{ steps.get_branch.outputs.branch }}
           author_name: Openshift-AI DevOps

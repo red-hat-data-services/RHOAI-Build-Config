@@ -1,0 +1,35 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch == "rhoai-3.4"
+      && ( "to-be-processed/helm/**".pathChanged() || ".tekton/rhaii-helm-chart-v3-4-push.yaml".pathChanged() )
+      && !".github/workflows/**".pathChanged()
+  labels:
+    appstudio.openshift.io/application: rhoai-v3-4
+    appstudio.openshift.io/component: rhaii-helm-chart-v3-4
+    pipelines.appstudio.openshift.io/type: build
+  name: rhaii-helm-chart-v3-4-on-push
+  namespace: rhoai-tenant
+spec:
+  pipelineSpec:
+    tasks:
+    - name: hello
+      taskSpec:
+        steps:
+        - name: hello
+          image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+          script: |
+            echo "Hello from rhaii-helm-chart-v3-4 push pipeline!"
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
