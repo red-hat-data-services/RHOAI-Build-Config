@@ -46,6 +46,12 @@ spec:
     value: "ci"
   - name: rhoai-version
     value: "2.16.4"
+  # Konflux NotebookLM advised to add these two parameters to force build-image-index to always run
+  # even if these params default to 'true' the Pipeline definition in pipelines/fbc-fragment-build.yaml
+  - name: build-image-index
+    value: "true"
+  - name: ALWAYS_BUILD_INDEX
+    value: "true"
   pipelineRef:
     resolver: git
     params:
