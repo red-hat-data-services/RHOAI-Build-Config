@@ -10,12 +10,12 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
       && target_branch == "rhoai-3.4"
-      && ( "helm/rhaii-helm-chart/**".pathChanged() || ".tekton/rhaii-helm-chart-v3-4-push.yaml".pathChanged() )
+      && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
   labels:
     appstudio.openshift.io/application: rhoai-v3-4
     appstudio.openshift.io/component: rhaii-helm-chart-v3-4
     pipelines.appstudio.openshift.io/type: build
-  name: rhaii-helm-chart-v3-4-on-push
+  name: rhaii-helm-chart-v3-4-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -26,6 +26,7 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: output-image
     value: quay.io/rhoai/rhaii-helm-chart:{{target_branch}}
   - name: rhoai-version
