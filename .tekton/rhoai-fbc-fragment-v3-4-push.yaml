@@ -7,12 +7,13 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
+    # Trigger on catalog/ changes (or this tekton file)
+    # No trigger if catalog/catalog-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
       && target_branch == "rhoai-3.4"
       && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-4-push.yaml".pathChanged() )
-      && !"catalog/catalog-patch.yaml".pathChanged()
-      && !".github/workflows/**".pathChanged()
+      && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
   labels:
     appstudio.openshift.io/application: rhoai-v3-4
     appstudio.openshift.io/component: rhoai-fbc-fragment-v3-4

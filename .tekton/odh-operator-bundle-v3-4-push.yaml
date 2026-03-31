@@ -8,12 +8,13 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
+    # Trigger on bundle/ changes (or this tekton file)
+    # No trigger if bundle/bundle-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
       && target_branch == "rhoai-3.4"
       && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-4-push.yaml".pathChanged() )
-      && !"bundle/bundle-patch.yaml".pathChanged()
-      && !".github/workflows/**".pathChanged()
+      && files.all.exists(p, !p.matches('^bundle/bundle-patch\\.yaml$'))
   labels:
     appstudio.openshift.io/application: rhoai-v3-4
     appstudio.openshift.io/component: odh-operator-bundle-v3-4
