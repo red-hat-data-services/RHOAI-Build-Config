@@ -114,6 +114,8 @@ ARG ODH_TA_LMES_JOB_GIT_URL=
 ARG ODH_TA_LMES_JOB_GIT_COMMIT=
 ARG ODH_TRAINER_GIT_URL=
 ARG ODH_TRAINER_GIT_COMMIT=
+ARG ODH_MAAS_CONTROLLER_GIT_URL=
+ARG ODH_MAAS_CONTROLLER_GIT_COMMIT=
 ARG ODH_TRAINING_CUDA121_TORCH24_PY311_GIT_URL=
 ARG ODH_TRAINING_CUDA121_TORCH24_PY311_GIT_COMMIT=
 ARG ODH_TRAINING_CUDA124_TORCH25_PY311_GIT_URL=
@@ -262,6 +264,8 @@ LABEL \
       odh-mod-arch-maas.git.url="${ODH_MOD_ARCH_MAAS_GIT_URL}" \
       odh-mod-arch-maas.git.commit="${ODH_MOD_ARCH_MAAS_GIT_COMMIT}" \
       odh-mod-arch-model-registry.git.url="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL}" \
+      odh-maas-controller.git.url="${ODH_MAAS_CONTROLLER_GIT_URL}" \
+      odh-maas-controller.git.commit="${ODH_MAAS_CONTROLLER_GIT_COMMIT}" \
       odh-mod-arch-model-registry.git.commit="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT}" \
       odh-mod-arch-mlflow.git.url="${ODH_MOD_ARCH_MLFLOW_GIT_URL}" \
       odh-mod-arch-mlflow.git.commit="${ODH_MOD_ARCH_MLFLOW_GIT_COMMIT}" \
