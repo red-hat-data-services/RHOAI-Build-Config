@@ -86,6 +86,8 @@ ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_URL=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT=
 ARG ODH_MUST_GATHER_GIT_URL=
 ARG ODH_MUST_GATHER_GIT_COMMIT=
+ARG ODH_MAAS_CONTROLLER_GIT_URL=
+ARG ODH_MAAS_CONTROLLER_GIT_COMMIT=
 ARG ODH_NOTEBOOK_CONTROLLER_GIT_URL=
 ARG ODH_NOTEBOOK_CONTROLLER_GIT_COMMIT=
 ARG ODH_OPENVINO_MODEL_SERVER_GIT_URL=
@@ -323,6 +325,8 @@ LABEL \
       odh-trustyai-vllm-orchestrator-gateway.git.commit="${ODH_TRUSTYAI_VLLM_ORCHESTRATOR_GATEWAY_GIT_COMMIT}" \
       odh-vllm-cpu.git.url="${ODH_VLLM_CPU_GIT_URL}" \
       odh-vllm-cpu.git.commit="${ODH_VLLM_CPU_GIT_COMMIT}" \
+      odh-maas-controller.git.url="${ODH_MAAS_CONTROLLER_GIT_URL}" \
+      odh-maas-controller.git.commit="${ODH_MAAS_CONTROLLER_GIT_COMMIT}" \
       odh-vllm-gaudi.git.url="${ODH_VLLM_GAUDI_GIT_URL}" \
       odh-vllm-gaudi.git.commit="${ODH_VLLM_GAUDI_GIT_COMMIT}" \
       odh-workbench-codeserver-datascience-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_DATASCIENCE_CPU_PY312_GIT_URL}" \
