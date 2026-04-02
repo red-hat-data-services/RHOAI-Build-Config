@@ -8,8 +8,9 @@ on:
       - bundle/bundle-patch.yaml
       - bundle/csv-patch.yaml
       - to-be-processed/bundle/**
-      - helm/values-patch.yaml
       - to-be-processed/helm/**
+      - helm/xks-values-patch.yaml
+      - helm/openshift-values-patch.yaml
     branches:
       - 'rhoai-[23].[0-9]'  # e.g. rhoai-2.1, rhoai-3.1, rhoai-3.4
       - 'rhoai-[23].[0-9][0-9]'  # e.g. rhoai-2.10, rhoai-3.10, rhoai-3.22
@@ -77,7 +78,8 @@ jobs:
           RHOAI_VERSION=v${BRANCH/rhoai-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
-          HELM_CHART_COMPONENT_NAME=rhaii-helm-chart-${COMPONENT_SUFFIX}
+          XKS_HELM_CHART_COMPONENT_NAME=rhai-on-xks-chart-${COMPONENT_SUFFIX}
+          OPENSHIFT_HELM_CHART_COMPONENT_NAME=rhai-on-openshift-chart-${COMPONENT_SUFFIX}
 
           #copy all the raw content to tmp location
           RAW_INPUTS_DIR=utils/tmp/bundle
@@ -97,10 +99,15 @@ jobs:
           ANNOTATION_YAML_PATH=${RAW_INPUTS_DIR}/metadata/annotations.yaml
           BUNDLE_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${OPERATOR_BUNDLE_COMPONENT_NAME}-push.yaml
 
-          #Declare Helm processing variables
-          HELM_PATCH_YAML_PATH=${BRANCH}/helm/values-patch.yaml
-          HELM_VALUES_YAML_PATH=${HELM_RAW_INPUTS_DIR}/rhaii-helm-chart/values.yaml
-          HELM_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${HELM_CHART_COMPONENT_NAME}-push.yaml
+          #Declare XKS Helm processing variables
+          XKS_HELM_PATCH_YAML_PATH=${BRANCH}/helm/xks-values-patch.yaml
+          XKS_HELM_VALUES_YAML_PATH=${HELM_RAW_INPUTS_DIR}/rhai-on-xks-chart/values.yaml
+          XKS_HELM_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${XKS_HELM_CHART_COMPONENT_NAME}-push.yaml
+
+          #Declare OpenShift Helm processing variables
+          OPENSHIFT_HELM_PATCH_YAML_PATH=${BRANCH}/helm/openshift-values-patch.yaml
+          OPENSHIFT_HELM_VALUES_YAML_PATH=${HELM_RAW_INPUTS_DIR}/rhai-on-openshift-chart/values.yaml
+          OPENSHIFT_HELM_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${OPENSHIFT_HELM_CHART_COMPONENT_NAME}-push.yaml
 
           #Invoke Bundle processor to patch the catalog
           python3 utils/utils/processors/bundle-processor.py \
@@ -111,9 +118,12 @@ jobs:
             -o ${OUTPUT_FILE_PATH} \
             -v ${BRANCH} \
             -a ${ANNOTATION_YAML_PATH} \
-            -hp ${HELM_PATCH_YAML_PATH} \
-            -hv ${HELM_VALUES_YAML_PATH} \
-            -hpp ${HELM_PUSH_PIPELINE_PATH} \
+            -xhp ${XKS_HELM_PATCH_YAML_PATH} \
+            -xhv ${XKS_HELM_VALUES_YAML_PATH} \
+            -xhpp ${XKS_HELM_PUSH_PIPELINE_PATH} \
+            -ohp ${OPENSHIFT_HELM_PATCH_YAML_PATH} \
+            -ohv ${OPENSHIFT_HELM_VALUES_YAML_PATH} \
+            -ohpp ${OPENSHIFT_HELM_PUSH_PIPELINE_PATH} \
             -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x enable
 
