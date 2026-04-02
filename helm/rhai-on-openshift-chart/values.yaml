@@ -32,7 +32,7 @@ operator:
   enabled: true
 
   # -- Operator type: odh (Open Data Hub) or rhoai (Red Hat OpenShift AI)
-  type: odh
+  type: rhoai
 
   # -- ODH operator settings
   odh:
@@ -51,7 +51,7 @@ operator:
     applicationsNamespace: redhat-ods-applications
 
     olm:
-      channel: beta
+      channel: stable-3.4
       name: rhods-operator
       namespace: redhat-ods-operator
       source: redhat-operators
@@ -253,7 +253,7 @@ components:
       # -- Management state for Model Registry (Managed or Removed)
       managementState: Removed
       # -- Registries namespace for Model Registry (overrides defaults)
-      registriesNamespace:
+      registriesNamespace: null
     # -- Operator-type-specific defaults for dsc fields
     defaults:
       odh:
@@ -314,7 +314,7 @@ components:
       # -- Management state for Workbenches (Managed or Removed)
       managementState: Removed
       # -- Workbench namespace for Workbenches (overrides defaults)
-      workbenchNamespace:
+      workbenchNamespace: null
     # -- Operator-type-specific defaults for dsc fields
     defaults:
       odh:
