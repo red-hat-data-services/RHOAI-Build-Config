@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch == "rhoai-3.4"
+      && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
+  labels:
+    appstudio.openshift.io/application: rhoai-v3-4
+    appstudio.openshift.io/component: rhai-on-openshift-chart-v3-4
+    pipelines.appstudio.openshift.io/type: build
+  name: rhai-on-openshift-chart-v3-4-on-schedule
+  namespace: rhoai-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: additional-tags
+    value:
+    - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
+  - name: output-image
+    value: quay.io/rhoai/rhai-on-openshift-chart:{{target_branch}}
+  - name: rhoai-version
+    value: "3.4.0"
+  - name: path-context
+    value: "helm/rhai-on-openshift-chart"
+  - name: hermetic
+    value: false
+  - name: build-source-image
+    value: true
+  pipelineRef:
+    resolver: git
+    params:
+    - name: url
+      value: https://github.com/red-hat-data-services/konflux-central.git
+    - name: revision
+      value: '{{ target_branch }}'
+    - name: pathInRepo
+      value: pipelines/helm-chart-build.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-rhai-on-openshift-chart-v3-4
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
