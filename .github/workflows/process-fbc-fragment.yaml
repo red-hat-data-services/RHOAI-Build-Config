@@ -317,6 +317,14 @@ jobs:
           path: ${{ steps.get_branch.outputs.branch }}/catalog/
           retention-days: 5
 
+      - name: Debug - Upload PCC Catalog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcc-catalog-${{ steps.get_branch.outputs.branch }}
+          path: main/pcc/
+          retention-days: 5
+
       - name: Commit and push the changes to release branch
         uses: actions-js/push@master
         with:
