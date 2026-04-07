@@ -88,7 +88,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:a19481b1f4ce842dbacc7593c494277516548a9d6a279fce5639b0db8909292f"
-    createdAt: "2026-04-07T02:59:53Z"
+    createdAt: "2026-04-07T17:22:28Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1704,7 +1704,7 @@ spec:
                 - /manager
                 env:
                 - name: DISABLE_DSC_CONFIG
-                  value: "false"
+                  value: 'false'
                 - name: OPERATOR_NAME
                   value: rhods-operator
                 - name: OPERATOR_NAMESPACE
@@ -1875,6 +1875,10 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-training-cuda128-torch29-py312-rhel9@sha256:620b984a9e69d41e61e3099260e2c0197b8ca9283b80ed857933e238f6d05ba0"
                 - name: RELATED_IMAGE_ODH_CLI_IMAGE
                   value: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:2cea28344e995188f1ffd1cbedf49d760dd8ed5066b3089604ec0f52c48bb891"
+                - name: RELATED_IMAGE_ODH_CLI_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:2cea28344e995188f1ffd1cbedf49d760dd8ed5066b3089604ec0f52c48bb891"
+                - name: RELATED_IMAGE_ODH_OPERATOR_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:200b02a0c0ce5e25687bcca627165084920eb07386990115d739c1ad1c9d38d7"
                 - name: RELATED_IMAGE_DSP_TOOLBOX_IMAGE
                   value: registry.redhat.io/ubi9/toolbox@sha256:5b7627411fd3b6920afb5553b3c3c1c7622a165a5b7a30ef09435178131b3b86
                 - name: RELATED_IMAGE_DSP_INSTRUCTLAB_NVIDIA_IMAGE
@@ -2552,6 +2556,10 @@ spec:
     image: "registry.redhat.io/rhoai/odh-training-cuda128-torch29-py312-rhel9@sha256:620b984a9e69d41e61e3099260e2c0197b8ca9283b80ed857933e238f6d05ba0"
   - name: odh_cli_image
     image: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:2cea28344e995188f1ffd1cbedf49d760dd8ed5066b3089604ec0f52c48bb891"
+  - name: odh_cli_image
+    image: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:2cea28344e995188f1ffd1cbedf49d760dd8ed5066b3089604ec0f52c48bb891"
+  - name: odh_operator_image
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:200b02a0c0ce5e25687bcca627165084920eb07386990115d739c1ad1c9d38d7"
   - name: dsp_toolbox_image
     image: registry.redhat.io/ubi9/toolbox@sha256:5b7627411fd3b6920afb5553b3c3c1c7622a165a5b7a30ef09435178131b3b86
   - name: dsp_instructlab_nvidia_image
