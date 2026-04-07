@@ -314,6 +314,13 @@ jobs:
           #Validate Catalogs
           python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
 
+      - name: Debug - Upload Generated Catalog
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-catalog-${{ steps.get_branch.outputs.branch }}
+          path: ${{ steps.get_branch.outputs.branch }}/catalog/
+          retention-days: 5
 
       - name: Commit and push the changes to release branch
         uses: actions-js/push@master
