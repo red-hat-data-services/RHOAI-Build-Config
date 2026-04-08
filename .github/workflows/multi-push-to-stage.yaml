@@ -180,23 +180,33 @@ jobs:
         id: validate-fbc-image
         run: |
           BASE_URI=docker://quay.io/rhoai/rhoai-fbc-fragment
+          STEP_START=$SECONDS
 
           declare -a GIT_COMMITS=()
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
           do
+              BRANCH_START=$SECONDS
               image_uri=${{ github.event.inputs.fbc_image_uri }}
               echo "processing $release_branch"
               if [[ $image_uri == LATEST_NIGHTLY ]]; then image_uri=${BASE_URI}:${release_branch}-nightly; fi
               if [[ "$image_uri" != docker* ]]; then image_uri="docker://${image_uri}"; fi
               echo $image_uri
+
+              T=$SECONDS
               META=$(skopeo inspect "${image_uri}")
+              echo "[perf] skopeo inspect image: $((SECONDS - T))s"
+
               DIGEST=$(echo $META | jq -r .Digest)
               image_uri=${BASE_URI}@${DIGEST}
               GIT_COMMIT=$(echo $META | jq -r '.Labels | ."git.commit"')
               SIG_TAG=${DIGEST/:/-}.sig
+
+              T=$SECONDS
               SIG_DIGEST=$(skopeo inspect ${BASE_URI}:${SIG_TAG}  | jq -r .Digest)
+              echo "[perf] skopeo inspect signature: $((SECONDS - T))s"
+
               if [[ -z $SIG_DIGEST ]]; then echo "Invalid FBC image, no valid signatures found."; exit 1; fi
               echo "Valid signature found with the digest - ${SIG_DIGEST}"
               echo "Validation successful, preparing to push the image to stage - ${image_uri}"
@@ -213,15 +223,21 @@ jobs:
               mkdir -p ${checkout_dir}
               cd ${checkout_dir}
               git config --global init.defaultBranch ${release_branch}
+
+              T=$SECONDS
               git init
               git remote add origin https://github.com/${{ env.GITHUB_ORG }}/RHOAI-Build-Config.git
               git fetch --depth=1 origin ${GIT_COMMIT}
               git checkout ${GIT_COMMIT}
+              echo "[perf] git clone at commit: $((SECONDS - T))s"
+
               GIT_COMMITS+=("${GIT_COMMIT}")
               cd ../
             echo "GIT_COMMIT=${GIT_COMMIT}"
             echo "GIT_COMMITS=${GIT_COMMITS[*]}"
+            echo "[perf] branch ${release_branch} total: $((SECONDS - BRANCH_START))s"
           done
+          echo "[perf] Validate FBC Image total: $((SECONDS - STEP_START))s"
           echo "GIT_COMMITS=${GIT_COMMITS[*]}" >> $GITHUB_OUTPUT
           echo "GIT_COMMITS=${GIT_COMMITS[*]}"
 
