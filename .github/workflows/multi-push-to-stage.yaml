@@ -519,20 +519,10 @@ jobs:
                     fi
 
                     COVERED_OPENSHIFT_VERSIONS+=("$OPENSHIFT_VERSION")
-                    echo "===contents of catalog yaml==="
-                    cat ${CATALOG_YAML_PATH}
-                    echo "===end of catalog yaml==="
-                    echo "Running stage promoter with flags:"
-                    echo " -op stage-catalog-patch"
-                    echo " -c ${CATALOG_YAML_PATH}"
-                    echo " -p ${PATCH_YAML_PATH} "
-                    echo " -r ${RELEASE_CATALOG_YAML_PATH} "
-                    echo " -o ${OUTPUT_CATALOG_PATH}
-                    echo " -v ${RHOAI_VERSION}"
 
-                    # Invoke the stage promoter to patch the main catalog with release branch.
-                    # stage_promoter.py merges the release branch's catalog changes
-                    # into the base catalog:
+
+                    # Invoke stage_promoter.py to merge the release branch's
+                    # catalog changes into the base catalog:
                     #   -c : base catalog (PCC cache or previous output)
                     #   -p : catalog-patch.yaml from the release branch
                     #   -r : release branch's per-OCP catalog.yaml (contains the olm.bundle)
@@ -544,7 +534,8 @@ jobs:
                       -p ${PATCH_YAML_PATH} \
                       -r ${RELEASE_CATALOG_YAML_PATH} \
                       -o ${OUTPUT_CATALOG_PATH} \
-                      -v ${RHOAI_VERSION}
+                      -v ${RHOAI_VERSION} \
+                      --skip-ea-pruning
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
                 # Merge build args: copy the release branch's catalog_build_args.map
