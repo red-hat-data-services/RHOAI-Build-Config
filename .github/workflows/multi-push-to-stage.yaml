@@ -572,7 +572,11 @@ jobs:
         id: validate-catalogs
         env:
           BRANCH: ${{ github.event.inputs.common_version }}
+        shell: bash
         run: |
+          set -eo pipefail
+          trap 'echo "Catalog validation failed"; exit 1' ERR
+
           #Declare basic variables
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=main/catalog/${BRANCH}
@@ -603,7 +607,7 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: test-multi-push-output
           message: "Patching the stage catalog with ${{ github.event.inputs.release_branches }} ${{ github.event.inputs.commit }}"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
