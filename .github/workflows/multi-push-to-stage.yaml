@@ -69,7 +69,7 @@ jobs:
 
       - name: Git checkout all RBC branches
         run: |
-          rhoai_versions="${{ github.event.inputs.rhoai_version }}"
+          rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
@@ -252,7 +252,6 @@ jobs:
         env:
           BRANCH: ${{ github.event.inputs.common_version }}
         run: |
-          cd ${{ steps.init.outputs.work_dir }}
           #Declare basic variables
           BUILD_CONFIG_PATH=main/config/config.yaml
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
