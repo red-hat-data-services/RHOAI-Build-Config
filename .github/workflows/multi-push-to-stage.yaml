@@ -167,24 +167,24 @@ jobs:
         run: |
           microdnf install -y coreutils-single && \
               microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
           PCC_CACHE_VALID=YES
           skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > latest_shipped_rhoai_versions.txt
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "latest_shipped_rhoai_versions = "
-          cat latest_shipped_rhoai_versions.txt
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions.txt
+          cat main/pcc/shipped_rhoai_versions_granular.txt
 
-          #diff=$(cmp --silent latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
 
           if [[ $diff -gt 0 ]]
           then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
+            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
             echo "following new versions are shipped - $diff"
-            cp latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt
-            echo "WARNING - skipping PCC Cache Validation"
-            # PCC_CACHE_VALID=NO
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
+            PCC_CACHE_VALID=NO
           fi
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
       - name: Regenerate PCC Cache
@@ -251,13 +251,15 @@ jobs:
         env:
           BRANCH: ${{ github.event.inputs.common_version }}
         run: |
+          cd ${{ steps.init.outputs.work_dir }}
           #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
 
           #Validate PCC
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
 
       - name: Push latest PCC Cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
@@ -359,9 +361,10 @@ jobs:
           BRANCH: ${{ github.event.inputs.common_version }}
         run: |
           #Declare basic variables
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          CATALOG_FOLDER_PATH=main/catalog/${BRANCH}
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
 
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
-          CATALOG_FOLDER_PATH=main/catalog/${COMMON_VERSION}
 
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
@@ -369,7 +372,12 @@ jobs:
           do
               BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
               #Validate Catalogs
-              python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+              python3 utils/utils/validators/catalog_validator.py \
+                -op validate-catalogs \
+                --build-config-path ${BUILD_CONFIG_PATH} \
+                --catalog-folder-path ${CATALOG_FOLDER_PATH} \
+                --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} \
+                --global-config-path ${GLOBAL_CONFIG_PATH}
           done
 
 
