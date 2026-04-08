@@ -529,7 +529,8 @@ jobs:
                       -r ${RELEASE_CATALOG_YAML_PATH} \
                       -o ${OUTPUT_CATALOG_PATH} \
                       -v ${RHOAI_VERSION} \
-                      --skip-ea-pruning
+                      --skip-ea-pruning \
+                      --skip-purge
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
                 # Merge build args: copy the release branch's catalog_build_args.map
