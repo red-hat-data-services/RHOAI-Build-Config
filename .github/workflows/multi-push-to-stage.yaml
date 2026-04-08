@@ -110,28 +110,6 @@ jobs:
           path: main
 
       # ---------------------------------------------------------------
-      # Clone each release branch into its own directory. Each release
-      # branch contains its own config/build-config.yaml and
-      # catalog/catalog-patch.yaml that describe how to patch the
-      # base catalog for that RHOAI version.
-      #
-      # NOTE: These clones (latest_rbc_release_*) are separate from
-      # the per-commit checkouts done later in the "Validate FBC Image"
-      # step, which checks out the exact commit baked into each FBC image.
-      # ---------------------------------------------------------------
-      - name: Git checkout all RBC branches
-        run: |
-          rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
-          release_branches="${{ github.event.inputs.release_branches }}"
-          IFS=', ' read -r -a release_branches <<< "${release_branches}"
-          for release_branch in "${release_branches[@]}"
-          do
-            # latest release branch
-            checkout_dir=latest_rbc_release_${release_branch}
-            git clone https://github.com/${{ env.GITHUB_ORG }}/RHOAI-Build-Config.git --branch ${release_branch} ${checkout_dir}
-          done
-
-      # ---------------------------------------------------------------
       # Install CLI tools needed by later steps:
       #   - yq: YAML processor (used to read build-config.yaml)
       #   - skopeo: container image inspection & copy (used to inspect
@@ -624,46 +602,11 @@ jobs:
           author_email: openshift-ai-devops@redhat.com
 
       # ---------------------------------------------------------------
-      # Monitor FBC builds step is currently disabled.
-      # When active, it polls Konflux/Tekton pipelines to verify that
-      # the FBC fragment images were built successfully for each OCP
-      # version, then generates a Slack summary with image URIs.
-      # ---------------------------------------------------------------
-#      - name: Monitor FBC builds
-#        if: ${{ steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' }}
-#        id: monitor-fbc-builds
-#        env:
-#          BRANCH: ${{ github.event.inputs.release_branches }}
-#          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
-#          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
-#          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
-#          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
-#        run: |
-#          LATEST_RBC_MAIN_COMMIT=$(git -C main log -1 | grep ^commit | cut -d " " -f 2)
-#          BUILD_CONFIG_PATH=latest_rbc_release/config/build-config.yaml
-#          GIT_COMMIT=${LATEST_RBC_MAIN_COMMIT}
-#          if [[ -z ${{ github.event.inputs.release_branches }} ]]; then GIT_COMMIT=${{ github.event.inputs.release_branches }}; fi
-#          python3 -u utils/utils/stage-promoter/stage_promoter.py -op monitor-fbc-builds -o utils/fbc_images.json -v ${BRANCH} --timeout 60 -b ${BUILD_CONFIG_PATH} --git-commit ${GIT_COMMIT}
-#          #${LATEST_RBC_MAIN_COMMIT}
-#          cat utils/slack_message.txt
-#          SLACK_MESSAGE=$(cat utils/slack_message.txt)
-#          #echo -en "SLACK_MESSAGE=${SLACK_MESSAGE}" >> $GITHUB_OUTPUT
-#          {
-#            echo "SLACK_MESSAGE<<EOF"
-#            echo -e "${SLACK_MESSAGE}"
-#            echo "EOF"
-#          } >> $GITHUB_OUTPUT
-
-      # ---------------------------------------------------------------
-      # Send a Slack notification on success. Note: SLACK_MESSAGE is
-      # empty because the monitor-fbc-builds step above is commented
-      # out — the notification will fire but with no body content.
-      # ---------------------------------------------------------------
       - name: Send Slack Notification
         if: ${{ success() && ( steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' ) }}
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_MESSAGE: '${{ steps.monitor-fbc-builds.outputs.SLACK_MESSAGE }}'
+          SLACK_MESSAGE: 'Stage catalog patched with ${{ github.event.inputs.release_branches }}'
           SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
           MSG_MINIMAL: true
           SLACK_COLOR: ${{ job.status }}
