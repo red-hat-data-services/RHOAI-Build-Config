@@ -173,7 +173,7 @@ jobs:
               echo $image_uri
 
               T=$SECONDS
-              META=$(skopeo inspect "${image_uri}")
+              META=$(skopeo inspect --no-tags "${image_uri}")
               echo "[perf] skopeo inspect image: $((SECONDS - T))s"
 
               DIGEST=$(echo $META | jq -r .Digest)
@@ -182,7 +182,7 @@ jobs:
               SIG_TAG=${DIGEST/:/-}.sig
 
               T=$SECONDS
-              SIG_DIGEST=$(skopeo inspect ${BASE_URI}:${SIG_TAG}  | jq -r .Digest)
+              SIG_DIGEST=$(skopeo inspect --no-tags ${BASE_URI}:${SIG_TAG}  | jq -r .Digest)
               echo "[perf] skopeo inspect signature: $((SECONDS - T))s"
 
               if [[ -z $SIG_DIGEST ]]; then echo "Invalid FBC image, no valid signatures found."; exit 1; fi
