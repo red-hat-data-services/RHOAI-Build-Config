@@ -93,8 +93,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:8f865ef87e08cae31f60e0e7ef25f036ea4783f4b1f83193d5536a41357a2a74"
-    createdAt: "2026-04-07T23:48:19Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:29a1582aff54f515100d06dcd634530182b1e9c2e44fe9c3f8249c3b874835ff"
+    createdAt: "2026-04-08T01:04:24Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1335,6 +1335,13 @@ spec:
           - patch
           - update
         - apiGroups:
+          - operator.authorino.kuadrant.io
+          resources:
+          - authorinos
+          verbs:
+          - get
+          - list
+        - apiGroups:
           - operator.openshift.io
           resources:
           - consoles
@@ -1969,7 +1976,7 @@ spec:
                   value: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
                 - name: RELATED_IMAGE_NGINX_126_IMAGE
                   value: registry.redhat.io/ubi9/nginx-126@sha256:1f3041ae3033f99b5cbea3455c45534f60d16218461d1a00dd19e77b33f192ca
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:8f865ef87e08cae31f60e0e7ef25f036ea4783f4b1f83193d5536a41357a2a74"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:29a1582aff54f515100d06dcd634530182b1e9c2e44fe9c3f8249c3b874835ff"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2413,8 +2420,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-8f865ef87e08cae31f60e0e7ef25f036ea4783f4b1f83193d5536a41357a2a74-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:8f865ef87e08cae31f60e0e7ef25f036ea4783f4b1f83193d5536a41357a2a74"
+  - name: odh-rhel9-operator-29a1582aff54f515100d06dcd634530182b1e9c2e44fe9c3f8249c3b874835ff-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:29a1582aff54f515100d06dcd634530182b1e9c2e44fe9c3f8249c3b874835ff"
   - name: odh_automl_image
     image: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:ec7b00b721563c042782a63bcb2df0f91961853a58edaf944f4311b0ba29cf66"
   - name: odh_autorag_image
