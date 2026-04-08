@@ -93,8 +93,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4c59f332dc9e49b7f21f78a21302cc6455e481706881d70f187867087bac1ba"
-    createdAt: "2026-04-08T22:25:05Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:12e9ce049cfdd06e3f4f834498504145a466feb27db493ce57fb0675530926f6"
+    createdAt: "2026-04-08T23:22:50Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1750,6 +1750,8 @@ spec:
                       fieldPath: metadata.namespace
                 - name: DEFAULT_MANIFESTS_PATH
                   value: /opt/manifests
+                - name: RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE
+                  value: "quay.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:8fea832e4f8b7f8c2c4475ae11bc9991ee218ac842ca6535f317bec15d9bb1c0"
                 - name: RELATED_IMAGE_ODH_AUTOML_IMAGE
                   value: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:7f6bd57478892b81c76d6cdbc62eef9bf4f4ad6afea284e784b058b36fd36b12"
                 - name: RELATED_IMAGE_ODH_AUTORAG_IMAGE
@@ -1976,7 +1978,7 @@ spec:
                   value: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
                 - name: RELATED_IMAGE_NGINX_126_IMAGE
                   value: registry.redhat.io/ubi9/nginx-126@sha256:46910faeb6ebbc371b0a450a2920d8706b4d5bbd8f14e4535a0b153c13e6b638
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4c59f332dc9e49b7f21f78a21302cc6455e481706881d70f187867087bac1ba"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:12e9ce049cfdd06e3f4f834498504145a466feb27db493ce57fb0675530926f6"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2420,8 +2422,10 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-d4c59f332dc9e49b7f21f78a21302cc6455e481706881d70f187867087bac1ba-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d4c59f332dc9e49b7f21f78a21302cc6455e481706881d70f187867087bac1ba"
+  - name: odh-rhel9-operator-12e9ce049cfdd06e3f4f834498504145a466feb27db493ce57fb0675530926f6-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:12e9ce049cfdd06e3f4f834498504145a466feb27db493ce57fb0675530926f6"
+  - name: odh_ai_gateway_payload_processing_image
+    image: "quay.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:8fea832e4f8b7f8c2c4475ae11bc9991ee218ac842ca6535f317bec15d9bb1c0"
   - name: odh_automl_image
     image: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:7f6bd57478892b81c76d6cdbc62eef9bf4f4ad6afea284e784b058b36fd36b12"
   - name: odh_autorag_image
