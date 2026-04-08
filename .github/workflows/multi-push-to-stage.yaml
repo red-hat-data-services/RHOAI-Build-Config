@@ -303,7 +303,7 @@ jobs:
                 #Declare FBC processing variables
                 BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
                 PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
-
+    
                 PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
                 PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
                 CSV_META_MIN_OCP_VERSION=417
@@ -331,10 +331,26 @@ jobs:
                     fi
 
                     COVERED_OPENSHIFT_VERSIONS+=("$OPENSHIFT_VERSION")
-
+                    echo "===contents of catalog yaml==="
+                    cat ${CATALOG_YAML_PATH}
+                    echo "===end of catalog yaml==="
+                    echo "Running stage promoter with flags:"
+                    echo " -op stage-catalog-patch"
+                    echo " -c ${CATALOG_YAML_PATH}"
+                    echo " -p ${PATCH_YAML_PATH} "
+                    echo " -r ${RELEASE_CATALOG_YAML_PATH} "
+                    echo " -o ${OUTPUT_CATALOG_PATH} 
+                    echo " -v ${RHOAI_VERSION}"
 
                     #Invoke the stage promoter to patch the main catalog with release branch
-                    python3 utils/utils/stage-promoter/stage_promoter.py -op stage-catalog-patch -c ${CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -r ${RELEASE_CATALOG_YAML_PATH} -o ${OUTPUT_CATALOG_PATH} -v ${RHOAI_VERSION}
+                    python3 utils/utils/stage-promoter/stage_promoter.py \
+                      -op stage-catalog-patch \
+                      -c ${CATALOG_YAML_PATH} \
+                      -p ${PATCH_YAML_PATH} \
+                      -r ${RELEASE_CATALOG_YAML_PATH} \
+                      -o ${OUTPUT_CATALOG_PATH} \
+                      -v ${RHOAI_VERSION}
+                      
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
                 #Copy the build-args-map
