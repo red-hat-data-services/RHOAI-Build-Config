@@ -585,6 +585,7 @@ jobs:
           GLOBAL_CONFIG_PATH=main/config/config.yaml
 
 
+          VALIDATION_FAILED=0
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
@@ -596,8 +597,12 @@ jobs:
                 --build-config-path ${BUILD_CONFIG_PATH} \
                 --catalog-folder-path ${CATALOG_FOLDER_PATH} \
                 --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} \
-                --global-config-path ${GLOBAL_CONFIG_PATH}
+                --global-config-path ${GLOBAL_CONFIG_PATH} || VALIDATION_FAILED=1
           done
+          if [[ $VALIDATION_FAILED -eq 1 ]]; then
+            echo "One or more catalog validations failed"
+            exit 1
+          fi
 
 
       # ---------------------------------------------------------------
