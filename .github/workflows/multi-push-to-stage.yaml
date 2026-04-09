@@ -1,15 +1,52 @@
+# =============================================================================
+# Batch Stage Push Workflow
+# =============================================================================
+# This workflow promotes multiple RHOAI release branches into merged
+# catalog directories on the main branch — in one run.
+#
+# It is the multi-branch counterpart of push-to-stage.yaml, which handles
+# a single release branch at a time. Use this when multiple RHOAI versions
+# (e.g. v2.16 and v2.25) need their FBC (File-Based Catalog) fragments
+# promoted to stage together.
+#
+# Output directory auto-selection:
+#   Each OCP version is assigned to the first release branch (in input
+#   order) that supports it. This ensures catalogs land in directories
+#   with matching Tekton pipelines. Example:
+#     release_branches=rhoai-2.16,rhoai-2.25,rhoai-3.2,rhoai-3.3
+#       v4.14–v4.19 → catalog/rhoai-2.16/  (rhoai-2.16 supports these)
+#       v4.20–v4.21 → catalog/rhoai-2.25/  (first branch supporting v4.20+)
+#
+# High-level flow:
+#   1. Validate the FBC fragment images for each release branch (signature + digest).
+#   2. Ensure the PCC (Pre-Computed Catalog) cache is up to date with the
+#      production registry (registry.redhat.io).
+#   3. Build OCP → output branch mapping (first-branch-wins).
+#   4. For each release branch × OCP version, patch the base catalog with
+#      the release branch's catalog-patch.yaml using stage_promoter.py,
+#      writing output to the mapped branch's catalog directory.
+#   5. Commit the merged catalogs and build-args to main.
+#   6. Notify Slack.
+# =============================================================================
+
 name: Batch Stage Push
 run-name: Batch Stage Push
 on:
   workflow_dispatch:
     inputs:
       release_branches:
+        # Comma-separated release branch names to promote
+        # (e.g. "rhoai-2.13,rhoai-2.16,rhoai-2.25").
         description: 'Comma separated list of release branches'
         required: true
       rhoai_versions:
+        # Must be in the same order as release_branches — each version is
+        # paired positionally with its branch (e.g. "v2.13.0,v2.16.0,v2.25.0").
         description: 'Comma separated list of rhoai versions, eg v2.14.0,v2.16.0'
         required: true
       fbc_image_uri:
+        # URI of the FBC fragment image to promote. When set to LATEST_NIGHTLY,
+        # each branch resolves to quay.io/rhoai/rhoai-fbc-fragment:<branch>-nightly.
         description: 'Full image uri of the FBC fragment image'
         default: 'LATEST_NIGHTLY'
       forced_slack_notification:
@@ -36,9 +73,12 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
-  COMMON_VERSION: rhoai-2.19
 
 jobs:
+  # -------------------------------------------------------------------
+  # Job 1: Log all input parameters to the GitHub Actions step summary
+  # for easy debugging / auditability.
+  # -------------------------------------------------------------------
   show-info:
     runs-on: ubuntu-latest
     steps:
@@ -49,8 +89,12 @@ jobs:
           echo "### fbc_image_uri: ${{ github.event.inputs.fbc_image_uri }}" >> $GITHUB_STEP_SUMMARY
           echo "### forced_slack_notification: ${{ github.event.inputs.forced_slack_notification }}" >> $GITHUB_STEP_SUMMARY
           echo "### git_commit: ${{ github.event.inputs.git_commit }}" >> $GITHUB_STEP_SUMMARY
-          echo "### force_build: ${{ github.event.inputs.force_build }}" >> $GITHUB_STEP_SUMMARY          
+          echo "### force_build: ${{ github.event.inputs.force_build }}" >> $GITHUB_STEP_SUMMARY
 
+  # -------------------------------------------------------------------
+  # Job 2: The main promotion job. Runs in a privileged container
+  # (needed for skopeo / buildah operations).
+  # -------------------------------------------------------------------
   push-to-stage:
     if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-22.04
@@ -58,24 +102,24 @@ jobs:
       image: quay.io/rhoai/rhoai-task-toolset:latest
       options: --privileged
     steps:
+      # ---------------------------------------------------------------
+      # Checkout the main branch — this is the target we'll modify.
+      # The catalog/, pcc/, builds/ directories here are the "output".
+      # ---------------------------------------------------------------
       - name: Git checkout RBC main
         uses: actions/checkout@v4
         with:
           ref: main
           path: main
 
-      - name: Git checkout all RBC branches
-        run: |
-          rhoai_versions="${{ github.event.inputs.rhoai_version }}"
-          release_branches="${{ github.event.inputs.release_branches }}"
-          IFS=', ' read -r -a release_branches <<< "${release_branches}"
-          for release_branch in "${release_branches[@]}"
-          do
-            # latest release branch
-            checkout_dir=latest_rbc_release_${release_branch}
-            git clone https://github.com/${{ env.GITHUB_ORG }}/RHOAI-Build-Config.git --branch ${release_branch} ${checkout_dir}
-          done
-
+      # ---------------------------------------------------------------
+      # Install CLI tools needed by later steps:
+      #   - yq: YAML processor (used to read build-config.yaml)
+      #   - skopeo: container image inspection & copy (used to inspect
+      #     FBC images and verify cosign signatures)
+      # Also logs into quay.io/rhoai with read-only credentials so
+      # skopeo can pull image metadata.
+      # ---------------------------------------------------------------
       - name: Install dependencies
         env:
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
@@ -90,56 +134,98 @@ jobs:
           chmod +x $yq_filename
           ln -s $yq_filename yq
           cp $yq_filename /usr/local/bin/yq
-          
+
           microdnf install -y skopeo && \
               microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
+
+      # ---------------------------------------------------------------
+      # For each release branch, validate its FBC fragment image:
+      #
+      # 1. Resolve the image URI (use nightly tag if LATEST_NIGHTLY).
+      # 2. Inspect the image with skopeo to get its digest and the
+      #    git commit label (git.commit) baked into the image.
+      # 3. Verify the image has a valid cosign signature by checking
+      #    for a corresponding .sig tag in the registry.
+      # 4. Shallow-clone the RHOAI-Build-Config repo at the exact
+      #    commit that produced the FBC image — this gives us the
+      #    catalog-patch.yaml and build-config.yaml as they were when
+      #    the image was built, ensuring consistency.
+      # 5. Collect all git commits into a space-separated GIT_COMMITS
+      #    array (one per release branch, positionally matched).
+      #
+      # Outputs:
+      #   GIT_COMMITS — space-separated list of commit SHAs
+      # ---------------------------------------------------------------
       - name: Validate FBC Image
         id: validate-fbc-image
         run: |
           BASE_URI=docker://quay.io/rhoai/rhoai-fbc-fragment
-          
+          STEP_START=$SECONDS
+
           declare -a GIT_COMMITS=()
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           for release_branch in "${release_branches[@]}"
           do
+              BRANCH_START=$SECONDS
               image_uri=${{ github.event.inputs.fbc_image_uri }}
               echo "processing $release_branch"
               if [[ $image_uri == LATEST_NIGHTLY ]]; then image_uri=${BASE_URI}:${release_branch}-nightly; fi
               if [[ "$image_uri" != docker* ]]; then image_uri="docker://${image_uri}"; fi
               echo $image_uri
-              META=$(skopeo inspect "${image_uri}")
+
+              T=$SECONDS
+              META=$(skopeo inspect --no-tags "${image_uri}")
+              echo "[perf] skopeo inspect image: $((SECONDS - T))s"
+
               DIGEST=$(echo $META | jq -r .Digest)
               image_uri=${BASE_URI}@${DIGEST}
               GIT_COMMIT=$(echo $META | jq -r '.Labels | ."git.commit"')
               SIG_TAG=${DIGEST/:/-}.sig
-              SIG_DIGEST=$(skopeo inspect ${BASE_URI}:${SIG_TAG}  | jq -r .Digest)
+
+              T=$SECONDS
+              SIG_DIGEST=$(skopeo inspect --no-tags ${BASE_URI}:${SIG_TAG}  | jq -r .Digest)
+              echo "[perf] skopeo inspect signature: $((SECONDS - T))s"
+
               if [[ -z $SIG_DIGEST ]]; then echo "Invalid FBC image, no valid signatures found."; exit 1; fi
               echo "Valid signature found with the digest - ${SIG_DIGEST}"
               echo "Validation successful, preparing to push the image to stage - ${image_uri}"
-              
-              
+
+
               echo "digest=${DIGEST}" >> $GITHUB_OUTPUT
               echo "image_uri=${image_uri}" >> $GITHUB_OUTPUT
               echo "ref=$ref"
-              
+
+              # Shallow-clone the repo at the exact commit that built this FBC image.
+              # This ensures we use the catalog-patch.yaml and build-config.yaml from
+              # the same state that produced the image.
               checkout_dir=${release_branch}
               mkdir -p ${checkout_dir}
               cd ${checkout_dir}
               git config --global init.defaultBranch ${release_branch}
+
+              T=$SECONDS
               git init
               git remote add origin https://github.com/${{ env.GITHUB_ORG }}/RHOAI-Build-Config.git
               git fetch --depth=1 origin ${GIT_COMMIT}
               git checkout ${GIT_COMMIT}
+              echo "[perf] git clone at commit: $((SECONDS - T))s"
+
               GIT_COMMITS+=("${GIT_COMMIT}")
               cd ../
             echo "GIT_COMMIT=${GIT_COMMIT}"
             echo "GIT_COMMITS=${GIT_COMMITS[*]}"
+            echo "[perf] branch ${release_branch} total: $((SECONDS - BRANCH_START))s"
           done
+          echo "[perf] Validate FBC Image total: $((SECONDS - STEP_START))s"
           echo "GIT_COMMITS=${GIT_COMMITS[*]}" >> $GITHUB_OUTPUT
           echo "GIT_COMMITS=${GIT_COMMITS[*]}"
 
+      # ---------------------------------------------------------------
+      # Debug step: verifies the GIT_COMMITS output can be correctly
+      # parsed back into a bash array from the step output.
+      # ---------------------------------------------------------------
       - name: poc
         run: |
           echo "GIT_COMMITS=${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
@@ -147,15 +233,42 @@ jobs:
           echo "GIT_COMMITS = ${GIT_COMMITS[*]}"
           echo "GIT_COMMITS[1]=${GIT_COMMITS[1]}"
 
+      # ---------------------------------------------------------------
+      # Checkout the RHOAI-Konflux-Automation repo which contains
+      # utility scripts:
+      #   - utils/stage-promoter/stage_promoter.py — patches base
+      #     catalogs with release-specific OLM bundle/channel changes
+      #   - utils/bundle-processor/ — bundle processing utilities
+      #   - utils/validators/catalog_validator.py — validates catalogs
+      # ---------------------------------------------------------------
       - name: Git checkout utils
         uses: actions/checkout@v4
         with:
           repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
-          ref: main
+          ref: '3.0'
           path: utils
       - name: Install python dependencies
         run: |
           pip install --default-timeout=100 -r utils/utils/bundle-processor/requirements.txt
+          pip install -r utils/utils/stage-promoter/requirements.txt
+
+      # ---------------------------------------------------------------
+      # PCC (Pre-Computed Catalog) Cache Validation
+      #
+      # The PCC cache (main/pcc/) stores a snapshot of the production
+      # operator catalog from registry.redhat.io. It provides the "base"
+      # catalog that release branches patch on top of. If new RHOAI
+      # versions have shipped to production since the cache was last
+      # updated, the cache is stale and must be regenerated.
+      #
+      # How it works:
+      #   1. Fetch the current list of shipped RHOAI versions from
+      #      registry.redhat.io/rhoai/odh-operator-bundle tags.
+      #   2. Compare against the cached list in
+      #      main/pcc/shipped_rhoai_versions_granular.txt.
+      #   3. If there are new versions, mark PCC_CACHE_VALID=NO and
+      #      update the cached version list.
+      # ---------------------------------------------------------------
       - name: Check if PCC Cache Valid
         id: check-if-pcc-cache-valid
         env:
@@ -164,31 +277,47 @@ jobs:
         run: |
           microdnf install -y coreutils-single && \
               microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
           PCC_CACHE_VALID=YES
           skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > latest_shipped_rhoai_versions.txt
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "latest_shipped_rhoai_versions = "
-          cat latest_shipped_rhoai_versions.txt
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
           echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions.txt
+          cat main/pcc/shipped_rhoai_versions_granular.txt
 
-          #diff=$(cmp --silent latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
 
           if [[ $diff -gt 0 ]]
           then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
+            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
             echo "following new versions are shipped - $diff"
-            cp latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
             PCC_CACHE_VALID=NO
           fi
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
+
+      # ---------------------------------------------------------------
+      # Regenerate PCC Cache (only runs when cache is stale)
+      #
+      # Uses the opm CLI to migrate production operator indices into
+      # catalog formats. Two separate indices are used to prevent
+      # bundles from leaking across OCP version boundaries:
+      #
+      #   v4.17 index → bundle_object_catalog.yaml (OCP < 4.17)
+      #                  csv_meta_catalog.yaml     (4.17 ≤ OCP < 4.19)
+      #
+      #   v4.19 index → bundle_object_catalog_v419.yaml (unused, generated for completeness)
+      #                  csv_meta_catalog_v419.yaml      (OCP ≥ 4.19)
+      #
+      # The v4.19 index contains RHOAI 3.x bundles that only belong on
+      # OCP ≥ 4.19. Using a single v4.19-sourced cache for all OCP
+      # versions would leak those 3.x bundles into older catalogs.
+      # ---------------------------------------------------------------
       - name: Regenerate PCC Cache
         id: regenerate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branches }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
         run: |
           #install opm cli
           os="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -204,57 +333,46 @@ jobs:
           microdnf install -y findutils && \
               microdnf clean all && rm -rf /var/cache/dnf/*
 
-          #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+          # --- Generate PCC from v4.17 index (for OCP < 4.19) ---
+          echo "=== Migrating v4.17 operator index ==="
+          opm migrate registry.redhat.io/redhat/redhat-operator-index:v4.17 ./catalog-migrate-v417
+          opm alpha convert-template basic catalog-migrate-v417/rhods-operator/catalog.json -o yaml > catalog-template-v417.yaml
+          opm alpha render-template basic catalog-template-v417.yaml -o yaml > main/pcc/bundle_object_catalog.yaml
+          opm alpha render-template basic catalog-template-v417.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > main/pcc/csv_meta_catalog.yaml
 
-          #Declare FBC processing variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          # --- Generate PCC from v4.19 index (for OCP >= 4.19) ---
+          echo "=== Migrating v4.19 operator index ==="
+          opm migrate registry.redhat.io/redhat/redhat-operator-index:v4.19 ./catalog-migrate-v419
+          opm alpha convert-template basic catalog-migrate-v419/rhods-operator/catalog.json -o yaml > catalog-template-v419.yaml
+          opm alpha render-template basic catalog-template-v419.yaml -o yaml > main/pcc/bundle_object_catalog_v419.yaml
+          opm alpha render-template basic catalog-template-v419.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > main/pcc/csv_meta_catalog_v419.yaml
 
-          CATALOG_GENERATION_REF_OCP_VERSION=v4.17
-          CSV_META_MIN_OCP_VERSION=417
-          BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:${CATALOG_GENERATION_REF_OCP_VERSION} ./catalog-migrate
-          opm alpha convert-template basic catalog-migrate/rhods-operator/catalog.json -o yaml > catalog-template.yaml
-          opm alpha render-template basic catalog-template.yaml -o yaml > ${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          opm alpha render-template basic catalog-template.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > ${CSV_META_CATALOG_YAML_PATH}
-
-          #while IFS= read -r value;
-          #do
-          #    OPENSHIFT_VERSION=$value
-          #    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          #    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-          #
-          #    CATALOG_YAML_PATH=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          #    CATALOG_DIR=main/pcc/${OPENSHIFT_VERSION}/rhods-operator
-          #    mkdir -p ${CATALOG_DIR}
-          #
-          #    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-          #    then
-          #      CATALOG_YAML_PATH=${CSV_META_CATALOG_YAML_PATH}
-          #    fi
-          #    cp ${CATALOG_YAML_PATH} ${CATALOG_DIR}/catalog.yaml
-          #done < <(find main/pcc/ -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
-
+          echo "=== PCC cache files ==="
           ls -l main/pcc/
 
+      # ---------------------------------------------------------------
+      # Validate the regenerated PCC cache using catalog_validator.py.
+      # Ensures the cached catalogs are structurally valid before using
+      # them as a base for patching.
+      # ---------------------------------------------------------------
       - name: Validate PCC Cache
         id: validate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branches }}
         run: |
           #Declare basic variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
 
           #Validate PCC
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
 
+      # ---------------------------------------------------------------
+      # If the PCC cache was regenerated, commit and push the updated
+      # cache files (shipped_rhoai_versions_granular.txt, catalog YAMLs)
+      # to the main branch so future runs can reuse them.
+      # ---------------------------------------------------------------
       - name: Push latest PCC Cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
         uses: actions-js/push@master
@@ -267,108 +385,242 @@ jobs:
           author_name: Openshift-AI DevOps
           author_email: openshift-ai-devops@redhat.com
 
+      # ---------------------------------------------------------------
+      # Core catalog patching — the heart of this workflow.
+      #
+      # Phase 1: Build OCP → output branch mapping.
+      #   Each OCP version is assigned to the first release branch
+      #   (in input order) that supports it. This ensures output
+      #   lands in catalog directories with matching Tekton pipelines.
+      #
+      # Phase 2: Patch catalogs.
+      #   For each release branch × OCP version, invoke stage_promoter.py.
+      #   Output goes to main/catalog/<output_branch>/<ocp_version>/.
+      #
+      # Phase 3: Write build args to each output branch directory.
+      #
+      # Outputs:
+      #   CATALOGS_CHANGED — "YES" or "NO"
+      #   OUTPUT_BRANCHES — space-separated list of output branch names
+      # ---------------------------------------------------------------
       - name: Push To Stage
         id: push-to-stage
         run: |
           echo "GIT_COMMITS=${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
 
           release_branches="${{ github.event.inputs.release_branches }}"
-
           rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
           echo "GIT_COMMITS = ${GIT_COMMITS[*]}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           IFS=', ' read -r -a rhoai_versions <<< "${rhoai_versions}"
-          COUNTER=0
-          declare -a COVERED_OPENSHIFT_VERSIONS=()
-          rm -rf main/catalog/${COMMON_VERSION}/catalog_build_args.map
+          STEP_START=$SECONDS
+
+          # --- Phase 1: Build OCP → output branch mapping ---
+          declare -A OCP_TO_OUTPUT_BRANCH
+          declare -a OUTPUT_BRANCHES=()
           for release_branch in "${release_branches[@]}"
           do
+              BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
+              while IFS= read -r ocp_version;
+              do
+                  if [[ -z "${OCP_TO_OUTPUT_BRANCH[$ocp_version]+x}" ]]; then
+                      OCP_TO_OUTPUT_BRANCH[$ocp_version]=$release_branch
+                      if ! [[ " ${OUTPUT_BRANCHES[@]} " =~ " ${release_branch} " ]]; then
+                          OUTPUT_BRANCHES+=("$release_branch")
+                      fi
+                  fi
+              done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+          done
+
+          echo "=== OCP → output branch mapping ==="
+          for ocp in $(echo "${!OCP_TO_OUTPUT_BRANCH[@]}" | tr ' ' '\n' | sort); do
+              echo "  $ocp → ${OCP_TO_OUTPUT_BRANCH[$ocp]}"
+          done
+          echo "Output branches: ${OUTPUT_BRANCHES[*]}"
+          echo "OUTPUT_BRANCHES=${OUTPUT_BRANCHES[*]}" >> $GITHUB_OUTPUT
+
+          # Clear stale build args for all output branches
+          for output_branch in "${OUTPUT_BRANCHES[@]}"; do
+              rm -f main/catalog/${output_branch}/catalog_build_args.map
+          done
+
+          # --- Phase 2: Patch catalogs ---
+          COUNTER=0
+          declare -a COVERED_OPENSHIFT_VERSIONS=()
+          for release_branch in "${release_branches[@]}"
+          do
+                BRANCH_START=$SECONDS
                 RHOAI_NUMERIC_VERSION=${release_branch/rhoai-/}
                 RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
                 echo "RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION}"
 
                 RHOAI_VERSION=${rhoai_versions[$COUNTER]}
                 BRANCH=${release_branch}
-                #Declare basic variables
-                COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-                OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
 
-                #Declare FBC processing variables
                 BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
                 PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
 
                 PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
                 PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
+                PCC_CSV_META_CATALOG_V419_YAML_PATH=main/pcc/csv_meta_catalog_v419.yaml
                 CSV_META_MIN_OCP_VERSION=417
+                V419_MIN_OCP_VERSION=419
 
                 while IFS= read -r value;
                 do
                     OPENSHIFT_VERSION=$value
-                    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
                     NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
+                    OUTPUT_BRANCH=${OCP_TO_OUTPUT_BRANCH[$OPENSHIFT_VERSION]}
+                    echo "${release_branch} ${OPENSHIFT_VERSION} → catalog/${OUTPUT_BRANCH}/"
 
                     RELEASE_CATALOG_YAML_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
-                    OUTPUT_CATALOG_DIR=main/catalog/${COMMON_VERSION}/${OPENSHIFT_VERSION}/rhods-operator/
+                    OUTPUT_CATALOG_DIR=main/catalog/${OUTPUT_BRANCH}/${OPENSHIFT_VERSION}/rhods-operator/
                     mkdir -p ${OUTPUT_CATALOG_DIR}
                     OUTPUT_CATALOG_PATH=${OUTPUT_CATALOG_DIR}/catalog.yaml
 
                     if [[ ${COUNTER} -eq 0 ]] || ! [[ " ${COVERED_OPENSHIFT_VERSIONS[@]} " =~ " ${OPENSHIFT_VERSION} " ]]
                     then
-                        CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
-                        if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+                        if [[ $NUMERIC_OCP_VERSION -ge $V419_MIN_OCP_VERSION ]]
+                        then
+                          CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_V419_YAML_PATH}
+                        elif [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
                         then
                           CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_YAML_PATH}
+                        else
+                          CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
                         fi
+                        # Seed the output with the PCC cache so that even if
+                        # stage_promoter skips writing (bundle already exists),
+                        # subsequent branches get a fresh base instead of stale
+                        # pre-existing content from the main checkout.
+                        cp ${CATALOG_YAML_PATH} ${OUTPUT_CATALOG_PATH}
                     else
                         CATALOG_YAML_PATH=${OUTPUT_CATALOG_PATH}
                     fi
 
                     COVERED_OPENSHIFT_VERSIONS+=("$OPENSHIFT_VERSION")
 
-
-                    #Invoke the stage promoter to patch the main catalog with release branch
-                    python3 utils/utils/stage-promoter/stage_promoter.py -op stage-catalog-patch -c ${CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -r ${RELEASE_CATALOG_YAML_PATH} -o ${OUTPUT_CATALOG_PATH} -v ${RHOAI_VERSION}
+                    T=$SECONDS
+                    python3 utils/utils/stage-promoter/stage_promoter.py \
+                      -op stage-catalog-patch \
+                      -c ${CATALOG_YAML_PATH} \
+                      -p ${PATCH_YAML_PATH} \
+                      -r ${RELEASE_CATALOG_YAML_PATH} \
+                      -o ${OUTPUT_CATALOG_PATH} \
+                      -v ${RHOAI_VERSION} \
+                      --skip-ea-pruning \
+                      --skip-purge
+                    echo "[perf] stage_promoter ${release_branch} ${OPENSHIFT_VERSION}: $((SECONDS - T))s"
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
-                #Copy the build-args-map
-                cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
-                { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
-                if [[ "${BRANCH}" == "${COMMON_VERSION}" ]]
-                then
-                    { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
-                fi
-                rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
+            echo "[perf] branch ${release_branch} total: $((SECONDS - BRANCH_START))s"
+          done
+          echo "[perf] Push To Stage total: $((SECONDS - STEP_START))s"
+
+          # --- Phase 3: Write build args to each output branch ---
+          COUNTER=0
+          for release_branch in "${release_branches[@]}"
+          do
+              RHOAI_NUMERIC_VERSION=${release_branch/rhoai-/}
+              RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
+              for output_branch in "${OUTPUT_BRANCHES[@]}"
+              do
+                  { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat ${release_branch}/catalog/catalog_build_args.map; } >> main/catalog/${output_branch}/catalog_build_args.map
+                  if [[ "${release_branch}" == "${output_branch}" ]]; then
+                      { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; } >> main/catalog/${output_branch}/catalog_build_args.map
+                  fi
+              done
+              COUNTER=$((COUNTER + 1))
           done
 
-          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${COMMON_VERSION}.txt"; fi
-          git -C main/catalog/${BRANCH} status
-          GIT_STATUS=$(git -C main/catalog/${COMMON_VERSION} status)
+          # Force build trigger
+          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then
+              for output_branch in "${OUTPUT_BRANCHES[@]}"; do
+                  echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${output_branch}.txt"
+              done
+          fi
+
+          # Check if any catalogs changed
+          GIT_STATUS=$(git -C main status)
           CATALOGS_CHANGED=YES
           if [[ $GIT_STATUS == *"nothing to commit"* ]]; then CATALOGS_CHANGED=NO; fi
           echo "CATALOGS_CHANGED=${CATALOGS_CHANGED}" >> $GITHUB_OUTPUT
 
+      # ---------------------------------------------------------------
+      # Validate that the output catalogs are structurally correct.
+      #
+      # Because catalogs may be spread across multiple output branch
+      # directories (e.g. catalog/rhoai-2.16/ and catalog/rhoai-2.25/),
+      # we create a temporary unified folder that symlinks all OCP
+      # version catalogs into one place. This lets the validator find
+      # every OCP version a release branch expects, regardless of which
+      # output directory it landed in.
+      #
+      # The unified folder is never committed — it's purely for validation.
+      # ---------------------------------------------------------------
       - name: Validate Catalogs
         id: validate-catalogs
-        env:
-          BRANCH: ${{ github.event.inputs.release_branches }}
+        shell: bash
         run: |
-          #Declare basic variables
+          set -eo pipefail
 
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
-          CATALOG_FOLDER_PATH=main/catalog/${COMMON_VERSION}
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
 
+          # Re-derive the OCP → output branch mapping
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
+
+          declare -A OCP_TO_OUTPUT_BRANCH
           for release_branch in "${release_branches[@]}"
           do
               BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
-              #Validate Catalogs
-              python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
+              while IFS= read -r ocp_version;
+              do
+                  if [[ -z "${OCP_TO_OUTPUT_BRANCH[$ocp_version]+x}" ]]; then
+                      OCP_TO_OUTPUT_BRANCH[$ocp_version]=$release_branch
+                  fi
+              done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
           done
 
+          # Build a unified validation folder with symlinks to the actual catalogs
+          VALIDATION_DIR=validation_catalogs
+          rm -rf ${VALIDATION_DIR}
+          mkdir -p ${VALIDATION_DIR}
+          for ocp_version in "${!OCP_TO_OUTPUT_BRANCH[@]}"; do
+              output_branch=${OCP_TO_OUTPUT_BRANCH[$ocp_version]}
+              ln -s "$(pwd)/main/catalog/${output_branch}/${ocp_version}" "${VALIDATION_DIR}/${ocp_version}"
+          done
+          echo "=== Unified validation folder ==="
+          ls -la ${VALIDATION_DIR}/
 
+          # Validate each release branch against the unified folder
+          VALIDATION_FAILED=0
+          for release_branch in "${release_branches[@]}"
+          do
+              BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
+              echo "=== Validating with ${release_branch} build-config ==="
+              python3 utils/utils/validators/catalog_validator.py \
+                -op validate-catalogs \
+                --build-config-path ${BUILD_CONFIG_PATH} \
+                --catalog-folder-path ${VALIDATION_DIR} \
+                --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} \
+                --global-config-path ${GLOBAL_CONFIG_PATH} || VALIDATION_FAILED=1
+          done
+
+          rm -rf ${VALIDATION_DIR}
+          if [[ $VALIDATION_FAILED -eq 1 ]]; then
+            echo "One or more catalog validations failed"
+            exit 1
+          fi
+
+
+      # ---------------------------------------------------------------
+      # Commit and push the patched catalogs + build-args to main.
+      # Only runs if catalog files actually changed.
+      # ---------------------------------------------------------------
       - name: Commit and push the changes to main branch
         if: ${{ steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' }}
         uses: actions-js/push@master
@@ -380,36 +632,13 @@ jobs:
           directory: main
           author_name: Openshift-AI DevOps
           author_email: openshift-ai-devops@redhat.com
-#      - name: Monitor FBC builds
-#        if: ${{ steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' }}
-#        id: monitor-fbc-builds
-#        env:
-#          BRANCH: ${{ github.event.inputs.release_branches }}
-#          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
-#          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
-#          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
-#          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
-#        run: |
-#          LATEST_RBC_MAIN_COMMIT=$(git -C main log -1 | grep ^commit | cut -d " " -f 2)
-#          BUILD_CONFIG_PATH=latest_rbc_release/config/build-config.yaml
-#          GIT_COMMIT=${LATEST_RBC_MAIN_COMMIT}
-#          if [[ -z ${{ github.event.inputs.release_branches }} ]]; then GIT_COMMIT=${{ github.event.inputs.release_branches }}; fi
-#          python3 -u utils/utils/stage-promoter/stage_promoter.py -op monitor-fbc-builds -o utils/fbc_images.json -v ${BRANCH} --timeout 60 -b ${BUILD_CONFIG_PATH} --git-commit ${GIT_COMMIT}
-#          #${LATEST_RBC_MAIN_COMMIT}
-#          cat utils/slack_message.txt
-#          SLACK_MESSAGE=$(cat utils/slack_message.txt)
-#          #echo -en "SLACK_MESSAGE=${SLACK_MESSAGE}" >> $GITHUB_OUTPUT
-#          {
-#            echo "SLACK_MESSAGE<<EOF"
-#            echo -e "${SLACK_MESSAGE}"
-#            echo "EOF"
-#          } >> $GITHUB_OUTPUT
 
+      # ---------------------------------------------------------------
       - name: Send Slack Notification
         if: ${{ success() && ( steps.push-to-stage.outputs.CATALOGS_CHANGED == 'YES' || github.event.inputs.forced_slack_notification == 'true' ) }}
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_MESSAGE: '${{ steps.monitor-fbc-builds.outputs.SLACK_MESSAGE }}'
+          SLACK_MESSAGE: 'Stage catalog patched with ${{ github.event.inputs.release_branches }}'
           SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
           MSG_MINIMAL: true
           SLACK_COLOR: ${{ job.status }}
