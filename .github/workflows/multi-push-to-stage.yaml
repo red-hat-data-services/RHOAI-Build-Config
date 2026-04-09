@@ -1,22 +1,32 @@
 # =============================================================================
 # Batch Stage Push Workflow
 # =============================================================================
-# This workflow promotes multiple RHOAI release branches into a single
-# "common version" catalog directory on the main branch — in one run.
+# This workflow promotes multiple RHOAI release branches into merged
+# catalog directories on the main branch — in one run.
 #
 # It is the multi-branch counterpart of push-to-stage.yaml, which handles
 # a single release branch at a time. Use this when multiple RHOAI versions
 # (e.g. v2.16 and v2.25) need their FBC (File-Based Catalog) fragments
-# promoted to stage together under a shared common_version umbrella.
+# promoted to stage together.
+#
+# Output directory auto-selection:
+#   Each OCP version is assigned to the first release branch (in input
+#   order) that supports it. This ensures catalogs land in directories
+#   with matching Tekton pipelines. Example:
+#     release_branches=rhoai-2.16,rhoai-2.25,rhoai-3.2,rhoai-3.3
+#       v4.14–v4.19 → catalog/rhoai-2.16/  (rhoai-2.16 supports these)
+#       v4.20–v4.21 → catalog/rhoai-2.25/  (first branch supporting v4.20+)
 #
 # High-level flow:
 #   1. Validate the FBC fragment images for each release branch (signature + digest).
 #   2. Ensure the PCC (Pre-Computed Catalog) cache is up to date with the
 #      production registry (registry.redhat.io).
-#   3. For each release branch × OCP version, patch the base catalog with
-#      the release branch's catalog-patch.yaml using stage_promoter.py.
-#   4. Commit the merged catalogs and build-args to main.
-#   5. Notify Slack.
+#   3. Build OCP → output branch mapping (first-branch-wins).
+#   4. For each release branch × OCP version, patch the base catalog with
+#      the release branch's catalog-patch.yaml using stage_promoter.py,
+#      writing output to the mapped branch's catalog directory.
+#   5. Commit the merged catalogs and build-args to main.
+#   6. Notify Slack.
 # =============================================================================
 
 name: Batch Stage Push
@@ -24,12 +34,6 @@ run-name: Batch Stage Push
 on:
   workflow_dispatch:
     inputs:
-      common_version:
-        # The release branch name that serves as the output directory on main
-        # (e.g. "rhoai-2.25"). All patched catalogs land under
-        # main/catalog/<common_version>/.
-        description: 'release branch which targets all the affected ocp versions'
-        required: true
       release_branches:
         # Comma-separated release branch names to promote
         # (e.g. "rhoai-2.13,rhoai-2.16,rhoai-2.25").
@@ -69,7 +73,6 @@ permissions:
 env:
   GITHUB_ORG: red-hat-data-services
   GITHUB_RKA_ORG: rhoai-rhtap
-  COMMON_VERSION: ${{ github.event.inputs.common_version }}
 
 jobs:
   # -------------------------------------------------------------------
@@ -317,9 +320,6 @@ jobs:
       - name: Regenerate PCC Cache
         id: regenerate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.common_version }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_versions }}
         run: |
           #install opm cli
           os="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -360,8 +360,6 @@ jobs:
       - name: Validate PCC Cache
         id: validate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.common_version }}
         run: |
           #Declare basic variables
           BUILD_CONFIG_PATH=main/config/config.yaml
@@ -392,48 +390,20 @@ jobs:
       # ---------------------------------------------------------------
       # Core catalog patching — the heart of this workflow.
       #
-      # Iterates over each release branch (paired with its RHOAI
-      # version and git commit) and, for each OCP version that branch
-      # supports, invokes stage_promoter.py to:
+      # Phase 1: Build OCP → output branch mapping.
+      #   Each OCP version is assigned to the first release branch
+      #   (in input order) that supports it. This ensures output
+      #   lands in catalog directories with matching Tekton pipelines.
       #
-      #   1. Load a base catalog:
-      #      - First branch for an OCP version: uses PCC cache, chosen
-      #        by OCP version:
-      #          OCP < 4.17  → bundle_object_catalog.yaml   (v4.17 index)
-      #          4.17–4.18   → csv_meta_catalog.yaml        (v4.17 index)
-      #          OCP ≥ 4.19  → csv_meta_catalog_v419.yaml   (v4.19 index)
-      #        The v4.17/v4.19 split prevents 3.x bundles (only in the
-      #        v4.19 index) from leaking into older OCP catalogs.
-      #      - Subsequent branches for the same OCP version: uses the
-      #        output from the previous branch's patch, so changes
-      #        accumulate.
+      # Phase 2: Patch catalogs.
+      #   For each release branch × OCP version, invoke stage_promoter.py.
+      #   Output goes to main/catalog/<output_branch>/<ocp_version>/.
       #
-      #   2. stage_promoter.py "stage-catalog-patch" operation:
-      #      - Reads the base catalog into a dict keyed by OLM schema
-      #        (olm.package, olm.channel, olm.bundle).
-      #      - Patches the current release's olm.bundle entry from the
-      #        release branch's catalog.yaml into the base catalog.
-      #      - Applies olm.package updates (e.g. defaultChannel) from
-      #        catalog-patch.yaml.
-      #      - Merges olm.channel entries (adds/updates upgrade edges,
-      #        skipRange). "beta" channels are fully reset rather than
-      #        merged. For OCP >= 4.19, EA drops in beta are pruned to
-      #        keep only the latest.
-      #      - Purges olm.bundle entries no longer referenced by any
-      #        channel.
-      #      - Writes the patched catalog to the output path under
-      #        main/catalog/<common_version>/<ocp_version>/rhods-operator/.
-      #
-      #   3. Copies each release branch's catalog_build_args.map
-      #      (100+ component git commit references) into the common
-      #      version directory, prepending the RBC release branch
-      #      commit SHA for traceability.
-      #
-      # After all branches are processed, checks whether any catalog
-      # files actually changed (to avoid empty commits).
+      # Phase 3: Write build args to each output branch directory.
       #
       # Outputs:
       #   CATALOGS_CHANGED — "YES" or "NO"
+      #   OUTPUT_BRANCHES — space-separated list of output branch names
       # ---------------------------------------------------------------
       - name: Push To Stage
         id: push-to-stage
@@ -441,68 +411,76 @@ jobs:
           echo "GIT_COMMITS=${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
 
           release_branches="${{ github.event.inputs.release_branches }}"
-
           rhoai_versions="${{ github.event.inputs.rhoai_versions }}"
           IFS=" " read -a GIT_COMMITS <<< "${{ steps.validate-fbc-image.outputs.GIT_COMMITS }}"
           echo "GIT_COMMITS = ${GIT_COMMITS[*]}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
           IFS=', ' read -r -a rhoai_versions <<< "${rhoai_versions}"
-          COUNTER=0
           STEP_START=$SECONDS
+
+          # --- Phase 1: Build OCP → output branch mapping ---
+          declare -A OCP_TO_OUTPUT_BRANCH
+          declare -a OUTPUT_BRANCHES=()
+          for release_branch in "${release_branches[@]}"
+          do
+              BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
+              while IFS= read -r ocp_version;
+              do
+                  if [[ -z "${OCP_TO_OUTPUT_BRANCH[$ocp_version]+x}" ]]; then
+                      OCP_TO_OUTPUT_BRANCH[$ocp_version]=$release_branch
+                      if ! [[ " ${OUTPUT_BRANCHES[@]} " =~ " ${release_branch} " ]]; then
+                          OUTPUT_BRANCHES+=("$release_branch")
+                      fi
+                  fi
+              done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+          done
+
+          echo "=== OCP → output branch mapping ==="
+          for ocp in $(echo "${!OCP_TO_OUTPUT_BRANCH[@]}" | tr ' ' '\n' | sort); do
+              echo "  $ocp → ${OCP_TO_OUTPUT_BRANCH[$ocp]}"
+          done
+          echo "Output branches: ${OUTPUT_BRANCHES[*]}"
+          echo "OUTPUT_BRANCHES=${OUTPUT_BRANCHES[*]}" >> $GITHUB_OUTPUT
+
+          # Clear stale build args for all output branches
+          for output_branch in "${OUTPUT_BRANCHES[@]}"; do
+              rm -f main/catalog/${output_branch}/catalog_build_args.map
+          done
+
+          # --- Phase 2: Patch catalogs ---
+          COUNTER=0
           declare -a COVERED_OPENSHIFT_VERSIONS=()
-          rm -rf main/catalog/${COMMON_VERSION}/catalog_build_args.map
           for release_branch in "${release_branches[@]}"
           do
                 BRANCH_START=$SECONDS
-                # Derive a numeric version suffix for the build-args key
-                # (e.g. "rhoai-2.25" -> "225")
                 RHOAI_NUMERIC_VERSION=${release_branch/rhoai-/}
                 RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
                 echo "RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION}"
 
                 RHOAI_VERSION=${rhoai_versions[$COUNTER]}
                 BRANCH=${release_branch}
-                #Declare basic variables
-                COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-                OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
 
-                #Declare FBC processing variables
                 BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
                 PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
 
-                # PCC cache files — two sets sourced from different indices:
-                #   v4.17 index (no 3.x bundles): for OCP < 4.19
-                #   v4.19 index (has 3.x bundles): for OCP >= 4.19
                 PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
                 PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-                PCC_BUNDLE_OBJECT_CATALOG_V419_YAML_PATH=main/pcc/bundle_object_catalog_v419.yaml
                 PCC_CSV_META_CATALOG_V419_YAML_PATH=main/pcc/csv_meta_catalog_v419.yaml
                 CSV_META_MIN_OCP_VERSION=417
                 V419_MIN_OCP_VERSION=419
 
-                # Loop over each OCP version supported by this release branch
-                # (read from the branch's build-config.yaml).
                 while IFS= read -r value;
                 do
                     OPENSHIFT_VERSION=$value
-                    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
                     NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
+                    OUTPUT_BRANCH=${OCP_TO_OUTPUT_BRANCH[$OPENSHIFT_VERSION]}
+                    echo "${release_branch} ${OPENSHIFT_VERSION} → catalog/${OUTPUT_BRANCH}/"
 
                     RELEASE_CATALOG_YAML_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
-                    OUTPUT_CATALOG_DIR=main/catalog/${COMMON_VERSION}/${OPENSHIFT_VERSION}/rhods-operator/
+                    OUTPUT_CATALOG_DIR=main/catalog/${OUTPUT_BRANCH}/${OPENSHIFT_VERSION}/rhods-operator/
                     mkdir -p ${OUTPUT_CATALOG_DIR}
                     OUTPUT_CATALOG_PATH=${OUTPUT_CATALOG_DIR}/catalog.yaml
 
-                    # Choose the base catalog:
-                    # - If this is the first branch touching this OCP version,
-                    #   start from the PCC cache.
-                    # - If a previous branch already patched this OCP version,
-                    #   build on top of that output so changes accumulate.
-                    #
-                    # PCC cache selection (first branch only):
-                    #   OCP < 4.17  → bundle_object_catalog.yaml     (v4.17 index)
-                    #   4.17 ≤ OCP < 4.19 → csv_meta_catalog.yaml   (v4.17 index)
-                    #   OCP ≥ 4.19  → csv_meta_catalog_v419.yaml     (v4.19 index)
                     if [[ ${COUNTER} -eq 0 ]] || ! [[ " ${COVERED_OPENSHIFT_VERSIONS[@]} " =~ " ${OPENSHIFT_VERSION} " ]]
                     then
                         if [[ $NUMERIC_OCP_VERSION -ge $V419_MIN_OCP_VERSION ]]
@@ -520,14 +498,6 @@ jobs:
 
                     COVERED_OPENSHIFT_VERSIONS+=("$OPENSHIFT_VERSION")
 
-
-                    # Invoke stage_promoter.py to merge the release branch's
-                    # catalog changes into the base catalog:
-                    #   -c : base catalog (PCC cache or previous output)
-                    #   -p : catalog-patch.yaml from the release branch
-                    #   -r : release branch's per-OCP catalog.yaml (contains the olm.bundle)
-                    #   -o : output path under main/catalog/<common_version>/
-                    #   -v : RHOAI version string (e.g. v2.25.0)
                     T=$SECONDS
                     python3 utils/utils/stage-promoter/stage_promoter.py \
                       -op stage-catalog-patch \
@@ -541,64 +511,103 @@ jobs:
                     echo "[perf] stage_promoter ${release_branch} ${OPENSHIFT_VERSION}: $((SECONDS - T))s"
                 done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
-                # Merge build args: copy the release branch's catalog_build_args.map
-                # and prepend the release branch commit SHA (keyed by numeric version)
-                # so Konflux/Tekton builds can trace which commit produced each catalog.
-                cp ${BRANCH}/catalog/catalog_build_args.map main/catalog/${BRANCH}/tmp_args.map
-                { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat main/catalog/${BRANCH}/tmp_args.map; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
-                # If this branch IS the common version, also set the generic
-                # RBC_RELEASE_BRANCH_COMMIT key (without version suffix).
-                if [[ "${BRANCH}" == "${COMMON_VERSION}" ]]
-                then
-                    { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; } >> main/catalog/${COMMON_VERSION}/catalog_build_args.map
-                fi
-                rm -rf main/catalog/${BRANCH}/tmp_args.map
             COUNTER=$((COUNTER + 1))
             echo "[perf] branch ${release_branch} total: $((SECONDS - BRANCH_START))s"
           done
           echo "[perf] Push To Stage total: $((SECONDS - STEP_START))s"
 
-          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${COMMON_VERSION}.txt"; fi
-          git -C main/catalog/${BRANCH} status
-          GIT_STATUS=$(git -C main/catalog/${COMMON_VERSION} status)
+          # --- Phase 3: Write build args to each output branch ---
+          COUNTER=0
+          for release_branch in "${release_branches[@]}"
+          do
+              RHOAI_NUMERIC_VERSION=${release_branch/rhoai-/}
+              RHOAI_NUMERIC_VERSION=${RHOAI_NUMERIC_VERSION/./}
+              for output_branch in "${OUTPUT_BRANCHES[@]}"
+              do
+                  { echo -en "RBC_RELEASE_BRANCH_COMMIT_${RHOAI_NUMERIC_VERSION}=${GIT_COMMITS[$COUNTER]}\n"; cat ${release_branch}/catalog/catalog_build_args.map; } >> main/catalog/${output_branch}/catalog_build_args.map
+                  if [[ "${release_branch}" == "${output_branch}" ]]; then
+                      { echo -en "RBC_RELEASE_BRANCH_COMMIT=${GIT_COMMITS[$COUNTER]}\n"; } >> main/catalog/${output_branch}/catalog_build_args.map
+                  fi
+              done
+              COUNTER=$((COUNTER + 1))
+          done
+
+          # Force build trigger
+          if [[ ${{ github.event.inputs.force_build }} == 'true' ]]; then
+              for output_branch in "${OUTPUT_BRANCHES[@]}"; do
+                  echo $(date +'%d-%m-%Y %H:%M:%S:%3N') > "main/builds/force-trigger-${output_branch}.txt"
+              done
+          fi
+
+          # Check if any catalogs changed
+          GIT_STATUS=$(git -C main status)
           CATALOGS_CHANGED=YES
           if [[ $GIT_STATUS == *"nothing to commit"* ]]; then CATALOGS_CHANGED=NO; fi
           echo "CATALOGS_CHANGED=${CATALOGS_CHANGED}" >> $GITHUB_OUTPUT
 
       # ---------------------------------------------------------------
       # Validate that the output catalogs are structurally correct.
-      # Runs catalog_validator.py for each release branch's
-      # build-config against the merged output catalog directory.
+      #
+      # Because catalogs may be spread across multiple output branch
+      # directories (e.g. catalog/rhoai-2.16/ and catalog/rhoai-2.25/),
+      # we create a temporary unified folder that symlinks all OCP
+      # version catalogs into one place. This lets the validator find
+      # every OCP version a release branch expects, regardless of which
+      # output directory it landed in.
+      #
+      # The unified folder is never committed — it's purely for validation.
       # ---------------------------------------------------------------
       - name: Validate Catalogs
         id: validate-catalogs
-        env:
-          BRANCH: ${{ github.event.inputs.common_version }}
         shell: bash
         run: |
           set -eo pipefail
-          trap 'echo "Catalog validation failed"; exit 1' ERR
 
-          #Declare basic variables
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
-          CATALOG_FOLDER_PATH=main/catalog/${BRANCH}
           GLOBAL_CONFIG_PATH=main/config/config.yaml
 
-
-          VALIDATION_FAILED=0
+          # Re-derive the OCP → output branch mapping
           release_branches="${{ github.event.inputs.release_branches }}"
           IFS=', ' read -r -a release_branches <<< "${release_branches}"
+
+          declare -A OCP_TO_OUTPUT_BRANCH
           for release_branch in "${release_branches[@]}"
           do
               BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
-              #Validate Catalogs
+              while IFS= read -r ocp_version;
+              do
+                  if [[ -z "${OCP_TO_OUTPUT_BRANCH[$ocp_version]+x}" ]]; then
+                      OCP_TO_OUTPUT_BRANCH[$ocp_version]=$release_branch
+                  fi
+              done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+          done
+
+          # Build a unified validation folder with symlinks to the actual catalogs
+          VALIDATION_DIR=validation_catalogs
+          rm -rf ${VALIDATION_DIR}
+          mkdir -p ${VALIDATION_DIR}
+          for ocp_version in "${!OCP_TO_OUTPUT_BRANCH[@]}"; do
+              output_branch=${OCP_TO_OUTPUT_BRANCH[$ocp_version]}
+              ln -s "$(pwd)/main/catalog/${output_branch}/${ocp_version}" "${VALIDATION_DIR}/${ocp_version}"
+          done
+          echo "=== Unified validation folder ==="
+          ls -la ${VALIDATION_DIR}/
+
+          # Validate each release branch against the unified folder
+          VALIDATION_FAILED=0
+          for release_branch in "${release_branches[@]}"
+          do
+              BUILD_CONFIG_PATH=${release_branch}/config/build-config.yaml
+              echo "=== Validating with ${release_branch} build-config ==="
               python3 utils/utils/validators/catalog_validator.py \
                 -op validate-catalogs \
                 --build-config-path ${BUILD_CONFIG_PATH} \
-                --catalog-folder-path ${CATALOG_FOLDER_PATH} \
+                --catalog-folder-path ${VALIDATION_DIR} \
                 --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} \
                 --global-config-path ${GLOBAL_CONFIG_PATH} || VALIDATION_FAILED=1
           done
+
+          rm -rf ${VALIDATION_DIR}
           if [[ $VALIDATION_FAILED -eq 1 ]]; then
             echo "One or more catalog validations failed"
             exit 1
