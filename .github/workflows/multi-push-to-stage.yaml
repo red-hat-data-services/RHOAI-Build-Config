@@ -492,6 +492,11 @@ jobs:
                         else
                           CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
                         fi
+                        # Seed the output with the PCC cache so that even if
+                        # stage_promoter skips writing (bundle already exists),
+                        # subsequent branches get a fresh base instead of stale
+                        # pre-existing content from the main checkout.
+                        cp ${CATALOG_YAML_PATH} ${OUTPUT_CATALOG_PATH}
                     else
                         CATALOG_YAML_PATH=${OUTPUT_CATALOG_PATH}
                     fi
