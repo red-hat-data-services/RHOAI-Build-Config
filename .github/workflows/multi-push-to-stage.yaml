@@ -96,7 +96,7 @@ jobs:
   # (needed for skopeo / buildah operations).
   # -------------------------------------------------------------------
   push-to-stage:
-    if: ${{ github.ref_name == 'main' }}
+    # if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-22.04
     container:
       image: quay.io/rhoai/rhoai-task-toolset:latest
@@ -390,7 +390,7 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: test-multi-push-output
           message: "Regeneratd the PCC Cache"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
@@ -623,7 +623,7 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: test-multi-push-output
           message: "Patching the stage catalog with ${{ github.event.inputs.release_branches }} ${{ github.event.inputs.commit }}"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
