@@ -96,7 +96,7 @@ jobs:
   # (needed for skopeo / buildah operations).
   # -------------------------------------------------------------------
   push-to-stage:
-    # if: ${{ github.ref_name == 'main' }}
+    if: ${{ github.ref_name == 'main' }}
     runs-on: ubuntu-22.04
     container:
       image: quay.io/rhoai/rhoai-task-toolset:latest
@@ -245,7 +245,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
-          ref: 'multi-stage-push-tshoot'
+          ref: '3.0'
           path: utils
       - name: Install python dependencies
         run: |
@@ -296,8 +296,6 @@ jobs:
             cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
             PCC_CACHE_VALID=NO
           fi
-          PCC_CACHE_VALID=NO
-          echo "Forcing PCC cache regeneration"
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
 
       # ---------------------------------------------------------------
@@ -628,7 +626,7 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: test-multi-push-output
+          branch: main
           message: "Patching the stage catalog with ${{ github.event.inputs.release_branches }} ${{ github.event.inputs.commit }}"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
