@@ -47,6 +47,23 @@ spec:
             type: object
           spec:
             description: FeastOperatorSpec defines the desired state of FeastOperator
+            properties:
+              oidc:
+                description: |-
+                  OIDC holds issuer settings synced from GatewayConfig by the DSC controller when the cluster
+                  uses external OIDC (issuer URL from GatewayConfig.spec.oidc). Only issuerURL is applied to
+                  Feast manifests (params.env).
+                properties:
+                  issuerURL:
+                    description: IssuerURL is the OIDC issuer URL (for example "https://keycloak.example.com/realms/myorg").
+                    format: uri
+                    maxLength: 2048
+                    minLength: 1
+                    pattern: ^https://\S+$
+                    type: string
+                required:
+                - issuerURL
+                type: object
             type: object
           status:
             description: FeastOperatorStatus defines the observed state of FeastOperator
