@@ -301,19 +301,17 @@ jobs:
       # ---------------------------------------------------------------
       # Regenerate PCC Cache (only runs when cache is stale)
       #
-      # Uses the opm CLI to migrate production operator indices into
-      # catalog formats. Two separate indices are used to prevent
-      # bundles from leaking across OCP version boundaries:
+      # Generates a separate PCC cache file per OCP version by
+      # running `opm migrate` against each version's specific
+      # operator index (registry.redhat.io/redhat/redhat-operator-index).
+      # This ensures each OCP version's cache only contains bundles
+      # that actually exist in that version's index, respecting
+      # discontinuity boundaries in config/config.yaml.
       #
-      #   v4.17 index → bundle_object_catalog.yaml (OCP < 4.17)
-      #                  csv_meta_catalog.yaml     (4.17 ≤ OCP < 4.19)
+      # Output files: main/pcc/catalog-v4.14.yaml, catalog-v4.16.yaml, etc.
       #
-      #   v4.19 index → bundle_object_catalog_v419.yaml (unused, generated for completeness)
-      #                  csv_meta_catalog_v419.yaml      (OCP ≥ 4.19)
-      #
-      # The v4.19 index contains RHOAI 3.x bundles that only belong on
-      # OCP ≥ 4.19. Using a single v4.19-sourced cache for all OCP
-      # versions would leak those 3.x bundles into older catalogs.
+      # If an OCP version is too new to have an operator index entry
+      # for rhods-operator, the previous version's cache is copied.
       # ---------------------------------------------------------------
       - name: Regenerate PCC Cache
         id: regenerate-pcc-cache
@@ -333,19 +331,33 @@ jobs:
           microdnf install -y findutils && \
               microdnf clean all && rm -rf /var/cache/dnf/*
 
-          # --- Generate PCC from v4.17 index (for OCP < 4.19) ---
-          echo "=== Migrating v4.17 operator index ==="
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:v4.17 ./catalog-migrate-v417
-          opm alpha convert-template basic catalog-migrate-v417/rhods-operator/catalog.json -o yaml > catalog-template-v417.yaml
-          opm alpha render-template basic catalog-template-v417.yaml -o yaml > main/pcc/bundle_object_catalog.yaml
-          opm alpha render-template basic catalog-template-v417.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > main/pcc/csv_meta_catalog.yaml
-
-          # --- Generate PCC from v4.19 index (for OCP >= 4.19) ---
-          echo "=== Migrating v4.19 operator index ==="
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:v4.19 ./catalog-migrate-v419
-          opm alpha convert-template basic catalog-migrate-v419/rhods-operator/catalog.json -o yaml > catalog-template-v419.yaml
-          opm alpha render-template basic catalog-template-v419.yaml -o yaml > main/pcc/bundle_object_catalog_v419.yaml
-          opm alpha render-template basic catalog-template-v419.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > main/pcc/csv_meta_catalog_v419.yaml
+          # --- Generate per-OCP-version PCC caches ---
+          CONFIG_PATH=main/config/config.yaml
+          CSV_META_MIN_OCP_VERSION=417
+          CATALOG_DIR=main/pcc
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+              echo "=== Migrating ${OCP_VERSION} operator index ==="
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
 
           echo "=== PCC cache files ==="
           ls -l main/pcc/
@@ -461,16 +473,9 @@ jobs:
                 BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
                 PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
 
-                PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-                PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-                PCC_CSV_META_CATALOG_V419_YAML_PATH=main/pcc/csv_meta_catalog_v419.yaml
-                CSV_META_MIN_OCP_VERSION=417
-                V419_MIN_OCP_VERSION=419
-
                 while IFS= read -r value;
                 do
                     OPENSHIFT_VERSION=$value
-                    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
                     OUTPUT_BRANCH=${OCP_TO_OUTPUT_BRANCH[$OPENSHIFT_VERSION]}
                     echo "${release_branch} ${OPENSHIFT_VERSION} → catalog/${OUTPUT_BRANCH}/"
 
@@ -481,15 +486,7 @@ jobs:
 
                     if [[ ${COUNTER} -eq 0 ]] || ! [[ " ${COVERED_OPENSHIFT_VERSIONS[@]} " =~ " ${OPENSHIFT_VERSION} " ]]
                     then
-                        if [[ $NUMERIC_OCP_VERSION -ge $V419_MIN_OCP_VERSION ]]
-                        then
-                          CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_V419_YAML_PATH}
-                        elif [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-                        then
-                          CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_YAML_PATH}
-                        else
-                          CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
-                        fi
+                        CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
                         # Seed the output with the PCC cache so that even if
                         # stage_promoter skips writing (bundle already exists),
                         # subsequent branches get a fresh base instead of stale
