@@ -172,6 +172,8 @@ ARG ODH_SPARK_OPERATOR_GIT_URL=
 ARG ODH_SPARK_OPERATOR_GIT_COMMIT=
 ARG ODH_CLI_GIT_URL=
 ARG ODH_CLI_GIT_COMMIT=
+ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_GIT_URL=
+ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -360,7 +362,9 @@ LABEL \
       odh-spark-operator.git.url="${ODH_SPARK_OPERATOR_GIT_URL}" \
       odh-spark-operator.git.commit="${ODH_SPARK_OPERATOR_GIT_COMMIT}" \
       odh-cli.git.url="${ODH_CLI_GIT_URL}" \
-      odh-cli.git.commit="${ODH_CLI_GIT_COMMIT}"
+      odh-cli.git.commit="${ODH_CLI_GIT_COMMIT}" \
+      odh-ai-gateway-payload-processing.git.url="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_GIT_URL}" \
+      odh-ai-gateway-payload-processing.git.commit="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
