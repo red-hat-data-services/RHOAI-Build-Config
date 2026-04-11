@@ -61,6 +61,37 @@ spec:
                     minimum: 1
                     type: integer
                 type: object
+              externalOIDC:
+                description: |-
+                  ExternalOIDC configures an external OIDC identity provider (e.g. Keycloak, Azure AD)
+                  for the maas-api AuthPolicy. When set, the operator patches the AuthPolicy to accept
+                  JWTs from the specified issuer alongside OpenShift TokenReview and API key authentication.
+                properties:
+                  clientId:
+                    description: |-
+                      ClientID is the OAuth2 client ID. Incoming OIDC tokens must have an
+                      azp (authorized party) claim matching this value.
+                    maxLength: 256
+                    minLength: 1
+                    pattern: ^\S+$
+                    type: string
+                  issuerUrl:
+                    description: |-
+                      IssuerURL is the OIDC issuer URL (e.g. https://keycloak.example.com/realms/maas).
+                      Must serve a .well-known/openid-configuration endpoint over HTTPS.
+                    maxLength: 2048
+                    minLength: 9
+                    pattern: ^https://\S+$
+                    type: string
+                  ttl:
+                    default: 300
+                    description: TTL is the JWKS cache duration in seconds.
+                    minimum: 30
+                    type: integer
+                required:
+                - clientId
+                - issuerUrl
+                type: object
               gatewayRef:
                 description: |-
                   GatewayRef specifies which Gateway (Gateway API) to use for exposing model endpoints.
