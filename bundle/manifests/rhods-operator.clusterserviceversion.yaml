@@ -112,8 +112,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9f1f01e19720296cd68b2f78cf5b50b7f83ad737d8319cd5b755bedfc5d1375c"
-    createdAt: "2026-03-01T05:13:19Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5417136e9ffee1aaee2256290c9e28c16067905e42effd7047558e18feee0eb2"
+    createdAt: "2026-04-13T15:14:28Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -225,7 +225,7 @@ metadata:
     ose-cli-etcd-image: registry.redhat.io/openshift4/ose-cli@sha256:4cfb4219f46c8cc25a5e567fd4cb8babe9a3778b0b86a1e354a3403994ef3677
     ose-etcd-image: registry.redhat.io/openshift4/ose-etcd@sha256:d3275cd886d13865937d225d8138db7f6b7bf59ac1a94d9fbe61e35286bee6ff
     operators.openshift.io/valid-subscription: '["OpenShift AI"]'
-  name: rhods-operator.2.25.4
+  name: rhods-operator.2.25.5
   namespace: placeholder
   labels:
     operatorframework.io/arch.amd64: supported
@@ -1786,6 +1786,8 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-training-rocm62-torch24-py311-rhel9@sha256:c46271d3f979df02cb7ca4c9fc7bf95a266a7af22ad6f78622709b8f890dfba3"
                 - name: RELATED_IMAGE_ODH_TRAINING_ROCM62_TORCH25_PY311_IMAGE
                   value: "registry.redhat.io/rhoai/odh-training-rocm62-torch25-py311-rhel9@sha256:a77f0d671d8e6c35e48e81846b168cdf857b03564f1fbba77eba7691af6731bd"
+                - name: RELATED_IMAGE_ODH_OPERATOR_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c"
                 - name: RELATED_IMAGE_DSP_TOOLBOX_IMAGE
                   value: registry.redhat.io/ubi9/toolbox@sha256:5b7627411fd3b6920afb5553b3c3c1c7622a165a5b7a30ef09435178131b3b86
                 - name: RELATED_IMAGE_DSP_INSTRUCTLAB_NVIDIA_IMAGE
@@ -1804,7 +1806,7 @@ spec:
                   value: registry.redhat.io/rhaiis/vllm-cuda-rhel9@sha256:720ebbd1f6945e47e4ad77465732eab5702cfc430658ae43d1c8f128271f81c4
                 - name: RELATED_IMAGE_RHAIIS_VLLM_SPYRE_IMAGE
                   value: registry.redhat.io/rhaiis/vllm-spyre-rhel9@sha256:75f0ea05a92661a33b40efe2a662d976d53c767db18990b433d4a00dd6693aae
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9f1f01e19720296cd68b2f78cf5b50b7f83ad737d8319cd5b755bedfc5d1375c"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5417136e9ffee1aaee2256290c9e28c16067905e42effd7047558e18feee0eb2"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1900,7 +1902,7 @@ spec:
   minKubeVersion: 1.25.0
   provider:
     name: Red Hat, Inc.
-  version: "2.25.4"
+  version: "2.25.5"
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
@@ -2105,8 +2107,8 @@ spec:
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-kueue
   relatedImages:
-  - name: odh-rhel9-operator-9f1f01e19720296cd68b2f78cf5b50b7f83ad737d8319cd5b755bedfc5d1375c-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9f1f01e19720296cd68b2f78cf5b50b7f83ad737d8319cd5b755bedfc5d1375c"
+  - name: odh-rhel9-operator-5417136e9ffee1aaee2256290c9e28c16067905e42effd7047558e18feee0eb2-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5417136e9ffee1aaee2256290c9e28c16067905e42effd7047558e18feee0eb2"
   - name: ose-cli-bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5-annotation
     image: registry.redhat.io/openshift4/ose-cli@sha256:bc35a9fc663baf0d6493cc57e89e77a240a36c43cf38fb78d8e61d3b87cf5cc5
   - name: ose-cli-75bf9b911b6481dcf29f7942240d1555adaa607eec7fc61bedb7f624f87c36d4-annotation
@@ -2287,6 +2289,8 @@ spec:
     image: "registry.redhat.io/rhoai/odh-training-rocm62-torch24-py311-rhel9@sha256:c46271d3f979df02cb7ca4c9fc7bf95a266a7af22ad6f78622709b8f890dfba3"
   - name: odh_training_rocm62_torch25_py311_image
     image: "registry.redhat.io/rhoai/odh-training-rocm62-torch25-py311-rhel9@sha256:a77f0d671d8e6c35e48e81846b168cdf857b03564f1fbba77eba7691af6731bd"
+  - name: odh_operator_image
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:4db426a2e1640b1da7ede4b08241853a9631da562240c6072fbe1895eeac560c"
   - name: dsp_toolbox_image
     image: registry.redhat.io/ubi9/toolbox@sha256:5b7627411fd3b6920afb5553b3c3c1c7622a165a5b7a30ef09435178131b3b86
   - name: dsp_instructlab_nvidia_image
