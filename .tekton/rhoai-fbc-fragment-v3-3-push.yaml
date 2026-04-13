@@ -7,8 +7,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged()
-      && event == "push" && target_branch == "rhoai-3.3" && ( "catalog/**".pathChanged()
+      event == "push" && target_branch == "rhoai-3.3" && ( "catalog/**".pathChanged()
       || ".tekton/rhoai-fbc-fragment-v3-3-push.yaml".pathChanged() ) && !"catalog/catalog-patch.yaml".pathChanged()
       && !".github/workflows/**".pathChanged()
   labels:
