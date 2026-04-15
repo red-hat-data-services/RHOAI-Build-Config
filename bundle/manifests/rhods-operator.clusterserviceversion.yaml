@@ -94,7 +94,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7383e5e3dc75e5280e725458b0963517a4b65872de2389ae54a08a2468eb09be"
-    createdAt: "2026-04-15T20:14:45Z"
+    createdAt: "2026-04-15T20:51:13Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2051,10 +2051,40 @@ spec:
                   capabilities:
                     drop:
                     - ALL
+                  readOnlyRootFilesystem: true
                 volumeMounts:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
+                - mountPath: /opt/manifests
+                  name: manifests
+                - mountPath: /tmp
+                  name: tmp
+              initContainers:
+              - command:
+                - cp
+                - -r
+                - /opt/manifests-template/.
+                - /opt/manifests/
+                image: REPLACE_IMAGE:latest
+                imagePullPolicy: Always
+                name: copy-manifests
+                resources:
+                  limits:
+                    cpu: 100m
+                    memory: 256Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  capabilities:
+                    drop:
+                    - ALL
+                  readOnlyRootFilesystem: true
+                volumeMounts:
+                - mountPath: /opt/manifests
+                  name: manifests
               securityContext:
                 runAsNonRoot: true
                 seccompProfile:
@@ -2066,6 +2096,13 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: redhat-ods-operator-controller-webhook-cert
+              - emptyDir:
+                  sizeLimit: 256Mi
+                name: manifests
+              - emptyDir:
+                  medium: Memory
+                  sizeLimit: 10Mi
+                name: tmp
     strategy: deployment
   installModes:
   - supported: false
