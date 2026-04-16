@@ -94,7 +94,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:f1c99e8b1ea2e6f715250d68fb91f816c94958ed01eb64bb4f90e85e9d5afdde"
-    createdAt: "2026-04-16T01:57:46Z"
+    createdAt: "2026-04-16T15:10:59Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2017,6 +2017,8 @@ spec:
                   value: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
                 - name: RELATED_IMAGE_NGINX_126_IMAGE
                   value: registry.redhat.io/ubi9/nginx-126@sha256:5e84e010b8d904f8d3fd8bd6a4147cff1068cafc0fa414acd17ff6d23060826c
+                - name: RELATED_IMAGE_UBI_MINIMAL_IMAGE
+                  value: registry.redhat.io/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
                 image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:f1c99e8b1ea2e6f715250d68fb91f816c94958ed01eb64bb4f90e85e9d5afdde"
                 imagePullPolicy: Always
                 livenessProbe:
@@ -2066,7 +2068,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: REPLACE_IMAGE:latest
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:f1c99e8b1ea2e6f715250d68fb91f816c94958ed01eb64bb4f90e85e9d5afdde"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2744,3 +2746,5 @@ spec:
     image: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
   - name: nginx_126_image
     image: registry.redhat.io/ubi9/nginx-126@sha256:5e84e010b8d904f8d3fd8bd6a4147cff1068cafc0fa414acd17ff6d23060826c
+  - name: ubi_minimal_image
+    image: registry.redhat.io/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
