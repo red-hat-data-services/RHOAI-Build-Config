@@ -9,14 +9,14 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       "non-existent-file.non-existent-ext".pathChanged() && event == "push"
-      && target_branch == "rhoai-3.4"
-      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-4-push.yaml".pathChanged() )
+      && target_branch == "rhoai-3.5-ea.1"
+      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-5-ea-1-push.yaml".pathChanged() )
       && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
   labels:
-    appstudio.openshift.io/application: rhoai-v3-4
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-4
+    appstudio.openshift.io/application: rhoai-v3-5-ea-1
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5-ea-1
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v3-4-on-push
+  name: rhoai-fbc-fragment-v3-5-ea-1-on-push
   namespace: rhoai-tenant
 spec:
   timeouts:
@@ -33,7 +33,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: rhoai-version
-    value: "3.4.0"
+    value: "3.5.0-ea.1"
   - name: dockerfile
     value: Dockerfile
   - name: path-context
@@ -66,7 +66,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-4
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-5-ea-1
   workspaces:
   - name: git-auth
     secret:
