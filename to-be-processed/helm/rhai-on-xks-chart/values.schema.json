@@ -1,0 +1,272 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "$defs": {
+    "dependency": {
+      "type": "object",
+      "description": "Dependency configuration",
+      "properties": {
+        "configuration": {
+          "type": "object",
+          "description": "Configuration for the dependency"
+        },
+        "managementPolicy": {
+          "type": "string",
+          "description": "Whether the operator manages this dependency (Managed or Unmanaged)",
+          "enum": ["Managed", "Unmanaged"],
+          "default": "Managed"
+        }
+      }
+    }
+  },
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "description": "Enable/disable all resource creation",
+      "default": true
+    },
+    "installCRDs": {
+      "type": "boolean",
+      "description": "Install CRDs or not using the chart",
+      "default": true
+    },
+    "labels": {
+      "type": "object",
+      "description": "Common labels applied to all resources",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Helm hooks configuration",
+      "properties": {
+        "cliImage": {
+          "type": "string",
+          "description": "CLI container image used by all post-install hook jobs"
+        },
+        "postInstallCrs": {
+          "type": "object",
+          "description": "Post-install hook for creating CRs",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable post-install CR creation hook",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["cliImage"]
+    },
+    "components": {
+      "type": "object",
+      "description": "Components configuration",
+      "properties": {
+        "kserve": {
+          "type": "object",
+          "description": "Kserve component configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Create Kserve CR via post-install hook",
+              "default": true
+            },
+            "spec": {
+              "type": "object",
+              "description": "Kserve CR spec"
+            }
+          }
+        }
+      }
+    },
+    "rhaiOperator": {
+      "type": "object",
+      "description": "RHAI Operator configuration",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "Operator namespace",
+          "default": "redhat-ods-operator"
+        },
+        "applicationsNamespace": {
+          "type": "string",
+          "description": "Applications namespace",
+          "default": "redhat-ods-applications"
+        },
+        "image": {
+          "type": "string",
+          "description": "Manager container image"
+        },
+        "imagePullPolicy": {
+          "type": "string",
+          "description": "Image pull policy for the manager container",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        },
+        "relatedImages": {
+          "type": "array",
+          "description": "Related images env vars (RELATED_IMAGE_*) for disconnected environments",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": ["name", "value"]
+          }
+        }
+      }
+    },
+    "azure": {
+      "type": "object",
+      "description": "Azure cloud configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Azure cloud manager resources",
+          "default": false
+        },
+        "cloudManager": {
+          "type": "object",
+          "description": "Azure Cloud Manager configuration",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "description": "Cloud Manager operator namespace",
+              "default": "cloudmanager-operator-system"
+            },
+            "image": {
+              "type": "string",
+              "description": "Cloud Manager container image"
+            }
+          }
+        },
+        "kubernetesEngine": {
+          "type": "object",
+          "description": "AzureKubernetesEngine CR configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Create AzureKubernetesEngine CR via post-install hook",
+              "default": true
+            },
+            "spec": {
+              "type": "object",
+              "description": "AzureKubernetesEngine CR spec",
+              "properties": {
+                "dependencies": {
+                  "type": "object",
+                  "description": "Dependency configurations",
+                  "properties": {
+                    "certManager": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "gatewayAPI": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "lws": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "sailOperator": {
+                      "$ref": "#/$defs/dependency"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "coreweave": {
+      "type": "object",
+      "description": "CoreWeave cloud configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable CoreWeave cloud manager resources",
+          "default": false
+        },
+        "cloudManager": {
+          "type": "object",
+          "description": "CoreWeave Cloud Manager configuration",
+          "properties": {
+            "namespace": {
+              "type": "string",
+              "description": "Cloud Manager operator namespace",
+              "default": "cloudmanager-operator-system"
+            },
+            "image": {
+              "type": "string",
+              "description": "Cloud Manager container image"
+            }
+          }
+        },
+        "kubernetesEngine": {
+          "type": "object",
+          "description": "CoreWeaveKubernetesEngine CR configuration",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Create CoreWeaveKubernetesEngine CR via post-install hook",
+              "default": true
+            },
+            "spec": {
+              "type": "object",
+              "description": "CoreWeaveKubernetesEngine CR spec",
+              "properties": {
+                "dependencies": {
+                  "type": "object",
+                  "description": "Dependency configurations",
+                  "properties": {
+                    "certManager": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "gatewayAPI": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "lws": {
+                      "$ref": "#/$defs/dependency"
+                    },
+                    "sailOperator": {
+                      "$ref": "#/$defs/dependency"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "imagePullSecret": {
+      "type": "object",
+      "description": "Pull secret configuration for private registries. Use --set-file imagePullSecret.dockerConfigJson=path/to/auth.json",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the pull secret to create in target namespaces",
+          "default": "rhai-pull-secret",
+          "const": "rhai-pull-secret"
+        },
+        "dockerConfigJson": {
+          "type": "string",
+          "description": "Docker config JSON content (populated via --set-file)"
+        },
+        "dependencyNamespaces": {
+          "type": "array",
+          "description": "Namespaces created by dependency operators where pull secrets should be injected",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

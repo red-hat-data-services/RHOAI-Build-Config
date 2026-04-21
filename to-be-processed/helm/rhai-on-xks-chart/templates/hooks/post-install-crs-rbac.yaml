@@ -1,0 +1,109 @@
+{{- if .Values.enabled }}
+{{- if .Values.hooks.postInstallCrs.enabled }}
+{{- $createKserve := .Values.components.kserve.enabled }}
+{{- $createAzureKE := and .Values.azure.enabled .Values.azure.kubernetesEngine.enabled }}
+{{- $createCoreweaveKE := and .Values.coreweave.enabled .Values.coreweave.kubernetesEngine.enabled }}
+{{- $createGateway := and .Values.components.kserve.enabled .Values.components.kserve.gateway.create }}
+{{- if or $createKserve $createAzureKE $createCoreweaveKE $createGateway }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rhai-post-install-hook
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rhai-post-install-hook
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - apiGroups:
+      - components.platform.opendatahub.io
+    resources:
+      - kserves
+    verbs:
+      - get
+      - create
+      - patch
+      - update
+  - apiGroups:
+      - infrastructure.opendatahub.io
+    resources:
+      - azurekubernetesengines
+      - coreweavekubernetesengines
+    verbs:
+      - get
+      - create
+      - patch
+      - update
+  {{- if $createGateway }}
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gateways
+    verbs:
+      - get
+      - create
+      - patch
+      - update
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses
+    verbs:
+      - get
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - create
+      - patch
+      - update
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rhai-post-install-hook
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rhai-post-install-hook
+subjects:
+  - kind: ServiceAccount
+    name: rhai-post-install-hook
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,18 @@
+{{- $dep := .Values.dependencies.rhcl -}}
+{{- $shouldInstall := include "rhoai-dependencies.shouldInstall" (dict
+  "dependencyName" "rhcl"
+  "dependency" $dep
+  "root" $
+) -}}
+{{- if eq $shouldInstall "true" }}
+{{- if eq (include "rhoai-dependencies.isOlmMode" $) "true" }}
+{{ include "rhoai-dependencies.operator.olm" (dict
+  "name" $dep.olm.name
+  "namespace" $dep.olm.namespace
+  "channel" $dep.olm.channel
+  "version" $dep.olm.version
+  "config" $dep.olm.config
+  "root" $
+) }}
+{{- end }}
+{{- end }}

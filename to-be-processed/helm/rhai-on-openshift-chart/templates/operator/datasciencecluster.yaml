@@ -1,0 +1,18 @@
+{{- /*
+DataScienceCluster configuration
+Sets managementState from component configuration
+*/ -}}
+{{- if include "rhoai-dependencies.crdExists" (dict "crdName" "datascienceclusters.datasciencecluster.opendatahub.io" "root" $) }}
+apiVersion: datasciencecluster.opendatahub.io/v2
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+  labels:
+    {{- include "rhoai-dependencies.labels" . | nindent 4 }}
+spec:
+  components:
+    {{- range $name, $comp := .Values.components }}
+    {{ $name }}:
+      {{- include "rhoai-dependencies.componentDSCConfig" (dict "componentName" $name "component" $comp "root" $) | nindent 6 }}
+    {{- end }}
+{{- end }}
