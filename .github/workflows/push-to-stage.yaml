@@ -64,6 +64,7 @@ jobs:
           path: main
           sparse-checkout: |
             pcc
+            config
             catalog/${{ github.event.inputs.release_branch }}
             builds
           sparse-checkout-cone-mode: false
@@ -161,9 +162,6 @@ jobs:
       - name: Regenerate PCC Cache
         id: regenerate-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branch }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_version }}
         run: |
           #install opm cli
           os="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -175,45 +173,38 @@ jobs:
           chmod +x "$opm_filename"
           ln -fs "$opm_filename" opm
           cp "$opm_filename" /usr/local/bin/opm
-          
+
           microdnf install -y findutils && \
               microdnf clean all && rm -rf /var/cache/dnf/*
-          
-          #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
 
-          #Declare FBC processing variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
-          
-          CATALOG_GENERATION_REF_OCP_VERSION=v4.17
+          CONFIG_PATH=main/config/config.yaml
           CSV_META_MIN_OCP_VERSION=417
-          BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-          
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:${CATALOG_GENERATION_REF_OCP_VERSION} ./catalog-migrate
-          opm alpha convert-template basic catalog-migrate/rhods-operator/catalog.json -o yaml > catalog-template.yaml
-          opm alpha render-template basic catalog-template.yaml -o yaml > ${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          opm alpha render-template basic catalog-template.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > ${CSV_META_CATALOG_YAML_PATH}
-          
-          #while IFS= read -r value;
-          #do
-          #    OPENSHIFT_VERSION=$value
-          #    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          #    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-          #
-          #    CATALOG_YAML_PATH=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          #    CATALOG_DIR=main/pcc/${OPENSHIFT_VERSION}/rhods-operator
-          #    mkdir -p ${CATALOG_DIR}
-          #
-          #    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-          #    then
-          #      CATALOG_YAML_PATH=${CSV_META_CATALOG_YAML_PATH}
-          #    fi
-          #    cp ${CATALOG_YAML_PATH} ${CATALOG_DIR}/catalog.yaml
-          #done < <(find main/pcc/ -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
-          
+          CATALOG_DIR=main/pcc
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+              echo "=== Migrating ${OCP_VERSION} operator index ==="
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+
+          echo "=== PCC cache files ==="
           ls -l main/pcc/
 
       - name: Validate PCC Cache
@@ -257,22 +248,13 @@ jobs:
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
           PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
 
-          PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-          CSV_META_MIN_OCP_VERSION=417
-          
           while IFS= read -r value;
           do
               OPENSHIFT_VERSION=$value
               echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-              NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          
-              CATALOG_YAML_PATH=${PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH}
-              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-              then
-                CATALOG_YAML_PATH=${PCC_CSV_META_CATALOG_YAML_PATH}
-              fi
-          
+
+              CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
+
               RELEASE_CATALOG_YAML_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
               OUTPUT_CATALOG_DIR=main/catalog/${BRANCH}/${OPENSHIFT_VERSION}/rhods-operator/
               mkdir -p ${OUTPUT_CATALOG_DIR}
