@@ -94,7 +94,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ea95b269aa0f868e14c75021d7a9782dc46b7ca9f2d7debf077e9425eeda7675"
-    createdAt: "2026-04-20T21:52:05Z"
+    createdAt: "2026-04-21T07:27:25Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2016,9 +2016,15 @@ spec:
                 - name: RELATED_IMAGE_PERSES_IMAGE
                   value: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
                 - name: RELATED_IMAGE_NGINX_126_IMAGE
-                  value: registry.redhat.io/ubi9/nginx-126@sha256:5e84e010b8d904f8d3fd8bd6a4147cff1068cafc0fa414acd17ff6d23060826c
-                - name: RELATED_IMAGE_UBI_MINIMAL_IMAGE
-                  value: registry.redhat.io/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
+                  value: registry.redhat.io/ubi9/nginx-126@sha256:48fc99441e8e3e1d84cfb786fd9844bca60b1a1f17cf90e8418945949669f223
+                - name: RELATED_IMAGE_RHAII_VLLM_CUDA_IMAGE
+                  value: registry.redhat.io/rhaii/vllm-cuda-rhel9@sha256:d3e57d4ca13a17f4d5d1228df4fe47cfe1a9f630250a8b3d26f86d871fdb9e69
+                - name: RELATED_IMAGE_RHAII_VLLM_ROCM_IMAGE
+                  value: registry.redhat.io/rhaii/vllm-rocm-rhel9@sha256:cfeac10c571206514c2876f220ce845058511185ebe8944afc32581dc45b34f3
+                - name: RELATED_IMAGE_RHAII_VLLM_SPYRE_IMAGE
+                  value: registry.redhat.io/rhaii/vllm-spyre-rhel9@sha256:5c0ed9be230a307d512fa99236b060ac2ecd86973d17c467badc7b5c2d2b5da4
+                - name: RELATED_IMAGE_RHAII_VLLM_CPU_IMAGE
+                  value: registry.redhat.io/rhaii/vllm-cpu-rhel9@sha256:562aeaf7dabfccccf9ecc2d8c0e7d84d813778f146dd9d5c8e3a1d595d07a82c
                 image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ea95b269aa0f868e14c75021d7a9782dc46b7ca9f2d7debf077e9425eeda7675"
                 imagePullPolicy: Always
                 livenessProbe:
@@ -2745,6 +2751,12 @@ spec:
   - name: perses_image
     image: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:e797cdb47beef40b04da7b6d645bca3dc32e6247003c45b56b38efd9e13bf01c
   - name: nginx_126_image
-    image: registry.redhat.io/ubi9/nginx-126@sha256:5e84e010b8d904f8d3fd8bd6a4147cff1068cafc0fa414acd17ff6d23060826c
-  - name: ubi_minimal_image
-    image: registry.redhat.io/ubi9/ubi-minimal@sha256:83006d535923fcf1345067873524a3980316f51794f01d8655be55d6e9387183
+    image: registry.redhat.io/ubi9/nginx-126@sha256:48fc99441e8e3e1d84cfb786fd9844bca60b1a1f17cf90e8418945949669f223
+  - name: rhaii_vllm_cuda_image
+    image: registry.redhat.io/rhaii/vllm-cuda-rhel9@sha256:d3e57d4ca13a17f4d5d1228df4fe47cfe1a9f630250a8b3d26f86d871fdb9e69
+  - name: rhaii_vllm_rocm_image
+    image: registry.redhat.io/rhaii/vllm-rocm-rhel9@sha256:cfeac10c571206514c2876f220ce845058511185ebe8944afc32581dc45b34f3
+  - name: rhaii_vllm_spyre_image
+    image: registry.redhat.io/rhaii/vllm-spyre-rhel9@sha256:5c0ed9be230a307d512fa99236b060ac2ecd86973d17c467badc7b5c2d2b5da4
+  - name: rhaii_vllm_cpu_image
+    image: registry.redhat.io/rhaii/vllm-cpu-rhel9@sha256:562aeaf7dabfccccf9ecc2d8c0e7d84d813778f146dd9d5c8e3a1d595d07a82c
