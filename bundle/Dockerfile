@@ -34,6 +34,8 @@ ARG ODH_KSERVE_STORAGE_INITIALIZER_GIT_URL=
 ARG ODH_KSERVE_STORAGE_INITIALIZER_GIT_COMMIT=
 ARG ODH_KUBE_AUTH_PROXY_GIT_URL=
 ARG ODH_KUBE_AUTH_PROXY_GIT_COMMIT=
+ARG ODH_KUBE_RBAC_PROXY_GIT_URL=
+ARG ODH_KUBE_RBAC_PROXY_GIT_COMMIT=
 ARG ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_URL=
 ARG ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_COMMIT=
 ARG ODH_LLAMA_STACK_CORE_GIT_URL=
@@ -227,6 +229,8 @@ LABEL \
       odh-kserve-storage-initializer.git.commit="${ODH_KSERVE_STORAGE_INITIALIZER_GIT_COMMIT}" \
       odh-kube-auth-proxy.git.url="${ODH_KUBE_AUTH_PROXY_GIT_URL}" \
       odh-kube-auth-proxy.git.commit="${ODH_KUBE_AUTH_PROXY_GIT_COMMIT}" \
+      odh-kube-rbac-proxy.git.url="${ODH_KUBE_RBAC_PROXY_GIT_URL}" \
+      odh-kube-rbac-proxy.git.commit="${ODH_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-kuberay-operator-controller.git.url="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_URL}" \
       odh-kuberay-operator-controller.git.commit="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_COMMIT}" \
       odh-llama-stack-core.git.url="${ODH_LLAMA_STACK_CORE_GIT_URL}" \
