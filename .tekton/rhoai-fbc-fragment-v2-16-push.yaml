@@ -7,7 +7,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: '3'
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged() && event == "push" && target_branch
+      event == "push" && target_branch
       == "rhoai-2.16" && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-16-push.yaml".pathChanged()
       ) && !"catalog/catalog-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()
   labels:
@@ -45,12 +45,12 @@ spec:
     value: "ci"
   - name: rhoai-version
     value: "2.16.5"
+  # Konflux NotebookLM advised to add these two parameters to force build-image-index to always run
+  # even if these params default to 'true' the Pipeline definition in pipelines/fbc-fragment-build.yaml
   - name: build-image-index
     value: "true"
   - name: ALWAYS_BUILD_INDEX
     value: "true"
-  - name: disable-slack-notifications
-    value: 'true'
   pipelineRef:
     resolver: git
     params:
