@@ -8,7 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged() && event == "push" && target_branch
+      event == "push" && target_branch
       == "rhoai-3.2" && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-2-push.yaml".pathChanged()
       ) && !"bundle/bundle-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()
   labels:
@@ -44,8 +44,6 @@ spec:
     value: true
   - name: build-image-index
     value: false
-  - name: disable-slack-notifications
-    value: 'true'
   pipelineRef:
     resolver: git
     params:
