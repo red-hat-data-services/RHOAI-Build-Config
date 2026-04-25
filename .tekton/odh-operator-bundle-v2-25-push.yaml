@@ -1,5 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
+# konflux build manual retrigger - 2026-04-15 14:16:12
 metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
@@ -8,10 +9,10 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged() && event == "push" && target_branch
+      event == "push" && target_branch
       == "rhoai-2.25" && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v2-25-push.yaml".pathChanged()
       ) && !"bundle/bundle-patch.yaml".pathChanged() && !".github/workflows/**".pathChanged()
-  creationTimestamp: null
+  creationTimestamp:
   labels:
     appstudio.openshift.io/application: rhoai-v2-25
     appstudio.openshift.io/component: odh-operator-bundle-v2-25
