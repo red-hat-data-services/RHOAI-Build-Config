@@ -36,6 +36,8 @@ ARG ODH_KSERVE_ROUTER_GIT_URL=
 ARG ODH_KSERVE_ROUTER_GIT_COMMIT=
 ARG ODH_KSERVE_STORAGE_INITIALIZER_GIT_URL=
 ARG ODH_KSERVE_STORAGE_INITIALIZER_GIT_COMMIT=
+ARG ODH_KSERVE_LOCALMODEL_CONTROLLER_GIT_URL=
+ARG ODH_KSERVE_LOCALMODEL_CONTROLLER_GIT_COMMIT=
 ARG ODH_KUBE_AUTH_PROXY_GIT_URL=
 ARG ODH_KUBE_AUTH_PROXY_GIT_COMMIT=
 ARG ODH_KUBE_RBAC_PROXY_GIT_URL=
@@ -235,6 +237,8 @@ LABEL \
       odh-kserve-router.git.commit="${ODH_KSERVE_ROUTER_GIT_COMMIT}" \
       odh-kserve-storage-initializer.git.url="${ODH_KSERVE_STORAGE_INITIALIZER_GIT_URL}" \
       odh-kserve-storage-initializer.git.commit="${ODH_KSERVE_STORAGE_INITIALIZER_GIT_COMMIT}" \
+      odh-kserve-localmodel-controller.git.url="${ODH_KSERVE_LOCALMODEL_CONTROLLER_GIT_URL}" \
+      odh-kserve-localmodel-controller.git.commit="${ODH_KSERVE_LOCALMODEL_CONTROLLER_GIT_COMMIT}" \
       odh-kube-auth-proxy.git.url="${ODH_KUBE_AUTH_PROXY_GIT_URL}" \
       odh-kube-auth-proxy.git.commit="${ODH_KUBE_AUTH_PROXY_GIT_COMMIT}" \
       odh-kube-rbac-proxy.git.url="${ODH_KUBE_RBAC_PROXY_GIT_URL}" \
