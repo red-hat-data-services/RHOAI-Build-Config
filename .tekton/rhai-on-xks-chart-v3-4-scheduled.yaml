@@ -46,6 +46,15 @@ spec:
       value: '{{ target_branch }}'
     - name: pathInRepo
       value: pipelines/helm-chart-build.yaml
+  taskRunSpecs:
+  - pipelineTaskName: build-helm-chart
+    stepSpecs:
+    - name: package-and-push
+      computeResources:
+        requests:
+          memory: 256Mi
+        limits:
+          memory: 320Mi
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhai-on-xks-chart-v3-4
   workspaces:
