@@ -1,0 +1,43 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  name: rhoai-v2-25-prod-1777161042-1
+  namespace: rhoai-tenant
+  labels:
+    konflux-release-data/rbc-release-commit: 6a2008826e49611e35a48774c1f657a209b82e4c
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: prod
+    appstudio.openshift.io/application: rhoai-v2-25
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v2-25-components-prod
+  snapshot: rhoai-v2-25-1777147534
+  data:
+    version: 2.25.6
+    releaseNotes:
+      cves:
+        - key: 'CVE-2026-33186' # https://redhat.atlassian.net/browse/RHOAIENG-55280
+          component: 'odh-modelmesh-serving-controller-v2-25'
+        - key: 'CVE-2026-33186' # https://redhat.atlassian.net/browse/RHOAIENG-55279
+          component: 'odh-modelmesh-runtime-adapter-v2-25'
+        - key: 'CVE-2026-33186' # https://redhat.atlassian.net/browse/RHOAIENG-55274
+          component: 'odh-mm-rest-proxy-v2-25'
+        - key: 'CVE-2025-61729' # https://redhat.atlassian.net/browse/RHOAIENG-44759
+          component: 'odh-llm-d-inference-scheduler-v2-25'
+      issues:
+          fixed:
+            - id: RHOAIENG-59757
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55280
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55279
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55274
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-44759
+              public: true
+              source: redhat.atlassian.net
