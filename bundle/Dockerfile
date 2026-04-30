@@ -370,7 +370,7 @@ LABEL \
       odh-pipelines-components.git.url="${ODH_PIPELINES_COMPONENTS_GIT_URL}" \
       odh-pipelines-components.git.commit="${ODH_PIPELINES_COMPONENTS_GIT_COMMIT}" \
       odh-model-serving-api.git.url="${ODH_MODEL_SERVING_API_GIT_URL}" \
-      odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}" \
+      odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
@@ -388,3 +388,4 @@ LABEL com.redhat.component="odh-operator-bundle" \
 COPY bundle/manifests /manifests/
 COPY bundle/metadata /metadata/
 COPY bundle/tests/scorecard /tests/scorecard/
+
