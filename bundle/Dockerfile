@@ -177,8 +177,6 @@ ARG ODH_PIPELINES_COMPONENTS_GIT_COMMIT=
 ARG ODH_MODEL_SERVING_API_GIT_URL=
 ARG ODH_MODEL_SERVING_API_GIT_COMMIT=
 
-ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL=
-ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -373,8 +371,6 @@ LABEL \
       odh-pipelines-components.git.commit="${ODH_PIPELINES_COMPONENTS_GIT_COMMIT}" \
       odh-model-serving-api.git.url="${ODH_MODEL_SERVING_API_GIT_URL}" \
       odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}" \
-      odh-th06-cuda130-torch210-py312.git.url="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL}" \
-      odh-th06-cuda130-torch210-py312.git.commit="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
