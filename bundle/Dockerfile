@@ -388,4 +388,3 @@ LABEL com.redhat.component="odh-operator-bundle" \
 COPY bundle/manifests /manifests/
 COPY bundle/metadata /metadata/
 COPY bundle/tests/scorecard /tests/scorecard/
-
