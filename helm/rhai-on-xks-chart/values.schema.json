@@ -41,6 +41,10 @@
       "type": "object",
       "description": "Helm hooks configuration",
       "properties": {
+        "cliImage": {
+          "type": "string",
+          "description": "CLI container image used by all post-install hook jobs"
+        },
         "postInstallCrs": {
           "type": "object",
           "description": "Post-install hook for creating CRs",
@@ -49,16 +53,12 @@
               "type": "boolean",
               "description": "Enable post-install CR creation hook",
               "default": true
-            },
-            "image": {
-              "type": "string",
-              "description": "Container image used by the post-install hook job"
             }
           },
-          "additionalProperties": false,
-          "required": ["image"]
+          "additionalProperties": false
         }
-      }
+      },
+      "required": ["cliImage"]
     },
     "components": {
       "type": "object",
@@ -76,6 +76,18 @@
             "spec": {
               "type": "object",
               "description": "Kserve CR spec"
+            },
+            "gateway": {
+              "type": "object",
+              "description": "Gateway configuration for KServe inference",
+              "properties": {
+                "create": {
+                  "type": "boolean",
+                  "description": "Create Gateway and ConfigMaps via post-install hook",
+                  "default": true
+                }
+              },
+              "additionalProperties": false
             }
           }
         }
@@ -98,6 +110,11 @@
         "image": {
           "type": "string",
           "description": "Manager container image"
+        },
+        "imagePullPolicy": {
+          "type": "string",
+          "description": "Image pull policy for the manager container",
+          "enum": ["Always", "IfNotPresent", "Never"]
         },
         "relatedImages": {
           "type": "array",
@@ -134,11 +151,16 @@
             "namespace": {
               "type": "string",
               "description": "Cloud Manager operator namespace",
-              "default": "cloudmanager-operator-system"
+              "default": "rhai-cloudmanager-system"
             },
             "image": {
               "type": "string",
               "description": "Cloud Manager container image"
+            },
+            "imagePullPolicy": {
+              "type": "string",
+              "description": "Image pull policy for the Cloud Manager container",
+              "enum": ["Always", "IfNotPresent", "Never"]
             }
           }
         },
@@ -195,11 +217,16 @@
             "namespace": {
               "type": "string",
               "description": "Cloud Manager operator namespace",
-              "default": "cloudmanager-operator-system"
+              "default": "rhai-cloudmanager-system"
             },
             "image": {
               "type": "string",
               "description": "Cloud Manager container image"
+            },
+            "imagePullPolicy": {
+              "type": "string",
+              "description": "Image pull policy for the Cloud Manager container",
+              "enum": ["Always", "IfNotPresent", "Never"]
             }
           }
         },
@@ -247,8 +274,8 @@
         "name": {
           "type": "string",
           "description": "Name of the pull secret to create in target namespaces",
-          "default": "rhaii-pull-secret",
-          "const": "rhaii-pull-secret"
+          "default": "rhai-pull-secret",
+          "const": "rhai-pull-secret"
         },
         "dockerConfigJson": {
           "type": "string",

@@ -7,7 +7,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rhaii-post-install-crs
+  name: rhai-post-install-crs
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
@@ -23,7 +23,7 @@ spec:
         {{- include "rhai-on-xks-chart.labels" . | nindent 8 }}
     spec:
       restartPolicy: Never
-      serviceAccountName: rhaii-post-install-hook
+      serviceAccountName: rhai-post-install-hook
       {{- include "rhai-on-xks-chart.imagePullSecrets" . | nindent 6 }}
       securityContext:
         runAsNonRoot: true
@@ -31,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: create-crs
-          image: {{ required "hooks.postInstallCrs.image is required" .Values.hooks.postInstallCrs.image | quote }}
+          image: {{ required "hooks.cliImage is required" .Values.hooks.cliImage | quote }}
           resources:
             limits:
               cpu: 200m
