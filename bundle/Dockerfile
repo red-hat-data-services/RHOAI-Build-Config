@@ -185,6 +185,8 @@ ARG ODH_MODEL_SERVING_API_GIT_COMMIT=
 
 ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_URL=
 ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_COMMIT=
+ARG ODH_OGX_OPERATOR_GIT_URL=
+ARG ODH_OGX_OPERATOR_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -384,7 +386,9 @@ LABEL \
       odh-model-serving-api.git.url="${ODH_MODEL_SERVING_API_GIT_URL}" \
       odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}" \
       odh-ai-gateway-payload-processing-e2e.git.url="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_URL}" \
-      odh-ai-gateway-payload-processing-e2e.git.commit="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_COMMIT}"
+      odh-ai-gateway-payload-processing-e2e.git.commit="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_COMMIT}" \
+      odh-ogx-operator.git.url="${ODH_OGX_OPERATOR_GIT_URL}" \
+      odh-ogx-operator.git.commit="${ODH_OGX_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
