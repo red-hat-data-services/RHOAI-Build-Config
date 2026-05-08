@@ -93,8 +93,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:97becfbf6a680cf471882ee82b81a91a604f2d31a9e05208e8eae613d81c3b57"
-    createdAt: "2026-05-08T08:08:59Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c6d203a2f68ba5934e946ffac4ed3d4d6afe9a61c631e121b2d01bb06830d99a"
+    createdAt: "2026-05-08T08:48:51Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1915,8 +1915,8 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-notebook-controller-rhel9@sha256:4a5cb37246e1311542aeccffce27baf1eab4eaf4b2fa2fe79f947c25bbc8a781"
                 - name: RELATED_IMAGE_ODH_OGX_CORE_IMAGE
                   value: "registry.redhat.io/rhoai/odh-ogx-core-rhel9@sha256:bcaf33867b87b884c18baed6058018075b6007e7703ed9cec73029cc4bcab7ec"
-                - name: RELATED_IMAGE_ODH_OGX_OPERATOR_IMAGE
-                  value: "quay.io/rhoai/odh-ogx-operator-rhel9@sha256:2a1a6c869d4f0a311eb2951156dbe3c09f4e24f7ec8b334cc30327bbd7c6582b"
+                - name: RELATED_IMAGE_ODH_OGX_K8S_OPERATOR_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-ogx-k8s-operator-rhel9@sha256:2d6bed56f3a3730125572a479f858619b02c1d156a0a4721e5b04d7ef7b87482"
                 - name: RELATED_IMAGE_ODH_OPENVINO_MODEL_SERVER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-openvino-model-server-rhel9@sha256:2bbbe9d13ed03d683fb404ca3ff3c2e8e9aaac55caa7a6d874b1c1e17d3a8323"
                 - name: RELATED_IMAGE_ODH_PIPELINES_COMPONENTS_IMAGE
@@ -2045,7 +2045,7 @@ spec:
                   value: registry.redhat.io/rhaii/vllm-cpu-rhel9@sha256:562aeaf7dabfccccf9ecc2d8c0e7d84d813778f146dd9d5c8e3a1d595d07a82c
                 - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_IMAGE
                   value: registry.redhat.io/rhaii/vllm-gaudi-rhel9@sha256:1adc51d99455d90f758d840cb3bb5747ed29585c1b0830c051f7fe5cca3471e6
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:97becfbf6a680cf471882ee82b81a91a604f2d31a9e05208e8eae613d81c3b57"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c6d203a2f68ba5934e946ffac4ed3d4d6afe9a61c631e121b2d01bb06830d99a"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2094,7 +2094,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:97becfbf6a680cf471882ee82b81a91a604f2d31a9e05208e8eae613d81c3b57"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c6d203a2f68ba5934e946ffac4ed3d4d6afe9a61c631e121b2d01bb06830d99a"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2526,8 +2526,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-97becfbf6a680cf471882ee82b81a91a604f2d31a9e05208e8eae613d81c3b57-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:97becfbf6a680cf471882ee82b81a91a604f2d31a9e05208e8eae613d81c3b57"
+  - name: odh-rhel9-operator-c6d203a2f68ba5934e946ffac4ed3d4d6afe9a61c631e121b2d01bb06830d99a-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c6d203a2f68ba5934e946ffac4ed3d4d6afe9a61c631e121b2d01bb06830d99a"
   - name: odh_ai_gateway_payload_processing_e2e_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-e2e-rhel9@sha256:5d290bce8d0171d48501a4305f80d704875ca250f5e16349b168b3698dffaf17"
   - name: odh_ai_gateway_payload_processing_image
@@ -2654,8 +2654,8 @@ spec:
     image: "registry.redhat.io/rhoai/odh-notebook-controller-rhel9@sha256:4a5cb37246e1311542aeccffce27baf1eab4eaf4b2fa2fe79f947c25bbc8a781"
   - name: odh_ogx_core_image
     image: "registry.redhat.io/rhoai/odh-ogx-core-rhel9@sha256:bcaf33867b87b884c18baed6058018075b6007e7703ed9cec73029cc4bcab7ec"
-  - name: odh_ogx_operator_image
-    image: "quay.io/rhoai/odh-ogx-operator-rhel9@sha256:2a1a6c869d4f0a311eb2951156dbe3c09f4e24f7ec8b334cc30327bbd7c6582b"
+  - name: odh_ogx_k8s_operator_image
+    image: "registry.redhat.io/rhoai/odh-ogx-k8s-operator-rhel9@sha256:2d6bed56f3a3730125572a479f858619b02c1d156a0a4721e5b04d7ef7b87482"
   - name: odh_openvino_model_server_image
     image: "registry.redhat.io/rhoai/odh-openvino-model-server-rhel9@sha256:2bbbe9d13ed03d683fb404ca3ff3c2e8e9aaac55caa7a6d874b1c1e17d3a8323"
   - name: odh_pipelines_components_image
