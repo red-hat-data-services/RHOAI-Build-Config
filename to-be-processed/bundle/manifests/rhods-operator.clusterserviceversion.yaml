@@ -97,7 +97,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-05-13T17:18:06Z"
+    createdAt: "2026-05-13T21:12:42Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -359,7 +359,6 @@ spec:
           - ""
           resources:
           - clusterversions
-          - nodes
           - rhmis
           verbs:
           - get
@@ -414,6 +413,16 @@ spec:
           - namespaces/finalizers
           verbs:
           - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - nodes
+          verbs:
           - get
           - list
           - patch
@@ -497,6 +506,7 @@ spec:
         - apiGroups:
           - apps
           resources:
+          - daemonsets
           - deployments
           - deployments/finalizers
           - statefulsets
@@ -1534,35 +1544,11 @@ spec:
           - securitycontextconstraints
           verbs:
           - create
+          - delete
           - get
           - list
           - patch
-          - use
-          - watch
-        - apiGroups:
-          - security.openshift.io
-          resourceNames:
-          - anyuid
-          resources:
-          - securitycontextconstraints
-          verbs:
-          - create
-          - get
-          - list
-          - patch
-          - use
-          - watch
-        - apiGroups:
-          - security.openshift.io
-          resourceNames:
-          - restricted
-          resources:
-          - securitycontextconstraints
-          verbs:
-          - create
-          - get
-          - list
-          - patch
+          - update
           - use
           - watch
         - apiGroups:
@@ -1608,6 +1594,7 @@ spec:
           - inferenceservices
           - inferenceservices/finalizers
           - llminferenceserviceconfigs
+          - localmodelnodegroups
           - predictors
           - servingruntimes
           - servingruntimes/finalizers
