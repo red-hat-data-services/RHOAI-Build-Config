@@ -46,6 +46,9 @@ metadata:
                 "managementState": "Managed",
                 "registriesNamespace": "rhoai-model-registries"
               },
+              "ogx": {
+                "managementState": "Removed"
+              },
               "ray": {
                 "managementState": "Managed"
               },
@@ -94,7 +97,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-04-28T20:53:32Z"
+    createdAt: "2026-05-13T17:18:06Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -132,6 +135,9 @@ metadata:
               "managementState": "Managed"
             },
             "llamastackoperator": {
+              "managementState": "Removed"
+            },
+            "ogx": {
               "managementState": "Removed"
             },
             "kueue": {
@@ -175,7 +181,7 @@ metadata:
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
       "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
       "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "llamastackoperators.components.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
+      "ogxs.components.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
       "mlflowoperators.components.platform.opendatahub.io", "modelsasservices.components.platform.opendatahub.io",
       "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
@@ -256,11 +262,6 @@ spec:
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
       version: v1alpha1
-    - description: LlamaStackOperator is the Schema for the LlamaStackOperator API
-      displayName: Llama Stack Operator
-      kind: LlamaStackOperator
-      name: llamastackoperators.components.platform.opendatahub.io
-      version: v1alpha1
     - description: MLflowOperator is the Schema for the MLflowOperators API
       displayName: MLflow Operator
       kind: MLflowOperator
@@ -283,6 +284,11 @@ spec:
       displayName: Monitoring
       kind: Monitoring
       name: monitorings.services.platform.opendatahub.io
+      version: v1alpha1
+    - description: OGX is the Schema for the OGX API
+      displayName: OGX
+      kind: OGX
+      name: ogxs.components.platform.opendatahub.io
       version: v1alpha1
     - description: Ray is the Schema for the rays API
       displayName: Ray
@@ -338,7 +344,7 @@ spec:
     * Fairness monitoring, drift tracking, LLM guardrails, and LLM evaluations (TrustyAI)
     * Index and manage models, versions, and artifacts metadata (Model Registry)
     * Feast - Feature Store is the fastest path to manage existing infrastructure to productionize analytic data for model training and online inference.
-    * Llama Stack - Unified open-source APIs for inference, RAG, agents, safety, evals & telemetry
+    * OGX - Unified open-source APIs for inference, RAG, agents, safety, evals & telemetry
     * MLflow - MLflow is an open-source platform, purpose-built to assist machine learning practitioners and teams in handling the complexities of the machine learning process. MLflow focuses on the full lifecycle for machine learning projects, ensuring that each phase is manageable, traceable, and reproducible.
     * Spark Operator - Spark Operator is a Kubernetes operator for managing Apache Spark applications. It provides a way to deploy and manage Spark applications on Kubernetes.
   displayName: Red Hat OpenShift AI
@@ -630,12 +636,12 @@ spec:
           - feastoperators
           - kserves
           - kueues
-          - llamastackoperators
           - mlflowoperators
           - modelcontrollers
           - modelmeshservings
           - modelregistries
           - modelsasservices
+          - ogxs
           - rays
           - sparkoperators
           - trainers
@@ -670,12 +676,12 @@ spec:
           - feastoperators/status
           - kserves/status
           - kueues/status
-          - llamastackoperators/status
           - mlflowoperators/status
           - modelcontrollers/status
           - modelmeshservings/status
           - modelregistries/status
           - modelsasservices/status
+          - ogxs/status
           - rays/status
           - sparkoperators/status
           - trainers/status
@@ -693,12 +699,12 @@ spec:
           - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
-          - llamastackoperators/finalizers
           - mlflowoperators/finalizers
           - modelcontrollers/finalizers
           - modelmeshservings/finalizers
           - modelregistries/finalizers
           - modelsasservices/finalizers
+          - ogxs/finalizers
           - rays/finalizers
           - sparkoperators/finalizers
           - trainers/finalizers
@@ -1907,7 +1913,7 @@ spec:
   - Data Science
   - Feast
   - featurestore
-  - llamastack
+  - ogx
   - mlflow
   - sparkoperator
   links:

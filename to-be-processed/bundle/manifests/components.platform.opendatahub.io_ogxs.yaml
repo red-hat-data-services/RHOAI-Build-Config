@@ -4,14 +4,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.17.3
   creationTimestamp: null
-  name: llamastackoperators.components.platform.opendatahub.io
+  name: ogxs.components.platform.opendatahub.io
 spec:
   group: components.platform.opendatahub.io
   names:
-    kind: LlamaStackOperator
-    listKind: LlamaStackOperatorList
-    plural: llamastackoperators
-    singular: llamastackoperator
+    kind: OGX
+    listKind: OGXList
+    plural: ogxs
+    singular: ogx
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -26,7 +26,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: LlamaStackOperator is the Schema for the LlamaStackOperator API
+        description: OGX is the Schema for the OGX API
         properties:
           apiVersion:
             description: |-
@@ -46,10 +46,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: LlamaStackOperatorSpec defines the desired state of LlamaStackOperator
+            description: OGXSpec defines the desired state of OGX
             type: object
           status:
-            description: LlamaStackOperatorStatus defines the observed state of LlamaStackOperator
+            description: OGXStatus defines the observed state of OGX
             properties:
               conditions:
                 items:
@@ -134,8 +134,8 @@ spec:
             type: object
         type: object
         x-kubernetes-validations:
-        - message: LlamaStackOperator name must be default-llamastackoperator
-          rule: self.metadata.name == 'default-llamastackoperator'
+        - message: OGX name must be default-ogx
+          rule: self.metadata.name == 'default-ogx'
     served: true
     storage: true
     subresources:
