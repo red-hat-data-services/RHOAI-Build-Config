@@ -4,6 +4,8 @@ RHAI on XKS Helm Chart has been installed.
 Cloud provider: Azure
 {{- else if .Values.coreweave.enabled }}
 Cloud provider: CoreWeave
+{{- else if .Values.aws.enabled }}
+Cloud provider: AWS
 {{- end }}
 
 == Custom Resources ==
@@ -68,6 +70,37 @@ CoreWeaveKubernetesEngine CR is NOT automatically created. To create it manually
    kind: CoreWeaveKubernetesEngine
    metadata:
      name: default-coreweavekubernetesengine
+   spec:
+     dependencies:
+       certManager:
+         configuration: {}
+         managementPolicy: Managed
+       gatewayAPI:
+         configuration: {}
+         managementPolicy: Managed
+       lws:
+         configuration: {}
+         managementPolicy: Managed
+       sailOperator:
+         configuration: {}
+         managementPolicy: Managed
+   EOF
+{{- end }}
+{{- end }}
+
+{{- if .Values.aws.enabled }}
+{{- if .Values.aws.kubernetesEngine.enabled }}
+
+AWSKubernetesEngine CR was automatically created during the installation.
+{{- else }}
+
+AWSKubernetesEngine CR is NOT automatically created. To create it manually:
+
+   kubectl apply -f - <<EOF
+   apiVersion: infrastructure.opendatahub.io/v1alpha1
+   kind: AWSKubernetesEngine
+   metadata:
+     name: default-awskubernetesengine
    spec:
      dependencies:
        certManager:

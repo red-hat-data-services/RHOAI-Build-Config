@@ -52,10 +52,14 @@ imagePullSecrets:
 Validate that exactly one cloud provider is enabled.
 */}}
 {{- define "rhai-on-xks-chart.validateCloudProvider" -}}
-{{- if and .Values.enabled (not (or .Values.azure.enabled .Values.coreweave.enabled)) -}}
-{{- fail "Exactly one cloud provider must be enabled: set azure.enabled=true or coreweave.enabled=true" -}}
+{{- if and .Values.enabled (not (or .Values.azure.enabled .Values.coreweave.enabled .Values.aws.enabled)) -}}
+{{- fail "Exactly one cloud provider must be enabled: set azure.enabled=true, coreweave.enabled=true, or aws.enabled=true" -}}
 {{- end -}}
-{{- if and .Values.enabled .Values.azure.enabled .Values.coreweave.enabled -}}
-{{- fail "Only one cloud provider can be enabled at a time: set either azure.enabled=true or coreweave.enabled=true, not both" -}}
+{{- $enabledCount := 0 -}}
+{{- if .Values.azure.enabled }}{{- $enabledCount = add $enabledCount 1 -}}{{- end -}}
+{{- if .Values.coreweave.enabled }}{{- $enabledCount = add $enabledCount 1 -}}{{- end -}}
+{{- if .Values.aws.enabled }}{{- $enabledCount = add $enabledCount 1 -}}{{- end -}}
+{{- if and .Values.enabled (gt (int $enabledCount) 1) -}}
+{{- fail "Only one cloud provider can be enabled at a time: set either azure.enabled=true, coreweave.enabled=true, or aws.enabled=true, not multiple" -}}
 {{- end -}}
 {{- end -}}

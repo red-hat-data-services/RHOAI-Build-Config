@@ -3,7 +3,8 @@
 {{- $createKserve := .Values.components.kserve.enabled }}
 {{- $createAzureKE := and .Values.azure.enabled .Values.azure.kubernetesEngine.enabled }}
 {{- $createCoreweaveKE := and .Values.coreweave.enabled .Values.coreweave.kubernetesEngine.enabled }}
-{{- if or $createKserve $createAzureKE $createCoreweaveKE }}
+{{- $createAwsKE := and .Values.aws.enabled .Values.aws.kubernetesEngine.enabled }}
+{{- if or $createKserve $createAzureKE $createCoreweaveKE $createAwsKE }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -97,6 +98,23 @@ spec:
               {{- if .Values.coreweave.kubernetesEngine.spec }}
               spec:
                 {{- .Values.coreweave.kubernetesEngine.spec | toYaml | nindent 16 }}
+              {{- else }}
+              spec: {}
+              {{- end }}
+              EOF
+              {{- end }}
+              {{- if $createAwsKE }}
+              echo "Creating AWSKubernetesEngine CR..."
+              kubectl apply -f - <<'EOF'
+              apiVersion: infrastructure.opendatahub.io/v1alpha1
+              kind: AWSKubernetesEngine
+              metadata:
+                name: default-awskubernetesengine
+                labels:
+                  {{- include "rhai-on-xks-chart.labels" . | nindent 18 }}
+              {{- if .Values.aws.kubernetesEngine.spec }}
+              spec:
+                {{- .Values.aws.kubernetesEngine.spec | toYaml | nindent 16 }}
               {{- else }}
               spec: {}
               {{- end }}

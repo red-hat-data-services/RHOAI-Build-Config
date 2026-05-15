@@ -8,6 +8,19 @@ RHAI on XKS Helm chart for non-OLM installation on non-OpenShift Kubernetes serv
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| aws.cloudManager.image | string | `"quay.io/opendatahub/opendatahub-operator:latest"` |  |
+| aws.cloudManager.imagePullPolicy | string | `"Always"` |  |
+| aws.cloudManager.namespace | string | `"rhai-cloudmanager-system"` |  |
+| aws.enabled | bool | `false` |  |
+| aws.kubernetesEngine.enabled | bool | `true` |  |
+| aws.kubernetesEngine.spec.dependencies.certManager.configuration | object | `{}` |  |
+| aws.kubernetesEngine.spec.dependencies.certManager.managementPolicy | string | `"Managed"` |  |
+| aws.kubernetesEngine.spec.dependencies.gatewayAPI.configuration | object | `{}` |  |
+| aws.kubernetesEngine.spec.dependencies.gatewayAPI.managementPolicy | string | `"Managed"` |  |
+| aws.kubernetesEngine.spec.dependencies.lws.configuration.namespace | string | `"openshift-lws-operator"` |  |
+| aws.kubernetesEngine.spec.dependencies.lws.managementPolicy | string | `"Managed"` |  |
+| aws.kubernetesEngine.spec.dependencies.sailOperator.configuration.namespace | string | `"istio-system"` |  |
+| aws.kubernetesEngine.spec.dependencies.sailOperator.managementPolicy | string | `"Managed"` |  |
 | azure.cloudManager.image | string | `"quay.io/opendatahub/opendatahub-operator:latest"` |  |
 | azure.cloudManager.imagePullPolicy | string | `"Always"` |  |
 | azure.cloudManager.namespace | string | `"rhai-cloudmanager-system"` |  |
