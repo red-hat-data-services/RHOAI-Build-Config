@@ -298,6 +298,38 @@ spec:
                             pattern: ^(Managed|Unmanaged|Force|Removed)$
                             type: string
                         type: object
+                      oauthProxy:
+                        description: |-
+                          Configures the OAuth proxy sidecar container resources in the
+                          'inferenceservice-config' ConfigMap for KServe. Only non-nil fields
+                          override the defaults shipped with the operator manifests.
+                        properties:
+                          resources:
+                            description: Resources describes the compute resource
+                              requirements for the OAuth proxy sidecar container.
+                            properties:
+                              limits:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: Limits describes the maximum amount of
+                                  resources allowed.
+                                type: object
+                              requests:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: Requests describes the minimum amount
+                                  of resources required.
+                                type: object
+                            type: object
+                        type: object
                       rawDeploymentServiceConfig:
                         default: Headless
                         description: |-
@@ -1386,6 +1418,38 @@ spec:
                             - Removed
                             pattern: ^(Managed|Unmanaged|Force|Removed)$
                             type: string
+                        type: object
+                      oauthProxy:
+                        description: |-
+                          Configures the OAuth proxy sidecar container resources in the
+                          'inferenceservice-config' ConfigMap for KServe. Only non-nil fields
+                          override the defaults shipped with the operator manifests.
+                        properties:
+                          resources:
+                            description: Resources describes the compute resource
+                              requirements for the OAuth proxy sidecar container.
+                            properties:
+                              limits:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: Limits describes the maximum amount of
+                                  resources allowed.
+                                type: object
+                              requests:
+                                additionalProperties:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
+                                description: Requests describes the minimum amount
+                                  of resources required.
+                                type: object
+                            type: object
                         type: object
                       rawDeploymentServiceConfig:
                         default: Headless
