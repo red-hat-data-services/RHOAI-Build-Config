@@ -7,6 +7,8 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
+    # Trigger on catalog/ changes (or this tekton file)
+    # No trigger if catalog/catalog-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
       && target_branch == "rhoai-3.4"
@@ -33,7 +35,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: rhoai-version
-    value: "3.4.0"
+    value: "3.4.1"
   - name: dockerfile
     value: Dockerfile
   - name: path-context
