@@ -16,6 +16,24 @@ rhaiOperator:
   image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ec8c62021f4553d707dce7d954a6958645acf9f9f3b5f0fda12e113e0606e2b3" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
+  # Number of operator replicas
+  replicas: 1
+  # Resources for the main manager container
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 300m
+      memory: 256Mi
+  # Resources for the copy-manifests init container
+  initResources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
   # Related images env vars (RELATED_IMAGE_*)
   relatedImages:
     - name: RELATED_IMAGE_ODH_KSERVE_AGENT_IMAGE
@@ -58,6 +76,14 @@ rhaiOperator:
 
 hooks:
   cliImage: "registry.redhat.io/openshift4/ose-cli-rhel9@sha256:7feb4aac0703a07483fb3b0d49bd8db240b7d18604657a2b89ba537c8dbbd64b"
+  # Default resources for all hook job containers
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
   postInstallCrs:
     enabled: true
 
@@ -82,6 +108,16 @@ azure:
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ec8c62021f4553d707dce7d954a6958645acf9f9f3b5f0fda12e113e0606e2b3"
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
   kubernetesEngine:
     # Create AzureKubernetesEngine CR via post-install hook
     enabled: true
@@ -112,6 +148,16 @@ coreweave:
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ec8c62021f4553d707dce7d954a6958645acf9f9f3b5f0fda12e113e0606e2b3"
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
   kubernetesEngine:
     # Create CoreWeaveKubernetesEngine CR via post-install hook
     enabled: true
@@ -142,6 +188,16 @@ aws:
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ec8c62021f4553d707dce7d954a6958645acf9f9f3b5f0fda12e113e0606e2b3"
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
   kubernetesEngine:
     # Create AWSKubernetesEngine CR via post-install hook
     enabled: true
