@@ -16,6 +16,24 @@ rhaiOperator:
   image: quay.io/opendatahub/opendatahub-operator:latest # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
+  # Number of operator replicas
+  replicas: 1
+  # Resources for the main manager container
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 300m
+      memory: 256Mi
+  # Resources for the copy-manifests init container
+  initResources:
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
   # Related images env vars (RELATED_IMAGE_*)
   relatedImages: []
   # Example:
@@ -25,6 +43,14 @@ rhaiOperator:
 
 hooks:
   cliImage: registry.redhat.io/openshift4/ose-cli-rhel9:v4.20@sha256:d876c1d98b39d65c00c4261431bb84b90284699f3aef84d8701a25c786fb79a1
+  # Default resources for all hook job containers
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
   postInstallCrs:
     enabled: true
 
@@ -49,6 +75,16 @@ azure:
     image: quay.io/opendatahub/opendatahub-operator:latest
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
   kubernetesEngine:
     # Create AzureKubernetesEngine CR via post-install hook
     enabled: true
@@ -79,6 +115,16 @@ coreweave:
     image: quay.io/opendatahub/opendatahub-operator:latest
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
   kubernetesEngine:
     # Create CoreWeaveKubernetesEngine CR via post-install hook
     enabled: true
@@ -109,6 +155,16 @@ aws:
     image: quay.io/opendatahub/opendatahub-operator:latest
     # Image pull policy
     imagePullPolicy: Always
+    # Number of cloud manager replicas
+    replicas: 1
+    # Resources for the cloud manager container
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 512Mi
   kubernetesEngine:
     # Create AWSKubernetesEngine CR via post-install hook
     enabled: true
