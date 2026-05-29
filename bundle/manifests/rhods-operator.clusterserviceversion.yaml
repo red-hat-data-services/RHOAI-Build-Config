@@ -96,8 +96,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:dc6f4a4856435364b7970879dd623f7c406362fcadf16f1d9883aafbc0b19e7d"
-    createdAt: "2026-05-29T14:57:52Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:336c9e3d82de609781bedbf35721ab66621cb683ab18163c60d791e0a03e1980"
+    createdAt: "2026-05-29T18:09:23Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1808,6 +1808,8 @@ spec:
                       fieldPath: metadata.namespace
                 - name: DEFAULT_MANIFESTS_PATH
                   value: /opt/manifests
+                - name: RELATED_IMAGE_ODH_AGENTS_OPERATOR_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-agents-operator-rhel9@sha256:c2c7e53d33325ff588f1554e3d2dea3eaf28ab2fa84c383ecbcabbcc19fc4b4a"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_IMAGE
                   value: "registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-e2e-rhel9@sha256:94ad775249045c6780d06aabc410b72b54a99aedadf3e9dfd91e5edcfd1f2f6b"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE
@@ -1817,7 +1819,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_AUTORAG_IMAGE
                   value: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:d9015344f00524a7affb644ea3637b1d11edfd021c47f8755fcfe8d8aff2907b"
                 - name: RELATED_IMAGE_ODH_BUILT_IN_DETECTOR_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:b9e830700704bba618a036a4677d4edfae3e93e034d068fff9b255afbd4033cc"
+                  value: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:a1992a5517f03ee8ed05d04c147d2c4c5d73dcc240ddb4ced5d68ad15ad2968f"
                 - name: RELATED_IMAGE_ODH_CLI_IMAGE
                   value: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:e60d34f8157564983d668e9971d937a6efafffaa3dfc33ee57dd4bfeb08a1b06"
                 - name: RELATED_IMAGE_ODH_DASHBOARD_IMAGE
@@ -1951,9 +1953,9 @@ spec:
                 - name: RELATED_IMAGE_ODH_PIPELINE_RUNTIME_TENSORFLOW_ROCM_PY312_IMAGE
                   value: "registry.redhat.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:d3c7ea1c6c8c3c8c29525a7146e066d49722d155dcf719f12e75cc7c041b6207"
                 - name: RELATED_IMAGE_ODH_RHAII_CLUSTER_VALIDATOR_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-rhaii-cluster-validator-rhel9@sha256:eadd0bfc9ab7b15c0e5fe8b28cc10e6f02a9b253a01ae873e5b99db6c4f891b1"
+                  value: "registry.redhat.io/rhoai/odh-rhaii-cluster-validator-rhel9@sha256:4967baec4ebf7522dbc8b579f6ade9fadca795de8d260c2b6642dcb0bfa86159"
                 - name: RELATED_IMAGE_ODH_RHAII_VALIDATOR_TOOLS_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-rhaii-validator-tools-rhel9@sha256:80d219c5e41e47f75838414c9c39e6924f967ba38573be71e274f4db67476724"
+                  value: "registry.redhat.io/rhoai/odh-rhaii-validator-tools-rhel9@sha256:b98102e47d0fb4cff70042abc17c7b2658d711b571e32c6a083e1bc59716b465"
                 - name: RELATED_IMAGE_ODH_SPARK_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-spark-operator-rhel9@sha256:7494a0de60a2034bb5e7a35c8f6bcb85d1a56398c165aa9cee511027e2b7b45a"
                 - name: RELATED_IMAGE_ODH_TA_LMES_DRIVER_IMAGE
@@ -2060,7 +2062,7 @@ spec:
                   value: registry.redhat.io/rhaii/vllm-cpu-rhel9@sha256:562aeaf7dabfccccf9ecc2d8c0e7d84d813778f146dd9d5c8e3a1d595d07a82c
                 - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_IMAGE
                   value: registry.redhat.io/rhaii/vllm-gaudi-rhel9@sha256:1adc51d99455d90f758d840cb3bb5747ed29585c1b0830c051f7fe5cca3471e6
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:dc6f4a4856435364b7970879dd623f7c406362fcadf16f1d9883aafbc0b19e7d"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:336c9e3d82de609781bedbf35721ab66621cb683ab18163c60d791e0a03e1980"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2109,7 +2111,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:dc6f4a4856435364b7970879dd623f7c406362fcadf16f1d9883aafbc0b19e7d"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:336c9e3d82de609781bedbf35721ab66621cb683ab18163c60d791e0a03e1980"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2541,8 +2543,10 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-dc6f4a4856435364b7970879dd623f7c406362fcadf16f1d9883aafbc0b19e7d-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:dc6f4a4856435364b7970879dd623f7c406362fcadf16f1d9883aafbc0b19e7d"
+  - name: odh-rhel9-operator-336c9e3d82de609781bedbf35721ab66621cb683ab18163c60d791e0a03e1980-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:336c9e3d82de609781bedbf35721ab66621cb683ab18163c60d791e0a03e1980"
+  - name: odh_agents_operator_image
+    image: "registry.redhat.io/rhoai/odh-agents-operator-rhel9@sha256:c2c7e53d33325ff588f1554e3d2dea3eaf28ab2fa84c383ecbcabbcc19fc4b4a"
   - name: odh_ai_gateway_payload_processing_e2e_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-payload-processing-e2e-rhel9@sha256:94ad775249045c6780d06aabc410b72b54a99aedadf3e9dfd91e5edcfd1f2f6b"
   - name: odh_ai_gateway_payload_processing_image
@@ -2552,7 +2556,7 @@ spec:
   - name: odh_autorag_image
     image: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:d9015344f00524a7affb644ea3637b1d11edfd021c47f8755fcfe8d8aff2907b"
   - name: odh_built_in_detector_image
-    image: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:b9e830700704bba618a036a4677d4edfae3e93e034d068fff9b255afbd4033cc"
+    image: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:a1992a5517f03ee8ed05d04c147d2c4c5d73dcc240ddb4ced5d68ad15ad2968f"
   - name: odh_cli_image
     image: "registry.redhat.io/rhoai/odh-cli-rhel9@sha256:e60d34f8157564983d668e9971d937a6efafffaa3dfc33ee57dd4bfeb08a1b06"
   - name: odh_dashboard_image
@@ -2686,9 +2690,9 @@ spec:
   - name: odh_pipeline_runtime_tensorflow_rocm_py312_image
     image: "registry.redhat.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:d3c7ea1c6c8c3c8c29525a7146e066d49722d155dcf719f12e75cc7c041b6207"
   - name: odh_rhaii_cluster_validator_image
-    image: "registry.redhat.io/rhoai/odh-rhaii-cluster-validator-rhel9@sha256:eadd0bfc9ab7b15c0e5fe8b28cc10e6f02a9b253a01ae873e5b99db6c4f891b1"
+    image: "registry.redhat.io/rhoai/odh-rhaii-cluster-validator-rhel9@sha256:4967baec4ebf7522dbc8b579f6ade9fadca795de8d260c2b6642dcb0bfa86159"
   - name: odh_rhaii_validator_tools_image
-    image: "registry.redhat.io/rhoai/odh-rhaii-validator-tools-rhel9@sha256:80d219c5e41e47f75838414c9c39e6924f967ba38573be71e274f4db67476724"
+    image: "registry.redhat.io/rhoai/odh-rhaii-validator-tools-rhel9@sha256:b98102e47d0fb4cff70042abc17c7b2658d711b571e32c6a083e1bc59716b465"
   - name: odh_spark_operator_image
     image: "registry.redhat.io/rhoai/odh-spark-operator-rhel9@sha256:7494a0de60a2034bb5e7a35c8f6bcb85d1a56398c165aa9cee511027e2b7b45a"
   - name: odh_ta_lmes_driver_image
