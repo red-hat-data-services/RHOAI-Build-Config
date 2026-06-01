@@ -9,15 +9,19 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       "non-existent-file.non-existent-ext".pathChanged() && event == "push"
-      && target_branch == "rhoai-3.5-ea.2"
-      && ( "helm/rhai-on-xks-chart/**".pathChanged() || ".tekton/rhai-on-xks-chart-v3-5-ea-2-push.yaml".pathChanged() )
+      && target_branch == "rhoai-3.5-ea.3"
+      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-5-ea-3-push.yaml".pathChanged() )
+      && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
   labels:
-    appstudio.openshift.io/application: rhoai-v3-5-ea-2
-    appstudio.openshift.io/component: rhai-on-xks-chart-v3-5-ea-2
+    appstudio.openshift.io/application: rhoai-v3-5-ea-3
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5-ea-3
     pipelines.appstudio.openshift.io/type: build
-  name: rhai-on-xks-chart-v3-5-ea-2-on-push
+  name: rhoai-fbc-fragment-v3-5-ea-3-on-push
   namespace: rhoai-tenant
 spec:
+  timeouts:
+    pipeline: 10h
+    tasks: 8h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -27,15 +31,31 @@ spec:
     value:
     - '{{target_branch}}-{{revision}}'
   - name: output-image
-    value: quay.io/rhoai/rhai-on-xks-chart:{{target_branch}}
+    value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: rhoai-version
-    value: "3.5.0-ea.2"
+    value: "3.5.0-ea.3"
+  - name: dockerfile
+    value: Dockerfile
   - name: path-context
-    value: "helm/rhai-on-xks-chart"
+    value: catalog/v4.19
   - name: hermetic
-    value: false
+    value: true
   - name: build-source-image
     value: true
+  - name: build-image-index
+    value: true
+  - name: build-platforms
+    value:
+    - linux/x86_64
+    - linux/ppc64le
+    - linux/s390x
+    - linux/arm64
+  - name: build-args-file
+    value: catalog/catalog_build_args.map
+  - name: skip-checks
+    value: false
+  - name: build-type
+    value: "ci"
   pipelineRef:
     resolver: git
     params:
@@ -44,18 +64,9 @@ spec:
     - name: revision
       value: '{{ target_branch }}'
     - name: pathInRepo
-      value: pipelines/helm-chart-build.yaml
-  taskRunSpecs:
-  - pipelineTaskName: build-helm-chart
-    stepSpecs:
-    - name: package-and-push
-      computeResources:
-        requests:
-          memory: 0.3Gi
-        limits:
-          memory: 4Gi
+      value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhai-on-xks-chart-v3-5-ea-2
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-5-ea-3
   workspaces:
   - name: git-auth
     secret:
