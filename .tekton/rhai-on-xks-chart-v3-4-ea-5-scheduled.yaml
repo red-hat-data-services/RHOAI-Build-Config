@@ -7,19 +7,15 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
-    # Trigger on bundle/ changes (or this tekton file)
-    # No trigger if bundle/bundle-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
-      && target_branch == "rhoai-3.4"
-      && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-4-push.yaml".pathChanged() )
-      && files.all.exists(p, !p.matches('^bundle/bundle-patch\\.yaml$'))
+      && target_branch == "rhoai-3.4-ea.5"
+      && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
   labels:
-    appstudio.openshift.io/application: rhoai-v3-4
-    appstudio.openshift.io/component: odh-operator-bundle-v3-4
+    appstudio.openshift.io/application: rhoai-v3-4-ea-5
+    appstudio.openshift.io/component: rhai-on-xks-chart-v3-4-ea-5
     pipelines.appstudio.openshift.io/type: build
-  name: odh-operator-bundle-v3-4-on-push
+  name: rhai-on-xks-chart-v3-4-ea-5-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -30,22 +26,17 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: output-image
-    value: quay.io/rhoai/odh-operator-bundle:{{target_branch}}
+    value: quay.io/rhoai/rhai-on-xks-chart:{{target_branch}}
   - name: rhoai-version
-    value: "3.4.1"
-  - name: dockerfile
-    value: bundle/Dockerfile
+    value: "3.4-ea.5.1"
   - name: path-context
-    value: .
+    value: "helm/rhai-on-xks-chart"
   - name: hermetic
-    value: true
+    value: false
   - name: build-source-image
     value: true
-  - name: build-image-index
-    value: false
-  - name: build-args-file
-    value: bundle/bundle_build_args.map
   pipelineRef:
     resolver: git
     params:
@@ -54,9 +45,18 @@ spec:
     - name: revision
       value: '{{ target_branch }}'
     - name: pathInRepo
-      value: pipelines/container-build.yaml
+      value: pipelines/helm-chart-build.yaml
+  taskRunSpecs:
+  - pipelineTaskName: build-helm-chart
+    stepSpecs:
+    - name: package-and-push
+      computeResources:
+        requests:
+          memory: 0.3Gi
+        limits:
+          memory: 4Gi
   taskRunTemplate:
-    serviceAccountName: build-pipeline-odh-operator-bundle-v3-4
+    serviceAccountName: build-pipeline-rhai-on-xks-chart-v3-4-ea-5
   workspaces:
   - name: git-auth
     secret:

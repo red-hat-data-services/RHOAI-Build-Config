@@ -9,13 +9,13 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
-      && target_branch == "rhoai-3.4"
-      && ( "helm/rhai-on-xks-chart/**".pathChanged() || ".tekton/rhai-on-xks-chart-v3-4-push.yaml".pathChanged() )
+      && target_branch == "rhoai-3.4-ea.5"
+      && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
   labels:
-    appstudio.openshift.io/application: rhoai-v3-4
-    appstudio.openshift.io/component: rhai-on-xks-chart-v3-4
+    appstudio.openshift.io/application: rhoai-v3-4-ea-5
+    appstudio.openshift.io/component: rhai-on-openshift-chart-v3-4-ea-5
     pipelines.appstudio.openshift.io/type: build
-  name: rhai-on-xks-chart-v3-4-on-push
+  name: rhai-on-openshift-chart-v3-4-ea-5-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -26,12 +26,13 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: output-image
-    value: quay.io/rhoai/rhai-on-xks-chart:{{target_branch}}
+    value: quay.io/rhoai/rhai-on-openshift-chart:{{target_branch}}
   - name: rhoai-version
-    value: "3.4.1"
+    value: "3.4-ea.5.1"
   - name: path-context
-    value: "helm/rhai-on-xks-chart"
+    value: "helm/rhai-on-openshift-chart"
   - name: hermetic
     value: false
   - name: build-source-image
@@ -55,7 +56,7 @@ spec:
         limits:
           memory: 4Gi
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhai-on-xks-chart-v3-4
+    serviceAccountName: build-pipeline-rhai-on-openshift-chart-v3-4-ea-5
   workspaces:
   - name: git-auth
     secret:
