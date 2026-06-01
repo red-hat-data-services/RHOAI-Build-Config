@@ -9,13 +9,13 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
-      && target_branch == "rhoai-3.4"
+      && target_branch == "rhoai-3.5-ea.7"
       && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
   labels:
-    appstudio.openshift.io/application: rhoai-v3-4
-    appstudio.openshift.io/component: rhai-on-openshift-chart-v3-4
+    appstudio.openshift.io/application: rhoai-v3-5-ea-7
+    appstudio.openshift.io/component: rhai-on-openshift-chart-v3-5-ea-7
     pipelines.appstudio.openshift.io/type: build
-  name: rhai-on-openshift-chart-v3-4-on-schedule
+  name: rhai-on-openshift-chart-v3-5-ea-7-on-schedule
   namespace: rhoai-tenant
 spec:
   params:
@@ -30,7 +30,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/rhai-on-openshift-chart:{{target_branch}}
   - name: rhoai-version
-    value: "3.4.1"
+    value: "3.5-ea.7.1"
   - name: path-context
     value: "helm/rhai-on-openshift-chart"
   - name: hermetic
@@ -56,7 +56,7 @@ spec:
         limits:
           memory: 4Gi
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhai-on-openshift-chart-v3-4
+    serviceAccountName: build-pipeline-rhai-on-openshift-chart-v3-5-ea-7
   workspaces:
   - name: git-auth
     secret:
