@@ -57,7 +57,10 @@ jobs:
           chmod +x $yq_filename
           ln -s $yq_filename yq
           cp $yq_filename /usr/local/bin/yq
-  
+
+          echo "-> Installing rsync" >&2
+          microdnf install -y rsync
+
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
       - name: Process Operator Bundle
