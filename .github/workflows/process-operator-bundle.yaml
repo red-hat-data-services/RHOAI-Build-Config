@@ -127,8 +127,10 @@ jobs:
             -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x enable
 
-          cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle
-          cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
+          # Use rsync --delete to properly sync directories and remove stale files
+          # This prevents orphaned files from persisting when they are removed from to-be-processed/
+          rsync -av --delete ${RAW_INPUTS_DIR}/ ${BRANCH}/bundle/
+          rsync -av --delete ${HELM_RAW_INPUTS_DIR}/ ${BRANCH}/helm/
 
       - name: Print debug logs
         if: always()
