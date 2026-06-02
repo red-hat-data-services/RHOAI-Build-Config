@@ -58,9 +58,6 @@ jobs:
           ln -s $yq_filename yq
           cp $yq_filename /usr/local/bin/yq
 
-          echo "-> Installing rsync" >&2
-          microdnf install -y rsync
-
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
       - name: Process Operator Bundle
@@ -130,10 +127,16 @@ jobs:
             -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x enable
 
-          # Use rsync --delete to properly sync directories and remove stale files
-          # This prevents orphaned files from persisting when they are removed from to-be-processed/
-          rsync -av --delete ${RAW_INPUTS_DIR}/ ${BRANCH}/bundle/
-          rsync -av --delete ${HELM_RAW_INPUTS_DIR}/ ${BRANCH}/helm/
+          # Sync processed content back to bundle and helm directories
+          # Convention: root-level files are permanent configs, subdirectories are synced content
+          # Strategy: delete all subdirectories then copy processed content to remove stale files
+          # WARNING: If permanent config subdirectories are added, this logic must be updated
+
+          find ${BRANCH}/bundle/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+          cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle/
+
+          find ${BRANCH}/helm/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+          cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
 
       - name: Print debug logs
         if: always()
