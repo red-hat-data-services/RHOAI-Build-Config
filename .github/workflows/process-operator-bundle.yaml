@@ -58,6 +58,9 @@ jobs:
           ln -s $yq_filename yq
           cp $yq_filename /usr/local/bin/yq
 
+          echo "-> Installing findutils" >&2
+          microdnf install -y findutils
+
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
       - name: Process Operator Bundle
