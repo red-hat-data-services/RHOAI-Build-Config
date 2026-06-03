@@ -97,7 +97,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-05-29T21:17:52Z"
+    createdAt: "2026-06-03T18:07:21Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -289,6 +289,9 @@ spec:
       displayName: OGX
       kind: OGX
       name: ogxs.components.platform.opendatahub.io
+      version: v1alpha1
+    - kind: Platform
+      name: platforms.config.opendatahub.io
       version: v1alpha1
     - description: Ray is the Schema for the rays API
       displayName: Ray
@@ -722,6 +725,28 @@ spec:
           - trustyais/finalizers
           - workbenches/finalizers
           verbs:
+          - update
+        - apiGroups:
+          - config.opendatahub.io
+          resources:
+          - platforms
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - config.opendatahub.io
+          resources:
+          - platforms/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - config.opendatahub.io
+          resources:
+          - platforms/status
+          verbs:
+          - get
+          - patch
           - update
         - apiGroups:
           - config.openshift.io
@@ -1802,6 +1827,8 @@ spec:
                       fieldPath: metadata.namespace
                 - name: DEFAULT_MANIFESTS_PATH
                   value: /opt/manifests
+                - name: DEFAULT_CHARTS_PATH
+                  value: /opt/charts
                 image: REPLACE_IMAGE:latest
                 imagePullPolicy: Always
                 livenessProbe:
