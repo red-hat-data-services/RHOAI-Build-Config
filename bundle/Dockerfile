@@ -193,6 +193,8 @@ ARG ODH_OGX_K8S_OPERATOR_GIT_URL=
 ARG ODH_OGX_K8S_OPERATOR_GIT_COMMIT=
 ARG ODH_AGENTS_OPERATOR_GIT_URL=
 ARG ODH_AGENTS_OPERATOR_GIT_COMMIT=
+ARG ODH_MOD_ARCH_AGENT_OPS_GIT_URL=
+ARG ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -400,7 +402,9 @@ LABEL \
       odh-ogx-k8s-operator.git.url="${ODH_OGX_K8S_OPERATOR_GIT_URL}" \
       odh-ogx-k8s-operator.git.commit="${ODH_OGX_K8S_OPERATOR_GIT_COMMIT}" \
       odh-agents-operator.git.url="${ODH_AGENTS_OPERATOR_GIT_URL}" \
-      odh-agents-operator.git.commit="${ODH_AGENTS_OPERATOR_GIT_COMMIT}"
+      odh-agents-operator.git.commit="${ODH_AGENTS_OPERATOR_GIT_COMMIT}" \
+      odh-mod-arch-agent-ops.git.url="${ODH_MOD_ARCH_AGENT_OPS_GIT_URL}" \
+      odh-mod-arch-agent-ops.git.commit="${ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
