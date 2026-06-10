@@ -1,0 +1,134 @@
+name: Regenerate PCC Cache
+run-name: Regenerate PCC Cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GITHUB_ORG: red-hat-data-services
+  GITHUB_RKA_ORG: rhoai-rhtap
+
+jobs:
+  regenerate-pcc-cache:
+    runs-on: ubuntu-22.04
+    container:
+      image: quay.io/rhoai/rhoai-task-toolset:latest
+      options: --privileged
+    steps:
+      - name: Git checkout RBC main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Install dependencies
+        run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+          yq_version="v4.44.3"
+          yq_filename="yq-$yq_version"
+          echo "-> Downloading yq" >&2
+          curl -sSfLo "$yq_filename" "https://github.com/mikefarah/yq/releases/download/$yq_version/yq_${os}_${arch}"
+          chmod +x "$yq_filename"
+          ln -s "$yq_filename" yq
+          cp "$yq_filename" /usr/local/bin/yq
+
+      - name: Fetch latest shipped versions
+        id: check-if-pcc-cache-valid
+        env:
+          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
+          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
+        run: |
+          microdnf install -y coreutils-single && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
+          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+          echo "latest_shipped_rhoai_versions = "
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+          echo "shipped_rhoai_versions (cached) = "
+          cat main/pcc/shipped_rhoai_versions_granular.txt
+
+          cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
+
+      - name: Regenerate PCC Cache
+        id: regenerate-pcc-cache
+        run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+          opm_version="v1.47.0"
+          opm_filename="opm-$opm_version"
+          echo "-> Downloading opm" >&2
+          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
+          chmod +x "$opm_filename"
+          ln -fs "$opm_filename" opm
+          cp "$opm_filename" /usr/local/bin/opm
+
+          microdnf install -y findutils && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+
+          CONFIG_PATH=main/config/config.yaml
+          CSV_META_MIN_OCP_VERSION=417
+          CATALOG_DIR=main/pcc
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+              echo "=== Migrating ${OCP_VERSION} operator index ==="
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+
+          echo "=== PCC cache files ==="
+          ls -l main/pcc/
+
+      - name: Git checkout utils
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
+          ref: '3.0'
+          path: utils
+
+      - name: Install python dependencies
+        run: |
+          pip install --default-timeout=100 -r utils/utils/bundle-processor/requirements.txt
+          pip install -r utils/utils/stage-promoter/requirements.txt
+
+      - name: Validate PCC Cache
+        id: validate-pcc-cache
+        run: |
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
+
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
+
+      - name: Push latest PCC Cache
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          message: "Regeneratd the PCC Cache"
+          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
+          directory: main
+          author_name: Openshift-AI DevOps
+          author_email: openshift-ai-devops@redhat.com
