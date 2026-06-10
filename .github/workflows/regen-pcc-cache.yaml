@@ -41,6 +41,9 @@ jobs:
           ln -s "$yq_filename" yq
           cp "$yq_filename" /usr/local/bin/yq
 
+          microdnf install -y skopeo && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+
       - name: Fetch latest shipped versions
         id: check-if-pcc-cache-valid
         env:
