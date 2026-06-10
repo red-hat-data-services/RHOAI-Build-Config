@@ -3,6 +3,10 @@ run-name: Regenerate PCC Cache
 
 on:
   workflow_dispatch:
+  # TODO: remove before merging — temporary trigger for PR testing
+  push:
+    branches:
+      - regen-pcc-cache
 
 permissions:
   contents: write
@@ -21,7 +25,8 @@ jobs:
       - name: Git checkout RBC main
         uses: actions/checkout@v4
         with:
-          ref: main
+          # TODO: change back to main before merging
+          ref: ${{ github.ref_name }}
           path: main
 
       - name: Install dependencies
@@ -126,7 +131,8 @@ jobs:
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          # TODO: change back to main before merging
+          branch: ${{ github.ref_name }}
           message: "Regeneratd the PCC Cache"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: main
