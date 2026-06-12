@@ -197,6 +197,8 @@ ARG ODH_MOD_ARCH_AGENT_OPS_GIT_URL=
 ARG ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_URL=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT=
+ARG ODH_AUTHBRIDGE_PROXY_GIT_URL=
+ARG ODH_AUTHBRIDGE_PROXY_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -408,7 +410,9 @@ LABEL \
       odh-mod-arch-agent-ops.git.url="${ODH_MOD_ARCH_AGENT_OPS_GIT_URL}" \
       odh-mod-arch-agent-ops.git.commit="${ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT}" \
       odh-ai-gateway-operator.git.url="${ODH_AI_GATEWAY_OPERATOR_GIT_URL}" \
-      odh-ai-gateway-operator.git.commit="${ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT}"
+      odh-ai-gateway-operator.git.commit="${ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT}" \
+      odh-authbridge-proxy.git.url="${ODH_AUTHBRIDGE_PROXY_GIT_URL}" \
+      odh-authbridge-proxy.git.commit="${ODH_AUTHBRIDGE_PROXY_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
