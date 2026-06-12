@@ -1,6 +1,6 @@
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.22
+FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.22
 
 ARG RBC_RELEASE_BRANCH_COMMIT=
 ARG ODH_RHEL9_OPERATOR_GIT_URL=
