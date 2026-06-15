@@ -29,17 +29,17 @@ jobs:
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Git checkout RBC main
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: main
           path: main
       - name: Git checkout RBC release
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
       - name: Git checkout utils
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
           ref: main
@@ -127,13 +127,10 @@ jobs:
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
       - name: Commit and push the changes to release branch
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.get_branch.outputs.branch }}
-          message: "Updating the catalog.yaml with latest images and patches"
-          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
-          directory: ${{ steps.get_branch.outputs.branch }}
-          author_name: Openshift-AI DevOps
-          author_email: openshift-ai-devops@redhat.com
+        working-directory: ${{ steps.get_branch.outputs.branch }}
+        run: |
+          git config user.name "Openshift-AI DevOps"
+          git config user.email "openshift-ai-devops@redhat.com"
+          git add -A
+          git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
 

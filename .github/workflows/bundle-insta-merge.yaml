@@ -27,26 +27,30 @@ permissions:
   statuses: write
 
 jobs:
-  insta-merge:
+  check-files:
     #    we also have the author and title check to be on safer side since we are using pull_request_target event,
     if: ${{ github.event.sender.login == 'konflux-internal-p02[bot]'  && contains(github.event.pull_request.title, 'update odh-operator-') }}
     runs-on: ubuntu-latest
+    outputs:
+      feasible: ${{ steps.merge-feasibility-check.outputs.FEASIBLE }}
+      base_branch: ${{ steps.merge-feasibility-check.outputs.BASE_BRANCH }}
+      head_branch: ${{ steps.merge-feasibility-check.outputs.HEAD_BRANCH }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Get changed files
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Check changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
-      - name: List all changed files
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: |
-          echo $ALL_CHANGED_FILES
-          for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
-          done
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
+        with:
+          filters: |
+            bundle_patch:
+              - 'bundle/bundle-patch.yaml'
+            trigger:
+              - 'schedule/bundle-github-trigger.txt'
+            all:
+              - '**'
 
       - name: Merge Feasibility Check
-        if: ${{ steps.changed-files.outputs.all_changed_files == 'bundle/bundle-patch.yaml' || steps.changed-files.outputs.all_changed_files == 'schedule/bundle-github-trigger.txt' }}
+        if: ${{ steps.changed-files.outputs.all_count == '1' && (steps.changed-files.outputs.bundle_patch == 'true' || steps.changed-files.outputs.trigger == 'true') }}
         id: merge-feasibility-check
         run: |
           # Declare variables
@@ -57,9 +61,9 @@ jobs:
           echo "SUFFIX=$SUFFIX"
           echo "HEAD_BRANCH=$HEAD_BRANCH"
           TITLE="${{ github.event.pull_request.title }}"
-          
+
           if [[ $TITLE == chore\(deps\)* ]]
-          then 
+          then
             TITLE=${TITLE/chore\(deps\): u/U}
           fi
           REGEX="^Update.*-$SUFFIX to [0-9a-z]{1,40}$"
@@ -77,25 +81,29 @@ jobs:
           echo "BASE_BRANCH=$BASE_BRANCH" >> $GITHUB_OUTPUT
           echo "HEAD_BRANCH=$HEAD_BRANCH" >> $GITHUB_OUTPUT
 
+  merge:
+    needs: check-files
+    if: ${{ needs.check-files.outputs.feasible == 'Yes' }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Generate github-app token
         id: app-token
-        uses: getsentry/action-github-app-token@v2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app_id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
-          private_key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
+          private-key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
-      - uses: Wandalen/wretry.action@v3.5.0
-        if: ${{ steps.merge-feasibility-check.outputs.FEASIBLE == 'Yes' }}
+      - uses: Wandalen/wretry.action@6feedb7dedadeb826de0f45ff482b53b379a7844 # v3.5.0
         with:
-          action: red-hat-data-services/insta-merge@main
+          action: red-hat-data-services/insta-merge@47b53270117978bb95afa0ce4ccd4d80fe08644c # main
           retry_condition: steps._this.outputs.code == 0
           attempt_limit: 5
           github_token: ${{ steps.app-token.outputs.token }}
           with: |
             upstream_repo: "https://github.com/${GITHUB_ORG}/RHOAI-Build-Config.git"
-            upstream_branch: "${{ steps.merge-feasibility-check.outputs.BASE_BRANCH }}"
+            upstream_branch: "${{ needs.check-files.outputs.base_branch }}"
             downstream_repo: "https://github.com/${GITHUB_ORG}/RHOAI-Build-Config.git"
-            downstream_branch: "${{ steps.merge-feasibility-check.outputs.HEAD_BRANCH }}"
+            downstream_branch: "${{ needs.check-files.outputs.head_branch }}"
             token: ${{ steps.app-token.outputs.token }}
             resolve_conflicts_for: "${RESOLVE_CONFLICTS_FOR}"
             merge_args: "--no-edit"
