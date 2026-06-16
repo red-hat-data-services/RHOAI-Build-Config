@@ -227,10 +227,6 @@ LABEL \
       odh-data-science-pipelines-operator-controller.git.commit="${ODH_DATA_SCIENCE_PIPELINES_OPERATOR_CONTROLLER_GIT_COMMIT}" \
       odh-eval-hub.git.url="${ODH_EVAL_HUB_GIT_URL}" \
       odh-eval-hub.git.commit="${ODH_EVAL_HUB_GIT_COMMIT}" \
-      odh-th06-cuda130-torch210-py312.git.url="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL}" \
-      odh-th06-cuda130-torch210-py312.git.commit="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT}" \
-      odh-th06-cpu-torch210-py312.git.url="${ODH_TH06_CPU_TORCH210_PY312_GIT_URL}" \
-      odh-th06-cpu-torch210-py312.git.commit="${ODH_TH06_CPU_TORCH210_PY312_GIT_COMMIT}" \
       odh-feast-operator.git.url="${ODH_FEAST_OPERATOR_GIT_URL}" \
       odh-feast-operator.git.commit="${ODH_FEAST_OPERATOR_GIT_COMMIT}" \
       odh-feature-server.git.url="${ODH_FEATURE_SERVER_GIT_URL}" \
