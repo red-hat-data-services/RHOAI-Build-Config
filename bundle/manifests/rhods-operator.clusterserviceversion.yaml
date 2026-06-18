@@ -100,7 +100,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:50a61b9f8b54f04a01502b3fc99e0e20dbe1f2172dcf0992ce675e81135c59ef"
-    createdAt: "2026-06-18T13:27:16Z"
+    createdAt: "2026-06-18T13:30:12Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -688,7 +688,6 @@ spec:
           - list
           - patch
           - update
-          - use
           - watch
         - apiGroups:
           - components.platform.opendatahub.io
@@ -1609,7 +1608,6 @@ spec:
           - list
           - patch
           - update
-          - use
           - watch
         - apiGroups:
           - services.platform.opendatahub.io
@@ -1795,6 +1793,7 @@ spec:
             metadata:
               annotations:
                 kubectl.kubernetes.io/default-container: rhods-operator
+                openshift.io/required-scc: restricted-v2
               labels:
                 name: rhods-operator
             spec:
