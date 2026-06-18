@@ -100,7 +100,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-06-18T06:11:34Z"
+    createdAt: "2026-06-18T13:29:43Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -682,7 +682,6 @@ spec:
           - list
           - patch
           - update
-          - use
           - watch
         - apiGroups:
           - components.platform.opendatahub.io
@@ -1603,7 +1602,6 @@ spec:
           - list
           - patch
           - update
-          - use
           - watch
         - apiGroups:
           - services.platform.opendatahub.io
@@ -1789,6 +1787,7 @@ spec:
             metadata:
               annotations:
                 kubectl.kubernetes.io/default-container: rhods-operator
+                openshift.io/required-scc: restricted-v2
               labels:
                 name: rhods-operator
             spec:
