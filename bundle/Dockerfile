@@ -195,6 +195,8 @@ ARG ODH_AGENTS_OPERATOR_GIT_URL=
 ARG ODH_AGENTS_OPERATOR_GIT_COMMIT=
 ARG ODH_MOD_ARCH_AGENT_OPS_GIT_URL=
 ARG ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT=
+ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL=
+ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_URL=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT=
 ARG ODH_AUTHBRIDGE_PROXY_GIT_URL=
@@ -405,6 +407,8 @@ LABEL \
       odh-agents-operator.git.commit="${ODH_AGENTS_OPERATOR_GIT_COMMIT}" \
       odh-mod-arch-agent-ops.git.url="${ODH_MOD_ARCH_AGENT_OPS_GIT_URL}" \
       odh-mod-arch-agent-ops.git.commit="${ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT}" \
+      odh-llm-d-batch-gateway-operator.git.url="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL}" \
+      odh-llm-d-batch-gateway-operator.git.commit="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT}" \
       odh-ai-gateway-operator.git.url="${ODH_AI_GATEWAY_OPERATOR_GIT_URL}" \
       odh-ai-gateway-operator.git.commit="${ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT}" \
       odh-authbridge-proxy.git.url="${ODH_AUTHBRIDGE_PROXY_GIT_URL}" \
