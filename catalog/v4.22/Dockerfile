@@ -1,7 +1,11 @@
-FROM scratch
+# The base image is expected to contain
+# /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
+FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.22
 
 ARG ODH_RHEL9_OPERATOR_GIT_URL=
 ARG ODH_RHEL9_OPERATOR_GIT_COMMIT=
+ARG ODH_OPERATOR_BUNDLE_GIT_COMMIT
+ARG ODH_OPERATOR_BUNDLE_GIT_URL
 ARG ODH_BUILT_IN_DETECTOR_GIT_URL=
 ARG ODH_BUILT_IN_DETECTOR_GIT_COMMIT=
 ARG ODH_DASHBOARD_GIT_URL=
@@ -14,6 +18,10 @@ ARG ODH_DATA_SCIENCE_PIPELINES_OPERATOR_CONTROLLER_GIT_URL=
 ARG ODH_DATA_SCIENCE_PIPELINES_OPERATOR_CONTROLLER_GIT_COMMIT=
 ARG ODH_EVAL_HUB_GIT_URL=
 ARG ODH_EVAL_HUB_GIT_COMMIT=
+ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL=
+ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT=
+ARG ODH_TH06_CPU_TORCH210_PY312_GIT_URL=
+ARG ODH_TH06_CPU_TORCH210_PY312_GIT_COMMIT=
 ARG ODH_FEAST_OPERATOR_GIT_URL=
 ARG ODH_FEAST_OPERATOR_GIT_COMMIT=
 ARG ODH_FEATURE_SERVER_GIT_URL=
@@ -40,6 +48,10 @@ ARG ODH_KUBE_RBAC_PROXY_GIT_URL=
 ARG ODH_KUBE_RBAC_PROXY_GIT_COMMIT=
 ARG ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_URL=
 ARG ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_COMMIT=
+ARG ODH_LLAMA_STACK_CORE_GIT_URL=
+ARG ODH_LLAMA_STACK_CORE_GIT_COMMIT=
+ARG ODH_LLAMA_STACK_K8S_OPERATOR_GIT_URL=
+ARG ODH_LLAMA_STACK_K8S_OPERATOR_GIT_COMMIT=
 ARG ODH_LLM_D_INFERENCE_SCHEDULER_GIT_URL=
 ARG ODH_LLM_D_INFERENCE_SCHEDULER_GIT_COMMIT=
 ARG ODH_LLM_D_ROUTING_SIDECAR_GIT_URL=
@@ -82,12 +94,12 @@ ARG ODH_MODEL_REGISTRY_GIT_URL=
 ARG ODH_MODEL_REGISTRY_GIT_COMMIT=
 ARG ODH_MODEL_REGISTRY_JOB_ASYNC_UPLOAD_GIT_URL=
 ARG ODH_MODEL_REGISTRY_JOB_ASYNC_UPLOAD_GIT_COMMIT=
+ARG ODH_MAAS_CONTROLLER_GIT_URL=
+ARG ODH_MAAS_CONTROLLER_GIT_COMMIT=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_URL=
 ARG ODH_MODEL_REGISTRY_OPERATOR_GIT_COMMIT=
 ARG ODH_MUST_GATHER_GIT_URL=
 ARG ODH_MUST_GATHER_GIT_COMMIT=
-ARG ODH_MAAS_CONTROLLER_GIT_URL=
-ARG ODH_MAAS_CONTROLLER_GIT_COMMIT=
 ARG ODH_NOTEBOOK_CONTROLLER_GIT_URL=
 ARG ODH_NOTEBOOK_CONTROLLER_GIT_COMMIT=
 ARG ODH_OPENVINO_MODEL_SERVER_GIT_URL=
@@ -110,6 +122,8 @@ ARG ODH_TA_LMES_DRIVER_GIT_URL=
 ARG ODH_TA_LMES_DRIVER_GIT_COMMIT=
 ARG ODH_TA_LMES_JOB_GIT_URL=
 ARG ODH_TA_LMES_JOB_GIT_COMMIT=
+ARG ODH_MAAS_CONTROLLER_GIT_URL=
+ARG ODH_MAAS_CONTROLLER_GIT_COMMIT=
 ARG ODH_TRAINER_GIT_URL=
 ARG ODH_TRAINER_GIT_COMMIT=
 ARG ODH_TRAINING_CUDA121_TORCH24_PY311_GIT_URL=
@@ -130,14 +144,12 @@ ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_URL=
 ARG ODH_TRAINING_ROCM64_TORCH28_PY312_GIT_COMMIT=
 ARG ODH_TRAINING_ROCM64_TORCH29_PY312_GIT_URL=
 ARG ODH_TRAINING_ROCM64_TORCH29_PY312_GIT_COMMIT=
+ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_URL=
+ARG ODH_TRUSTYAI_RAGAS_LLS_PROVIDER_DSP_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_OPERATOR_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_OPERATOR_GIT_COMMIT=
-ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL=
-ARG ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT=
-ARG ODH_TH06_CPU_TORCH210_PY312_GIT_URL=
-ARG ODH_TH06_CPU_TORCH210_PY312_GIT_COMMIT=
 ARG ODH_TRUSTYAI_VLLM_ORCHESTRATOR_GATEWAY_GIT_URL=
 ARG ODH_TRUSTYAI_VLLM_ORCHESTRATOR_GATEWAY_GIT_COMMIT=
 ARG ODH_VLLM_CPU_GIT_URL=
@@ -183,40 +195,22 @@ ARG ODH_PIPELINES_COMPONENTS_GIT_COMMIT=
 ARG ODH_MODEL_SERVING_API_GIT_URL=
 ARG ODH_MODEL_SERVING_API_GIT_COMMIT=
 
-ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_URL=
-ARG ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_COMMIT=
-ARG ODH_KSERVE_LOCALMODELNODE_AGENT_GIT_URL=
-ARG ODH_KSERVE_LOCALMODELNODE_AGENT_GIT_COMMIT=
-ARG ODH_OGX_CORE_GIT_URL=
-ARG ODH_OGX_CORE_GIT_COMMIT=
-ARG ODH_OGX_K8S_OPERATOR_GIT_URL=
-ARG ODH_OGX_K8S_OPERATOR_GIT_COMMIT=
-ARG ODH_AGENTS_OPERATOR_GIT_URL=
-ARG ODH_AGENTS_OPERATOR_GIT_COMMIT=
-ARG ODH_MOD_ARCH_AGENT_OPS_GIT_URL=
-ARG ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT=
-ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL=
-ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT=
-ARG ODH_AI_GATEWAY_OPERATOR_GIT_URL=
-ARG ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT=
-ARG ODH_AUTHBRIDGE_PROXY_GIT_URL=
-ARG ODH_AUTHBRIDGE_PROXY_GIT_COMMIT=
-# Core bundle labels.
-LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
-LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
-LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
-LABEL operators.operatorframework.io.bundle.package.v1=rhods-operator
-LABEL operators.operatorframework.io.metrics.builder=operator-sdk-v1.31.0
-LABEL operators.operatorframework.io.metrics.mediatype.v1=metrics+v1
-LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v3
+# Configure the entrypoint and command
+ENTRYPOINT ["/bin/opm"]
+CMD ["serve", "/configs", "--cache-dir=/tmp/cache"]
+# Copy declarative config root into image at /configs and pre-populate serve cache
+ADD rhods-operator /configs/rhods-operator
+RUN ["/bin/opm", "serve", "/configs", "--cache-dir=/tmp/cache", "--cache-only"]
 
-# Labels for testing.
-LABEL operators.operatorframework.io.test.mediatype.v1=scorecard+v1
-LABEL operators.operatorframework.io.test.config.v1=tests/scorecard/
+# Set DC-specific label for the location of the DC root directory
+# in the image
+LABEL operators.operatorframework.io.index.configs.v1=/configs
 
 LABEL \
       odh-rhel9-operator.git.url="${ODH_RHEL9_OPERATOR_GIT_URL}" \
       odh-rhel9-operator.git.commit="${ODH_RHEL9_OPERATOR_GIT_COMMIT}" \
+      odh-operator-bundle.git.url="${ODH_OPERATOR_BUNDLE_GIT_URL}" \
+      odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}" \
       odh-built-in-detector.git.url="${ODH_BUILT_IN_DETECTOR_GIT_URL}" \
       odh-built-in-detector.git.commit="${ODH_BUILT_IN_DETECTOR_GIT_COMMIT}" \
       odh-dashboard.git.url="${ODH_DASHBOARD_GIT_URL}" \
@@ -231,6 +225,10 @@ LABEL \
       odh-eval-hub.git.commit="${ODH_EVAL_HUB_GIT_COMMIT}" \
       odh-feast-operator.git.url="${ODH_FEAST_OPERATOR_GIT_URL}" \
       odh-feast-operator.git.commit="${ODH_FEAST_OPERATOR_GIT_COMMIT}" \
+      odh-th06-cuda130-torch210-py312.git.url="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_URL}" \
+      odh-th06-cuda130-torch210-py312.git.commit="${ODH_TH06_CUDA130_TORCH210_PY312_GIT_COMMIT}" \
+      odh-th06-cpu-torch210-py312.git.url="${ODH_TH06_CPU_TORCH210_PY312_GIT_URL}" \
+      odh-th06-cpu-torch210-py312.git.commit="${ODH_TH06_CPU_TORCH210_PY312_GIT_COMMIT}" \
       odh-feature-server.git.url="${ODH_FEATURE_SERVER_GIT_URL}" \
       odh-feature-server.git.commit="${ODH_FEATURE_SERVER_GIT_COMMIT}" \
       odh-fms-guardrails-orchestrator.git.url="${ODH_FMS_GUARDRAILS_ORCHESTRATOR_GIT_URL}" \
@@ -255,6 +253,10 @@ LABEL \
       odh-kube-rbac-proxy.git.commit="${ODH_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-kuberay-operator-controller.git.url="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_URL}" \
       odh-kuberay-operator-controller.git.commit="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_COMMIT}" \
+      odh-llama-stack-core.git.url="${ODH_LLAMA_STACK_CORE_GIT_URL}" \
+      odh-llama-stack-core.git.commit="${ODH_LLAMA_STACK_CORE_GIT_COMMIT}" \
+      odh-llama-stack-k8s-operator.git.url="${ODH_LLAMA_STACK_K8S_OPERATOR_GIT_URL}" \
+      odh-llama-stack-k8s-operator.git.commit="${ODH_LLAMA_STACK_K8S_OPERATOR_GIT_COMMIT}" \
       odh-llm-d-inference-scheduler.git.url="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_URL}" \
       odh-llm-d-inference-scheduler.git.commit="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_COMMIT}" \
       odh-llm-d-routing-sidecar.git.url="${ODH_LLM_D_ROUTING_SIDECAR_GIT_URL}" \
@@ -282,6 +284,8 @@ LABEL \
       odh-mod-arch-gen-ai.git.url="${ODH_MOD_ARCH_GEN_AI_GIT_URL}" \
       odh-mod-arch-gen-ai.git.commit="${ODH_MOD_ARCH_GEN_AI_GIT_COMMIT}" \
       odh-mod-arch-maas.git.url="${ODH_MOD_ARCH_MAAS_GIT_URL}" \
+      odh-maas-controller.git.url="${ODH_MAAS_CONTROLLER_GIT_URL}" \
+      odh-maas-controller.git.commit="${ODH_MAAS_CONTROLLER_GIT_COMMIT}" \
       odh-mod-arch-maas.git.commit="${ODH_MOD_ARCH_MAAS_GIT_COMMIT}" \
       odh-mod-arch-model-registry.git.url="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_URL}" \
       odh-mod-arch-model-registry.git.commit="${ODH_MOD_ARCH_MODEL_REGISTRY_GIT_COMMIT}" \
@@ -353,8 +357,6 @@ LABEL \
       odh-trustyai-vllm-orchestrator-gateway.git.commit="${ODH_TRUSTYAI_VLLM_ORCHESTRATOR_GATEWAY_GIT_COMMIT}" \
       odh-vllm-cpu.git.url="${ODH_VLLM_CPU_GIT_URL}" \
       odh-vllm-cpu.git.commit="${ODH_VLLM_CPU_GIT_COMMIT}" \
-      odh-maas-controller.git.url="${ODH_MAAS_CONTROLLER_GIT_URL}" \
-      odh-maas-controller.git.commit="${ODH_MAAS_CONTROLLER_GIT_COMMIT}" \
       odh-vllm-gaudi.git.url="${ODH_VLLM_GAUDI_GIT_URL}" \
       odh-vllm-gaudi.git.commit="${ODH_VLLM_GAUDI_GIT_COMMIT}" \
       odh-workbench-codeserver-datascience-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_DATASCIENCE_CPU_PY312_GIT_URL}" \
@@ -394,39 +396,16 @@ LABEL \
       odh-pipelines-components.git.url="${ODH_PIPELINES_COMPONENTS_GIT_URL}" \
       odh-pipelines-components.git.commit="${ODH_PIPELINES_COMPONENTS_GIT_COMMIT}" \
       odh-model-serving-api.git.url="${ODH_MODEL_SERVING_API_GIT_URL}" \
-      odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}" \
-      odh-ai-gateway-payload-processing-e2e.git.url="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_URL}" \
-      odh-ai-gateway-payload-processing-e2e.git.commit="${ODH_AI_GATEWAY_PAYLOAD_PROCESSING_E2E_GIT_COMMIT}" \
-      odh-kserve-localmodelnode-agent.git.url="${ODH_KSERVE_LOCALMODELNODE_AGENT_GIT_URL}" \
-      odh-kserve-localmodelnode-agent.git.commit="${ODH_KSERVE_LOCALMODELNODE_AGENT_GIT_COMMIT}" \
-      odh-ogx-core.git.url="${ODH_OGX_CORE_GIT_URL}" \
-      odh-ogx-core.git.commit="${ODH_OGX_CORE_GIT_COMMIT}" \
-      odh-ogx-k8s-operator.git.url="${ODH_OGX_K8S_OPERATOR_GIT_URL}" \
-      odh-ogx-k8s-operator.git.commit="${ODH_OGX_K8S_OPERATOR_GIT_COMMIT}" \
-      odh-agents-operator.git.url="${ODH_AGENTS_OPERATOR_GIT_URL}" \
-      odh-agents-operator.git.commit="${ODH_AGENTS_OPERATOR_GIT_COMMIT}" \
-      odh-mod-arch-agent-ops.git.url="${ODH_MOD_ARCH_AGENT_OPS_GIT_URL}" \
-      odh-mod-arch-agent-ops.git.commit="${ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT}" \
-      odh-llm-d-batch-gateway-operator.git.url="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL}" \
-      odh-llm-d-batch-gateway-operator.git.commit="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT}"
-      odh-ai-gateway-operator.git.url="${ODH_AI_GATEWAY_OPERATOR_GIT_URL}" \
-      odh-ai-gateway-operator.git.commit="${ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT}" \
-      odh-authbridge-proxy.git.url="${ODH_AUTHBRIDGE_PROXY_GIT_URL}" \
-      odh-authbridge-proxy.git.commit="${ODH_AUTHBRIDGE_PROXY_GIT_COMMIT}"
-# Copy files to locations specified by labels.
+      odh-model-serving-api.git.commit="${ODH_MODEL_SERVING_API_GIT_COMMIT}"
 
-LABEL com.redhat.component="odh-operator-bundle" \
-      description="odh-operator-bundle" \
+LABEL com.redhat.component="rhoai-fbc-fragment" \
+      description="rhoai-fbc-fragment" \
       distribution-scope="public" \
-      name="managed-open-data-hub/odh-operator-bundle" \
+      name="managed-open-data-hub/rhoai-fbc-fragment" \
       vendor="Red Hat, Inc." \
-      summary="odh-operator-bundle" \
+      summary="rhoai-fbc-fragment" \
       maintainer="['managed-open-data-hub@redhat.com']" \
-      io.k8s.display-name="odh-operator-bundle" \
-      io.k8s.description="odh-operator-bundle" \
+      io.k8s.display-name="rhoai-fbc-fragment" \
+      io.k8s.description="rhoai-fbc-fragment" \
       com.redhat.delivery.operator.bundle="true" \
       com.redhat.license_terms="https://www.redhat.com/licenses/Red_Hat_Standard_EULA_20191108.pdf"
-
-COPY bundle/manifests /manifests/
-COPY bundle/metadata /metadata/
-COPY bundle/tests/scorecard /tests/scorecard/
