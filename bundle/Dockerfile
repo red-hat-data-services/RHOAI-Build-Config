@@ -261,10 +261,6 @@ LABEL \
       odh-kube-rbac-proxy.git.commit="${ODH_KUBE_RBAC_PROXY_GIT_COMMIT}" \
       odh-kuberay-operator-controller.git.url="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_URL}" \
       odh-kuberay-operator-controller.git.commit="${ODH_KUBERAY_OPERATOR_CONTROLLER_GIT_COMMIT}" \
-      odh-llm-d-inference-scheduler.git.url="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_URL}" \
-      odh-llm-d-inference-scheduler.git.commit="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_COMMIT}" \
-      odh-llm-d-routing-sidecar.git.url="${ODH_LLM_D_ROUTING_SIDECAR_GIT_URL}" \
-      odh-llm-d-routing-sidecar.git.commit="${ODH_LLM_D_ROUTING_SIDECAR_GIT_COMMIT}" \
       odh-maas-api.git.url="${ODH_MAAS_API_GIT_URL}" \
       odh-maas-api.git.commit="${ODH_MAAS_API_GIT_COMMIT}" \
       odh-mlflow.git.url="${ODH_MLFLOW_GIT_URL}" \
