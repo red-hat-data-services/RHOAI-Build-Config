@@ -294,7 +294,9 @@ jobs:
               echo "RHOAI_VERSION=${RHOAI_VERSION} NUMERIC_OCP_VERSION=${NUMERIC_OCP_VERSION}"
               if [[ "$RHOAI_VERSION" == "v2.25" ]] && [[ $NUMERIC_OCP_VERSION -ge 419 ]]; then
                   echo "Overriding defaultChannel to stable-3.x for ${OPENSHIFT_VERSION}"
-                  yq e -i 'select(.schema == "olm.package").defaultChannel = "stable-3.x"' ${OUTPUT_CATALOG_PATH}
+
+                  python3 -c "import sys; from ruamel.yaml import YAML; from pathlib import Path; yaml = YAML(); yaml.preserve_quotes = True; f = Path(sys.argv[1]); docs = list(yaml.load_all(f)); [doc.__setitem__('defaultChannel', 'stable-3.x') for doc in docs if doc.get('schema') == 'olm.package']; yaml.dump_all(docs, f)" "${OUTPUT_CATALOG_PATH}"
+
               fi
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
