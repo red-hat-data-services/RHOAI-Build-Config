@@ -289,9 +289,13 @@ jobs:
               PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
               if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
               python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
-              
-              
-              #cat ${OUTPUT_CATALOG_PATH}
+
+              # Override defaultChannel for OCP >= 4.19
+              echo "RHOAI_VERSION=${RHOAI_VERSION} NUMERIC_OCP_VERSION=${NUMERIC_OCP_VERSION}"
+              if [[ "$RHOAI_VERSION" == "v2.25" ]] && [[ $NUMERIC_OCP_VERSION -ge 419 ]]; then
+                  echo "Overriding defaultChannel to stable-3.x for ${OPENSHIFT_VERSION}"
+                  yq e -i 'select(.schema == "olm.package").defaultChannel = "stable-3.x"' ${OUTPUT_CATALOG_PATH}
+              fi
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
       - name: Validate Catalogs
