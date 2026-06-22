@@ -8,15 +8,14 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged() && event == "push"
-      && target_branch == "rhoai-3.5-ea.2"
-      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-5-ea-2-push.yaml".pathChanged() )
-      && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
+      event == "push"
+      && target_branch == "rhoai-3.5"
+      && "schedule/catalog-tekton-trigger.txt".pathChanged()
   labels:
-    appstudio.openshift.io/application: rhoai-v3-5-ea-2
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5-ea-2
+    appstudio.openshift.io/application: rhoai-v3-5
+    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v3-5-ea-2-on-push
+  name: rhoai-fbc-fragment-v3-5-on-schedule
   namespace: rhoai-tenant
 spec:
   timeouts:
@@ -30,10 +29,17 @@ spec:
   - name: additional-tags
     value:
     - '{{target_branch}}-{{revision}}'
+    - '{{target_branch}}-nightly'
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: rhoai-version
-    value: "3.5.0-ea.2"
+    value: "3.5.0"
+  - name: build-platforms
+    value:
+    - linux/x86_64
+    - linux/ppc64le
+    - linux/s390x
+    - linux/arm64
   - name: dockerfile
     value: Dockerfile
   - name: path-context
@@ -44,18 +50,16 @@ spec:
     value: true
   - name: build-image-index
     value: true
-  - name: build-platforms
-    value:
-    - linux/x86_64
-    - linux/ppc64le
-    - linux/s390x
-    - linux/arm64
   - name: build-args-file
     value: catalog/catalog_build_args.map
   - name: skip-checks
     value: false
   - name: build-type
-    value: "ci"
+    value: "nightly"
+  - name: workflow_url
+    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
+  - name: smoke_url
+    value: "https://github.com/red-hat-data-services/rhods-devops-infra/actions/workflows/smoke-trigger.yaml"
   pipelineRef:
     resolver: git
     params:
@@ -66,7 +70,7 @@ spec:
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-5-ea-2
+    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-5
   workspaces:
   - name: git-auth
     secret:
