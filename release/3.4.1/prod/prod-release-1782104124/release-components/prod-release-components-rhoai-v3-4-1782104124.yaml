@@ -1,0 +1,25 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  name: rhoai-v3-4-prod-1782104124-1
+  namespace: rhoai-tenant
+  labels:
+    konflux-release-data/rbc-release-commit: e2a5cb14463a313ebd727f7109ee65972274896b
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: prod
+    appstudio.openshift.io/application: rhoai-v3-4
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v3-4-components-prod
+  snapshot: rhoai-v3-4-1781688060
+  data:
+    version: 3.4.1
+    releaseNotes:
+      cves:
+        - key: 'CVE-2026-42271' # https://redhat.atlassian.net/browse/RHOAIENG-67127
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-4'
+      issues:
+          fixed:
+            - id: RHOAIENG-67127
+              public: false
+              source: redhat.atlassian.net
