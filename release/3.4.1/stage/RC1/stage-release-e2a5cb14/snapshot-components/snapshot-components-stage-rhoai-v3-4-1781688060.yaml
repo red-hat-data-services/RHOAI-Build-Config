@@ -1,0 +1,30 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  labels:
+    konflux-release-data/artifact-type: components
+    konflux-release-data/rbc-release-commit: e2a5cb14463a313ebd727f7109ee65972274896b
+    test.appstudio.openshift.io/type: override
+  name: rhoai-v3-4-1781688060
+  namespace: rhoai-tenant
+spec:
+  application: rhoai-v3-4
+  components:
+  - containerImage: quay.io/rhoai/odh-operator-bundle@sha256:0efd1bb73b277b4cdca47bcb424679de6fd094d04e73e7a3ed0c470e8040b440
+    name: odh-operator-bundle-v3-4
+    source:
+      git:
+        revision: 7b4908f8bdf5c6337488021d52c0ba132ddb6eb7
+        url: https://github.com/red-hat-data-services/RHOAI-Build-Config
+  - containerImage: quay.io/rhoai/odh-rhel9-operator@sha256:421c36725ef568f8e2059e7263733ae7c176b77ea3058ff8a9bbbe29cc6f43ec
+    name: odh-operator-v3-4
+    source:
+      git:
+        revision: 741f265794bd0b03cef737ddf819a02cc86dc00b
+        url: https://github.com/red-hat-data-services/rhods-operator
+  - containerImage: quay.io/rhoai/odh-trustyai-garak-lls-provider-dsp-rhel9@sha256:a55836a3af2fe27c365ccd4ab43ee15934d72c94202319193a7094ea4a0229ca
+    name: odh-trustyai-garak-lls-provider-dsp-v3-4
+    source:
+      git:
+        revision: fb173afcc7462b5f91b37a15f6fc5fb9c126afc4
+        url: https://github.com/red-hat-data-services/llama-stack-provider-trustyai-garak
