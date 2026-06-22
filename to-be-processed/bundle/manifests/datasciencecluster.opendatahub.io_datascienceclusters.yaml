@@ -358,15 +358,26 @@ spec:
                   kueue:
                     description: Kueue component configuration.
                     properties:
+                      autoCreateQueues:
+                        default: false
+                        description: |-
+                          AutoCreateQueues controls whether the operator automatically creates default
+                          ClusterQueue and LocalQueue resources in managed namespaces. When false (the default),
+                          the operator skips queue creation entirely, allowing administrators to manage queues
+                          via GitOps or other external tooling. HardwareProfiles of type "Queue" continue to
+                          reference externally-managed LocalQueues without change.
+                        type: boolean
                       defaultClusterQueueName:
                         default: default
-                        description: Configures the automatically created cluster
-                          queue name.
+                        description: |-
+                          Configures the automatically created cluster queue name.
+                          Only used when autoCreateQueues is true.
                         type: string
                       defaultLocalQueueName:
                         default: default
-                        description: Configures the automatically created, in the
-                          managed namespaces, local queue name.
+                        description: |-
+                          Configures the automatically created, in the managed namespaces, local queue name.
+                          Only used when autoCreateQueues is true.
                         type: string
                       managementState:
                         description: |-
@@ -1480,15 +1491,26 @@ spec:
                   kueue:
                     description: Kueue component configuration.
                     properties:
+                      autoCreateQueues:
+                        default: false
+                        description: |-
+                          AutoCreateQueues controls whether the operator automatically creates default
+                          ClusterQueue and LocalQueue resources in managed namespaces. When false (the default),
+                          the operator skips queue creation entirely, allowing administrators to manage queues
+                          via GitOps or other external tooling. HardwareProfiles of type "Queue" continue to
+                          reference externally-managed LocalQueues without change.
+                        type: boolean
                       defaultClusterQueueName:
                         default: default
-                        description: Configures the automatically created cluster
-                          queue name.
+                        description: |-
+                          Configures the automatically created cluster queue name.
+                          Only used when autoCreateQueues is true.
                         type: string
                       defaultLocalQueueName:
                         default: default
-                        description: Configures the automatically created, in the
-                          managed namespaces, local queue name.
+                        description: |-
+                          Configures the automatically created, in the managed namespaces, local queue name.
+                          Only used when autoCreateQueues is true.
                         type: string
                       managementState:
                         description: |-
