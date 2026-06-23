@@ -203,6 +203,8 @@ ARG ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_URL=
 ARG ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_COMMIT=
 ARG ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_URL=
 ARG ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_COMMIT=
+ARG ODH_LATENCY_PREDICTOR_PREDICTION_GIT_URL=
+ARG ODH_LATENCY_PREDICTOR_PREDICTION_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -416,7 +418,9 @@ LABEL \
       odh-llm-d-router-endpoint-picker.git.url="${ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_URL}" \
       odh-llm-d-router-endpoint-picker.git.commit="${ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_COMMIT}" \
       odh-llm-d-router-disagg-sidecar.git.url="${ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_URL}" \
-      odh-llm-d-router-disagg-sidecar.git.commit="${ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_COMMIT}"
+      odh-llm-d-router-disagg-sidecar.git.commit="${ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_COMMIT}" \
+      odh-latency-predictor-prediction.git.url="${ODH_LATENCY_PREDICTOR_PREDICTION_GIT_URL}" \
+      odh-latency-predictor-prediction.git.commit="${ODH_LATENCY_PREDICTOR_PREDICTION_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
