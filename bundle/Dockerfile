@@ -203,6 +203,8 @@ ARG ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_URL=
 ARG ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_COMMIT=
 ARG ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_URL=
 ARG ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_COMMIT=
+ARG ODH_LATENCY_PREDICTOR_TEST_GIT_URL=
+ARG ODH_LATENCY_PREDICTOR_TEST_GIT_COMMIT=
 ARG ODH_LATENCY_PREDICTOR_TRAINING_GIT_URL=
 ARG ODH_LATENCY_PREDICTOR_TRAINING_GIT_COMMIT=
 # Core bundle labels.
@@ -419,6 +421,8 @@ LABEL \
       odh-llm-d-router-endpoint-picker.git.commit="${ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_COMMIT}" \
       odh-llm-d-router-disagg-sidecar.git.url="${ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_URL}" \
       odh-llm-d-router-disagg-sidecar.git.commit="${ODH_LLM_D_ROUTER_DISAGG_SIDECAR_GIT_COMMIT}" \
+      odh-latency-predictor-test.git.url="${ODH_LATENCY_PREDICTOR_TEST_GIT_URL}" \
+      odh-latency-predictor-test.git.commit="${ODH_LATENCY_PREDICTOR_TEST_GIT_COMMIT}" \
       odh-latency-predictor-training.git.url="${ODH_LATENCY_PREDICTOR_TRAINING_GIT_URL}" \
       odh-latency-predictor-training.git.commit="${ODH_LATENCY_PREDICTOR_TRAINING_GIT_COMMIT}"
 # Copy files to locations specified by labels.
