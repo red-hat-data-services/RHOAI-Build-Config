@@ -1,0 +1,25 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  labels:
+    appstudio.openshift.io/application: rhoai-v2-25
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: stage
+    konflux-release-data/rbc-release-commit: 316a4ac67b941cdb3b4c7eae3b2e8cfbf8c85b0c
+  name: rhoai-v2-25-stage-1782136187
+  namespace: rhoai-tenant
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v2-25-components-stage
+  snapshot: rhoai-v2-25-1782136187
+  data:
+    version: 2.25.8
+    releaseNotes:
+      cves:
+        - key: 'CVE-2026-42271' # https://redhat.atlassian.net/browse/RHOAIENG-67122
+          component: 'odh-llama-stack-core-v2-25'
+      issues:
+          fixed:
+            - id: RHOAIENG-67122
+              public: false
+              source: redhat.atlassian.net
