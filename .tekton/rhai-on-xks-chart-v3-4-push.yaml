@@ -8,7 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      "non-existent-file.non-existent-ext".pathChanged() && event == "push"
+      event == "push"
       && target_branch == "rhoai-3.4"
       && ( "helm/rhai-on-xks-chart/**".pathChanged() || ".tekton/rhai-on-xks-chart-v3-4-push.yaml".pathChanged() )
   labels:
