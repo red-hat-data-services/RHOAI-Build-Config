@@ -209,6 +209,8 @@ ARG ODH_LATENCY_PREDICTOR_TEST_GIT_URL=
 ARG ODH_LATENCY_PREDICTOR_TEST_GIT_COMMIT=
 ARG ODH_LATENCY_PREDICTOR_TRAINING_GIT_URL=
 ARG ODH_LATENCY_PREDICTOR_TRAINING_GIT_COMMIT=
+ARG ODH_DASHBOARD_OPERATOR_GIT_URL=
+ARG ODH_DASHBOARD_OPERATOR_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -428,7 +430,9 @@ LABEL \
       odh-latency-predictor-test.git.url="${ODH_LATENCY_PREDICTOR_TEST_GIT_URL}" \
       odh-latency-predictor-test.git.commit="${ODH_LATENCY_PREDICTOR_TEST_GIT_COMMIT}" \
       odh-latency-predictor-training.git.url="${ODH_LATENCY_PREDICTOR_TRAINING_GIT_URL}" \
-      odh-latency-predictor-training.git.commit="${ODH_LATENCY_PREDICTOR_TRAINING_GIT_COMMIT}"
+      odh-latency-predictor-training.git.commit="${ODH_LATENCY_PREDICTOR_TRAINING_GIT_COMMIT}" \
+      odh-dashboard-operator.git.url="${ODH_DASHBOARD_OPERATOR_GIT_URL}" \
+      odh-dashboard-operator.git.commit="${ODH_DASHBOARD_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
