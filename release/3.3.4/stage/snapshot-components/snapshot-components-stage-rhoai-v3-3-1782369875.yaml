@@ -1,0 +1,30 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  labels:
+    konflux-release-data/artifact-type: components
+    konflux-release-data/rbc-release-commit: 3742fe0b679103d31dac4091cc2102273d6ff2f4
+    test.appstudio.openshift.io/type: override
+  name: rhoai-v3-3-1782369875
+  namespace: rhoai-tenant
+spec:
+  application: rhoai-v3-3
+  components:
+  - containerImage: quay.io/rhoai/odh-operator-bundle@sha256:163f636a1cbc151572ad0470bd5b06650980efd72e6c462cff6ce9ce4bcfaa93
+    name: odh-operator-bundle-v3-3
+    source:
+      git:
+        revision: c889ba57ba42af9f0aa2a0cbb6261d1a7a0b39f0
+        url: https://github.com/red-hat-data-services/RHOAI-Build-Config
+  - containerImage: quay.io/rhoai/odh-llama-stack-core-rhel9@sha256:3185f3ceeeb93265d47f43e74b28461b6daf8b35a2f0ccd636e9f0f1e053888f
+    name: odh-llama-stack-core-v3-3
+    source:
+      git:
+        revision: 4cb5def11bbf6ac3f9a633c3c530836b05977acb
+        url: https://github.com/red-hat-data-services/ogx-distribution
+  - containerImage: quay.io/rhoai/odh-rhel9-operator@sha256:19e18a128eb6f9c29a794b3a806e91aacbec303ca632aeea4a3eca470554e501
+    name: odh-operator-v3-3
+    source:
+      git:
+        revision: 6bfc61571508c1c4cd7f6404c9fb2c49447b906c
+        url: https://github.com/red-hat-data-services/rhods-operator
