@@ -13,7 +13,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:094c01cd85e640cd4f850010f1271aa279346467055dde700d38b2c29261e7f5" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c4bdad5f9a630b4e65df3af767977cdc817b260323160c9980d38758db1747cb" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Number of operator replicas
@@ -37,15 +37,15 @@ rhaiOperator:
   # Related images env vars (RELATED_IMAGE_*)
   relatedImages:
     - name: RELATED_IMAGE_ODH_KSERVE_AGENT_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:2bffdca272451c518a2f00db08577e71350dea363c59c375264e07bfc666f254"
+      value: "registry.redhat.io/rhoai/odh-kserve-agent-rhel9@sha256:629cfe45b712cecca1f8a8066ab38f692e0b4429edec9b0d57cd4d8f7d91497e"
     - name: RELATED_IMAGE_ODH_KSERVE_CONTROLLER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:06022bcccb215b5cacd6fd52c7a7b8fef68868eba4491b174bb34725048565d0"
+      value: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:f32d20ca5445255d8e2e0d6396ff96dd5adc01f504c7e9458ff5a46b9f1fef2c"
     - name: RELATED_IMAGE_ODH_KSERVE_LLMISVC_CONTROLLER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:467c3b07c941d4640a752210726cf632b5bdf05da923066b8fce26c653d9676b"
+      value: "registry.redhat.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:013772cc6d0695f1411b160f28c291f19acade182d80f9c73d848cccfd9dce1a"
     - name: RELATED_IMAGE_ODH_KSERVE_ROUTER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-router-rhel9@sha256:d0ab5528619903ccae136f0e47692261e289d4a452211bacc022ef47e1c27c34"
+      value: "registry.redhat.io/rhoai/odh-kserve-router-rhel9@sha256:35b7621e27c8d287c53511614fdac1a34b9b1156ed761aa7c59aea9d00ab43b7"
     - name: RELATED_IMAGE_ODH_KSERVE_STORAGE_INITIALIZER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-storage-initializer-rhel9@sha256:e946efe907946c374d3c64be9aeced3ab7b8be02cbb99ed0a6d3db6f2babd51a"
+      value: "registry.redhat.io/rhoai/odh-kserve-storage-initializer-rhel9@sha256:cfb05f8676aade03d7a4344e6de6b7f08cc125e235700458eeeeeddf796ea842"
     - name: RELATED_IMAGE_RHAII_VLLM_CUDA_IMAGE
       value: "registry.redhat.io/rhaii/vllm-cuda-rhel9@sha256:d3e57d4ca13a17f4d5d1228df4fe47cfe1a9f630250a8b3d26f86d871fdb9e69"
     - name: RELATED_IMAGE_RHAII_VLLM_ROCM_IMAGE
@@ -57,17 +57,17 @@ rhaiOperator:
     - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_IMAGE
       value: "registry.redhat.io/rhaii/vllm-gaudi-rhel9@sha256:1adc51d99455d90f758d840cb3bb5747ed29585c1b0830c051f7fe5cca3471e6"
     - name: RELATED_IMAGE_ODH_LLM_D_ROUTER_ENDPOINT_PICKER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-llm-d-router-endpoint-picker-rhel9@sha256:77599332406d8f81d4fafc18009070099e39837703f034ccec39ae56d6f23214"
+      value: "registry.redhat.io/rhoai/odh-llm-d-router-endpoint-picker-rhel9@sha256:c44d183feaff741100669652a3d38cc2613c9013751e2120c128e9c2a917b32c"
     - name: RELATED_IMAGE_ODH_LLM_D_ROUTER_DISAGG_SIDECAR_IMAGE
-      value: "registry.redhat.io/rhoai/odh-llm-d-router-disagg-sidecar-rhel9@sha256:1e991f0ba97fe4b51169805299bd1892215a4d799025c97efd383cdc457d5c2b"
+      value: "registry.redhat.io/rhoai/odh-llm-d-router-disagg-sidecar-rhel9@sha256:dfced627e4abee920ea1e882537633843344504db1cb6673595f957314b5ae7f"
     - name: RELATED_IMAGE_ODH_KUBE_RBAC_PROXY_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kube-rbac-proxy-rhel9@sha256:cfd1097bcffdc1ded26b46f675c82b6ee2010859166d7422a9861fbb4ee165b2"
+      value: "registry.redhat.io/rhoai/odh-kube-rbac-proxy-rhel9@sha256:293ea097cd07b66f97d2fdf8d92cab721996e0a8d6dd758b46ee7eb7d9ef1298"
     - name: RELATED_IMAGE_ODH_LLM_D_KV_CACHE_IMAGE
-      value: "registry.redhat.io/rhoai/odh-llm-d-kv-cache-rhel9@sha256:8dabab96d3346b6a37ef22a8a343fe86b5dc4c9df2a0c7d2bfb6b0b39436cbc4"
+      value: "registry.redhat.io/rhoai/odh-llm-d-kv-cache-rhel9@sha256:9433d212a2a64f84e70c436e434392312080af6c19ccbe9d725857a0d81b6563"
     - name: RELATED_IMAGE_ODH_KSERVE_LOCALMODEL_CONTROLLER_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-localmodel-controller-rhel9@sha256:b3977aeaf6f6d9dd6297f0d2d69ed53827b11b515942bc3f214acc113c2fcb17"
+      value: "registry.redhat.io/rhoai/odh-kserve-localmodel-controller-rhel9@sha256:a18ad1b623edf27969fbd47f70cd7ac05669754a21377cf8ad95b3d0970d1674"
     - name: RELATED_IMAGE_ODH_KSERVE_LOCALMODELNODE_AGENT_IMAGE
-      value: "registry.redhat.io/rhoai/odh-kserve-localmodelnode-agent-rhel9@sha256:f3329518e492e148632aae163f575e25c089513b167a8d59f8270a9522075d71"
+      value: "registry.redhat.io/rhoai/odh-kserve-localmodelnode-agent-rhel9@sha256:4abb18919a1a63aceb46a5c03c37cb6250022d2b53095615b023b88e8e3c7802"
 
   # Example:
   # relatedImages:
@@ -133,7 +133,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:094c01cd85e640cd4f850010f1271aa279346467055dde700d38b2c29261e7f5"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c4bdad5f9a630b4e65df3af767977cdc817b260323160c9980d38758db1747cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -173,7 +173,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:094c01cd85e640cd4f850010f1271aa279346467055dde700d38b2c29261e7f5"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c4bdad5f9a630b4e65df3af767977cdc817b260323160c9980d38758db1747cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -213,7 +213,7 @@ aws:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:094c01cd85e640cd4f850010f1271aa279346467055dde700d38b2c29261e7f5"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c4bdad5f9a630b4e65df3af767977cdc817b260323160c9980d38758db1747cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
