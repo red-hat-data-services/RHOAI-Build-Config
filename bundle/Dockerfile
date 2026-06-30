@@ -213,6 +213,8 @@ ARG ODH_DASHBOARD_OPERATOR_GIT_URL=
 ARG ODH_DASHBOARD_OPERATOR_GIT_COMMIT=
 ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_URL=
 ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT=
+ARG ODH_KSERVE_MODULE_OPERATOR_GIT_URL=
+ARG ODH_KSERVE_MODULE_OPERATOR_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -436,7 +438,9 @@ LABEL \
       odh-dashboard-operator.git.url="${ODH_DASHBOARD_OPERATOR_GIT_URL}" \
       odh-dashboard-operator.git.commit="${ODH_DASHBOARD_OPERATOR_GIT_COMMIT}" \
       odh-mcp-lifecycle-module-operator.git.url="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_URL}" \
-      odh-mcp-lifecycle-module-operator.git.commit="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT}"
+      odh-mcp-lifecycle-module-operator.git.commit="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT}" \
+      odh-kserve-module-operator.git.url="${ODH_KSERVE_MODULE_OPERATOR_GIT_URL}" \
+      odh-kserve-module-operator.git.commit="${ODH_KSERVE_MODULE_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
