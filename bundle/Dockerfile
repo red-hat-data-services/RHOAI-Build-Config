@@ -187,8 +187,6 @@ ARG ODH_OGX_CORE_GIT_URL=
 ARG ODH_OGX_CORE_GIT_COMMIT=
 ARG ODH_OGX_K8S_OPERATOR_GIT_URL=
 ARG ODH_OGX_K8S_OPERATOR_GIT_COMMIT=
-ARG ODH_AGENTS_OPERATOR_GIT_URL=
-ARG ODH_AGENTS_OPERATOR_GIT_COMMIT=
 ARG ODH_MOD_ARCH_AGENT_OPS_GIT_URL=
 ARG ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT=
 ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL=
@@ -413,8 +411,6 @@ LABEL \
       odh-ogx-core.git.commit="${ODH_OGX_CORE_GIT_COMMIT}" \
       odh-ogx-k8s-operator.git.url="${ODH_OGX_K8S_OPERATOR_GIT_URL}" \
       odh-ogx-k8s-operator.git.commit="${ODH_OGX_K8S_OPERATOR_GIT_COMMIT}" \
-      odh-agents-operator.git.url="${ODH_AGENTS_OPERATOR_GIT_URL}" \
-      odh-agents-operator.git.commit="${ODH_AGENTS_OPERATOR_GIT_COMMIT}" \
       odh-mod-arch-agent-ops.git.url="${ODH_MOD_ARCH_AGENT_OPS_GIT_URL}" \
       odh-mod-arch-agent-ops.git.commit="${ODH_MOD_ARCH_AGENT_OPS_GIT_COMMIT}" \
       odh-llm-d-batch-gateway-operator.git.url="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL}" \
