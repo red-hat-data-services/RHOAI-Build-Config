@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2c32243636bbb53c31e73e272b0d4ef93c534ac48b9134642ea5bffc8c828d47"
-    createdAt: "2026-06-29T17:50:17Z"
+    createdAt: "2026-06-30T06:25:04Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2041,69 +2041,6 @@ spec:
     targetPort: 9443
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-hardware-profile
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: kserve-kueuelabels-validator.opendatahub.io
-    rules:
-    - apiGroups:
-      - serving.kserve.io
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - inferenceservices
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-kueue
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: kubeflow-kueuelabels-validator.opendatahub.io
-    rules:
-    - apiGroups:
-      - kubeflow.org
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - pytorchjobs
-      - notebooks
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-kueue
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: ray-kueuelabels-validator.opendatahub.io
-    rules:
-    - apiGroups:
-      - ray.io
-      apiVersions:
-      - v1
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - rayjobs
-      - rayclusters
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-kueue
   relatedImages:
   - name: odh-rhel9-operator-2c32243636bbb53c31e73e272b0d4ef93c534ac48b9134642ea5bffc8c828d47-annotation
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2c32243636bbb53c31e73e272b0d4ef93c534ac48b9134642ea5bffc8c828d47"
