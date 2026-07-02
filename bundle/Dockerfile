@@ -213,6 +213,8 @@ ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_URL=
 ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT=
 ARG ODH_MCP_LIFECYCLE_OPERATOR_GIT_URL=
 ARG ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT=
+ARG ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_URL=
+ARG ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -436,7 +438,9 @@ LABEL \
       odh-mcp-lifecycle-module-operator.git.url="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_URL}" \
       odh-mcp-lifecycle-module-operator.git.commit="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT}" \
       odh-mcp-lifecycle-operator.git.url="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_URL}" \
-      odh-mcp-lifecycle-operator.git.commit="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT}"
+      odh-mcp-lifecycle-operator.git.commit="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT}" \
+      odh-workbenches-operator-rhel9.git.url="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_URL}" \
+      odh-workbenches-operator-rhel9.git.commit="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
