@@ -213,6 +213,8 @@ ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_URL=
 ARG ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT=
 ARG ODH_MCP_LIFECYCLE_OPERATOR_GIT_URL=
 ARG ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT=
+ARG ODH_CORE_BFF_GIT_URL=
+ARG ODH_CORE_BFF_GIT_COMMIT=
 ARG ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_URL=
 ARG ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT=
 # Core bundle labels.
@@ -439,6 +441,8 @@ LABEL \
       odh-mcp-lifecycle-module-operator.git.commit="${ODH_MCP_LIFECYCLE_MODULE_OPERATOR_GIT_COMMIT}" \
       odh-mcp-lifecycle-operator.git.url="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_URL}" \
       odh-mcp-lifecycle-operator.git.commit="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT}" \
+      odh-core-bff.git.url="${ODH_CORE_BFF_GIT_URL}" \
+      odh-core-bff.git.commit="${ODH_CORE_BFF_GIT_COMMIT}" \
       odh-workbenches-operator-rhel9.git.url="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_URL}" \
       odh-workbenches-operator-rhel9.git.commit="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT}"
 # Copy files to locations specified by labels.
