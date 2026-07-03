@@ -442,9 +442,9 @@ LABEL \
       odh-mcp-lifecycle-operator.git.url="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_URL}" \
       odh-mcp-lifecycle-operator.git.commit="${ODH_MCP_LIFECYCLE_OPERATOR_GIT_COMMIT}" \
       odh-core-bff.git.url="${ODH_CORE_BFF_GIT_URL}" \
-      odh-core-bff.git.commit="${ODH_CORE_BFF_GIT_COMMIT}"
+      odh-core-bff.git.commit="${ODH_CORE_BFF_GIT_COMMIT}" \
       odh-workbenches-operator-rhel9.git.url="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_URL}" \
-      odh-workbenches-operator-rhel9.git.commit="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT}"
+      odh-workbenches-operator-rhel9.git.commit="${ODH_WORKBENCHES_OPERATOR_RHEL9_GIT_COMMIT}" 
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
