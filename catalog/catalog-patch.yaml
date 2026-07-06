@@ -1,8 +1,28 @@
 patch:
   olm.package:
     name: rhods-operator
-    defaultChannel: eus-2.25
+    defaultChannel: stable
   olm.channels:
+    - name: fast
+      entries:
+      - name: rhods-operator.2.25.9
+        replaces: rhods-operator.2.25.8
+        skipRange: '>=2.24.0 <2.25.9'
+    - name: alpha
+      entries:
+      - name: rhods-operator.2.25.9
+        replaces: rhods-operator.2.25.8
+        skipRange: '>=2.24.0 <2.25.9'
+    - name: stable
+      entries:
+      - name: rhods-operator.2.25.9
+        replaces: rhods-operator.2.25.8
+        skipRange: '>=2.22.0 <2.25.9'
+    - name: stable-2.25
+      entries:
+      - name: rhods-operator.2.25.9
+        replaces: rhods-operator.2.25.8
+        skipRange: '>=2.22.0 <2.25.9'
     - name: eus-2.25
       entries:
       - name: rhods-operator.2.25.9
