@@ -1,0 +1,901 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Release
+metadata:
+  name: rhoai-v3-3-prod-1783586527-1-2
+  namespace: rhoai-tenant
+  labels:
+    konflux-release-data/rbc-release-commit: 9e62817cf9ed15b3d1ca6fa3dd393670e7a0fecd
+    konflux-release-data/artifact-type: components
+    konflux-release-data/environment: prod
+    appstudio.openshift.io/application: rhoai-v3-3
+spec:
+  gracePeriodDays: 30
+  releasePlan: rhoai-onprem-v3-3-components-prod
+  snapshot: rhoai-v3-3-1783094273
+  data:
+    version: 3.3.5
+    releaseNotes:
+      cves:
+        - key: 'CVE-2026-42561' # https://redhat.atlassian.net/browse/RHOAIENG-71848
+          component: 'odh-mlserver-v3-3'
+        - key: 'CVE-2026-39830' # https://redhat.atlassian.net/browse/RHOAIENG-70063
+          component: 'odh-trainer-v3-3'
+        - key: 'CVE-2026-46595' # https://redhat.atlassian.net/browse/RHOAIENG-67971
+          component: 'odh-trainer-v3-3'
+        - key: 'CVE-2026-48526' # https://redhat.atlassian.net/browse/RHOAIENG-66591
+          component: 'odh-kserve-storage-initializer-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66258
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66252
+          component: 'odh-training-cuda124-torch25-py311-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66250
+          component: 'odh-training-rocm64-torch28-py312-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66246
+          component: 'odh-training-rocm62-torch24-py311-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66245
+          component: 'odh-training-rocm62-torch25-py311-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66241
+          component: 'odh-training-rocm64-torch29-py312-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66237
+          component: 'odh-training-cuda121-torch24-py311-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66231
+          component: 'odh-training-cuda128-torch28-py312-v3-3'
+        - key: 'CVE-2026-5241' # https://redhat.atlassian.net/browse/RHOAIENG-66230
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-34993' # https://redhat.atlassian.net/browse/RHOAIENG-65992
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-34993' # https://redhat.atlassian.net/browse/RHOAIENG-65968
+          component: 'odh-mlserver-v3-3'
+        - key: 'CVE-2026-33245' # https://redhat.atlassian.net/browse/RHOAIENG-65879
+          component: 'odh-mod-arch-maas-v3-3'
+        - key: 'CVE-2026-33245' # https://redhat.atlassian.net/browse/RHOAIENG-65878
+          component: 'odh-mod-arch-gen-ai-v3-3'
+        - key: 'CVE-2026-33245' # https://redhat.atlassian.net/browse/RHOAIENG-65877
+          component: 'odh-dashboard-v3-3'
+        - key: 'CVE-2026-33245' # https://redhat.atlassian.net/browse/RHOAIENG-65869
+          component: 'odh-mod-arch-model-registry-v3-3'
+        - key: 'CVE-2026-2614' # https://redhat.atlassian.net/browse/RHOAIENG-65819
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64900
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64898
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64896
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64893
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64892
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64891
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64890
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64889
+          component: 'odh-feature-server-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64888
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64885
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64882
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64878
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64873
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-48710' # https://redhat.atlassian.net/browse/RHOAIENG-64865
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64537
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64536
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64535
+          component: 'odh-training-rocm64-torch29-py312-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64534
+          component: 'odh-training-rocm64-torch28-py312-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64533
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64532
+          component: 'odh-training-cuda128-torch28-py312-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64531
+          component: 'odh-mlserver-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64530
+          component: 'odh-mlflow-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64502
+          component: 'odh-training-rocm62-torch25-py311-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64500
+          component: 'odh-training-rocm62-torch24-py311-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64498
+          component: 'odh-training-cuda124-torch25-py311-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64496
+          component: 'odh-training-cuda121-torch24-py311-v3-3'
+        - key: 'CVE-2026-44431' # https://redhat.atlassian.net/browse/RHOAIENG-64470
+          component: 'odh-kserve-storage-initializer-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64055
+          component: 'odh-training-cuda124-torch25-py311-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64054
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64052
+          component: 'odh-training-rocm62-torch25-py311-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64051
+          component: 'odh-training-rocm64-torch28-py312-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64050
+          component: 'odh-training-rocm64-torch29-py312-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64047
+          component: 'odh-training-cuda128-torch28-py312-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64045
+          component: 'odh-training-rocm62-torch24-py311-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64042
+          component: 'odh-training-cuda121-torch24-py311-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64035
+          component: 'odh-mlserver-v3-3'
+        - key: 'CVE-2026-8643' # https://redhat.atlassian.net/browse/RHOAIENG-64034
+          component: 'odh-kserve-storage-initializer-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63917
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63916
+          component: 'odh-training-rocm64-torch29-py312-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63915
+          component: 'odh-training-rocm64-torch28-py312-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63914
+          component: 'odh-training-cuda128-torch29-py312-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63913
+          component: 'odh-training-cuda128-torch28-py312-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63912
+          component: 'odh-mlserver-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63911
+          component: 'odh-mlflow-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63878
+          component: 'odh-training-rocm62-torch25-py311-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63876
+          component: 'odh-training-rocm62-torch24-py311-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63874
+          component: 'odh-training-cuda124-torch25-py311-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63872
+          component: 'odh-training-cuda121-torch24-py311-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63851
+          component: 'odh-model-registry-job-async-upload-v3-3'
+        - key: 'CVE-2026-44432' # https://redhat.atlassian.net/browse/RHOAIENG-63845
+          component: 'odh-kserve-storage-initializer-v3-3'
+        - key: 'CVE-2026-39892' # https://redhat.atlassian.net/browse/RHOAIENG-62113
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-39892' # https://redhat.atlassian.net/browse/RHOAIENG-62112
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-39892' # https://redhat.atlassian.net/browse/RHOAIENG-62102
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-41242' # https://redhat.atlassian.net/browse/RHOAIENG-60095
+          component: 'odh-mod-arch-maas-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59323
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59322
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59321
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59320
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59319
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59318
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59317
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59316
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59315
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59314
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59313
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59312
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59311
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59309
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59308
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59307
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59306
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59305
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59304
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59303
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-23490' # https://redhat.atlassian.net/browse/RHOAIENG-59301
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-28684' # https://redhat.atlassian.net/browse/RHOAIENG-59257
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-28684' # https://redhat.atlassian.net/browse/RHOAIENG-59256
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-40192' # https://redhat.atlassian.net/browse/RHOAIENG-58605
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-40192' # https://redhat.atlassian.net/browse/RHOAIENG-58604
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-1462' # https://redhat.atlassian.net/browse/RHOAIENG-57867
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-1462' # https://redhat.atlassian.net/browse/RHOAIENG-57866
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-1462' # https://redhat.atlassian.net/browse/RHOAIENG-57865
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-1462' # https://redhat.atlassian.net/browse/RHOAIENG-57864
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-33699' # https://redhat.atlassian.net/browse/RHOAIENG-57780
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-35536' # https://redhat.atlassian.net/browse/RHOAIENG-56673
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-35536' # https://redhat.atlassian.net/browse/RHOAIENG-56664
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-34070' # https://redhat.atlassian.net/browse/RHOAIENG-56150
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-34070' # https://redhat.atlassian.net/browse/RHOAIENG-56148
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-27893' # https://redhat.atlassian.net/browse/RHOAIENG-55684
+          component: 'odh-vllm-cpu-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55453
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55452
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55451
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55450
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55449
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55448
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55447
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55446
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55445
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55444
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55443
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55442
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55441
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55440
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55439
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55438
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55437
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55436
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55435
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-55433
+          component: 'odh-llama-stack-core-v3-3'
+        - key: 'CVE-2026-33186' # https://redhat.atlassian.net/browse/RHOAIENG-55304
+          component: 'odh-feast-operator-v3-3'
+        - key: 'CVE-2026-33236' # https://redhat.atlassian.net/browse/RHOAIENG-54735
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-33231' # https://redhat.atlassian.net/browse/RHOAIENG-54653
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54270
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54269
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54268
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54267
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54266
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54265
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54261
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54260
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54259
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54258
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54256
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54255
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54254
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54252
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-30922' # https://redhat.atlassian.net/browse/RHOAIENG-54250
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-32640' # https://redhat.atlassian.net/browse/RHOAIENG-53797
+          component: 'odh-trustyai-nemo-guardrails-server-v3-3'
+        - key: 'CVE-2026-28356' # https://redhat.atlassian.net/browse/RHOAIENG-53295
+          component: 'odh-vllm-cpu-v3-3'
+        - key: 'CVE-2026-32597' # https://redhat.atlassian.net/browse/RHOAIENG-53163
+          component: 'odh-trustyai-garak-lls-provider-dsp-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52850
+          component: 'odh-workbench-jupyter-trustyai-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52849
+          component: 'odh-workbench-jupyter-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52848
+          component: 'odh-workbench-jupyter-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52847
+          component: 'odh-workbench-jupyter-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52842
+          component: 'odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52823
+          component: 'odh-workbench-jupyter-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52821
+          component: 'odh-workbench-jupyter-minimal-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52820
+          component: 'odh-workbench-jupyter-minimal-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52819
+          component: 'odh-workbench-jupyter-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52818
+          component: 'odh-workbench-jupyter-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52817
+          component: 'odh-workbench-codeserver-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52815
+          component: 'odh-pipeline-runtime-tensorflow-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52814
+          component: 'odh-pipeline-runtime-tensorflow-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52813
+          component: 'odh-pipeline-runtime-pytorch-rocm-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52812
+          component: 'odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52811
+          component: 'odh-pipeline-runtime-pytorch-cuda-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52810
+          component: 'odh-pipeline-runtime-minimal-cpu-py312-v3-3'
+        - key: 'CVE-2026-31958' # https://redhat.atlassian.net/browse/RHOAIENG-52809
+          component: 'odh-pipeline-runtime-datascience-cpu-py312-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48628
+          component: 'odh-ml-pipelines-scheduledworkflow-v2-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48627
+          component: 'odh-ml-pipelines-persistenceagent-v2-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48626
+          component: 'odh-ml-pipelines-launcher-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48625
+          component: 'odh-ml-pipelines-driver-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48624
+          component: 'odh-ml-pipelines-api-server-v2-v3-3'
+        - key: 'CVE-2025-61726' # https://redhat.atlassian.net/browse/RHOAIENG-48616
+          component: 'odh-data-science-pipelines-operator-controller-v3-3'
+        - key: 'CVE-2025-69223' # https://redhat.atlassian.net/browse/RHOAIENG-43649
+          component: 'odh-ta-lmes-job-v3-3'
+      issues:
+          fixed:
+            - id: RHOAIENG-71848
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-70063
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-67971
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66591
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66258
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66252
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66250
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66246
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66245
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66241
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66237
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66231
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-66230
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65992
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65968
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65879
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65878
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65877
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65869
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-65819
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64900
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64898
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64896
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64893
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64892
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64891
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64890
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64889
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64888
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64885
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64882
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64878
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64873
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64865
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64537
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64536
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64535
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64534
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64533
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64532
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64531
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64530
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64502
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64500
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64498
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64496
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64470
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64055
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64054
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64052
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64051
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64050
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64047
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64045
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64042
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64035
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-64034
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63917
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63916
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63915
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63914
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63913
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63912
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63911
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63878
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63876
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63874
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63872
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63851
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-63845
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-62113
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-62112
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-62102
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-60095
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59323
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59322
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59321
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59320
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59319
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59318
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59317
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59316
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59315
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59314
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59313
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59312
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59311
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59309
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59308
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59307
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59306
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59305
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59304
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59303
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59301
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59257
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-59256
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-58605
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-58604
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-57867
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-57866
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-57865
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-57864
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-57780
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-56673
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-56664
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-56150
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-56148
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55684
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55453
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55452
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55451
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55450
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55449
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55448
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55447
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55446
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55445
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55444
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55443
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55442
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55441
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55440
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55439
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55438
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55437
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55436
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55435
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55433
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-55304
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54735
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54653
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54270
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54269
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54268
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54267
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54266
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54265
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54261
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54260
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54259
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54258
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54256
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54255
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54254
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54252
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-54250
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-53797
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-53295
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-53163
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52850
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52849
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52848
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52847
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52842
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52823
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52821
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52820
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52819
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52818
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52817
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52815
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52814
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52813
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52812
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52811
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52810
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-52809
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48628
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48627
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48626
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48625
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48624
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-48616
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-43649
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-67054
+              public: true
+              source: redhat.atlassian.net
+            - id: RHOAIENG-51802
+              public: true
+              source: redhat.atlassian.net
