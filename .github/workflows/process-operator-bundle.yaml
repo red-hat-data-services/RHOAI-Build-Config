@@ -29,7 +29,8 @@ jobs:
     if: ${{ github.ref_name != 'main' }}
     runs-on: ubuntu-latest
     container:
-      image: quay.io/rhoai/rhoai-task-toolset:latest
+      # defined here: https://github.com/red-hat-data-services/devops-images/tree/main/builds
+      image: quay.io/rhoai-devops/olm-runner:latest
     steps:
       - name: Get Current branch name
         shell: bash
@@ -48,19 +49,6 @@ jobs:
           path: utils
       - name: Install dependencies
         run: |
-          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-          arch="$(uname -m | sed 's/x86_64/amd64/')"
-          yq_version="v4.44.3"
-          yq_filename="yq-$yq_version"
-          echo "-> Downloading yq" >&2
-          curl -sSfLo "$yq_filename" "https://github.com/mikefarah/yq/releases/download/$yq_version/yq_${os}_${arch}"
-          chmod +x $yq_filename
-          ln -s $yq_filename yq
-          cp $yq_filename /usr/local/bin/yq
-
-          echo "-> Installing findutils" >&2
-          microdnf install -y findutils
-
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
       - name: Process Operator Bundle
