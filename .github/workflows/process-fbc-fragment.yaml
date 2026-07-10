@@ -180,15 +180,20 @@ jobs:
 
       - name: Push latest PCC Cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        uses: actions-js/push@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-          message: "Regeneratd the PCC Cache"
-          repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
-          directory: main
-          author_name: Openshift-AI DevOps
-          author_email: openshift-ai-devops@redhat.com
+        working-directory: main
+        run: |
+          git config user.name "Openshift-AI DevOps"
+          git config user.email "openshift-ai-devops@redhat.com"
+          git add -A
+          # Atomic commit: only commit if PCC catalog files actually changed.
+          # If only shipped_rhoai_versions_granular.txt changed (index hasn't caught up),
+          # revert it so the next run retries regeneration.
+          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
+            git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
+          else
+            echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
+            git checkout HEAD -- .
+          fi
 
 
       - name: Process FBC Fragment
