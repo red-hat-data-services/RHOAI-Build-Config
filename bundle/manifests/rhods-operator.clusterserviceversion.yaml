@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:eea76131985c3b7eef8b46da7b2ad6695e5db22f7ae29ddd78deaa8bb21e84aa"
-    createdAt: "2026-07-10T16:05:36Z"
+    createdAt: "2026-07-10T17:10:48Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2311,47 +2311,6 @@ spec:
     containerPort: 443
     deploymentName: rhods-operator
     failurePolicy: Fail
-    generateName: connection-isvc.opendatahub.io
-    rules:
-    - apiGroups:
-      - serving.kserve.io
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - inferenceservices
-    sideEffects: NoneOnDryRun
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /platform-connection-isvc
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: connection-llmisvc.opendatahub.io
-    rules:
-    - apiGroups:
-      - serving.kserve.io
-      apiVersions:
-      - v1alpha1
-      - v1alpha2
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - llminferenceservices
-    sideEffects: NoneOnDryRun
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /platform-connection-llmisvc
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
     generateName: connection-notebook.opendatahub.io
     rules:
     - apiGroups:
@@ -2535,47 +2494,6 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dscinitialization-v2
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: hardwareprofile-isvc-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - serving.kserve.io
-      apiVersions:
-      - v1beta1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - inferenceservices
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-hardware-profile
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: hardwareprofile-llmisvc-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - serving.kserve.io
-      apiVersions:
-      - v1alpha1
-      - v1alpha2
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - llminferenceservices
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-hardware-profile
   - admissionReviewVersions:
     - v1
     containerPort: 443
