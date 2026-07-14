@@ -64,6 +64,18 @@ jobs:
         run: |
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
 
+      - name: Login to container registries
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+          REGISTRY_STAGE_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_USERNAME }}
+          REGISTRY_STAGE_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}
+          AIPCC_QUAY_RO_USERNAME: ${{ secrets.AIPCC_QUAY_RO_USERNAME }}
+          AIPCC_QUAY_RO_TOKEN: ${{ secrets.AIPCC_QUAY_RO_TOKEN }}
+        run: |
+          cosign login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+          cosign login registry.stage.redhat.io -u "${REGISTRY_STAGE_REDHAT_IO_USERNAME}" -p "${REGISTRY_STAGE_REDHAT_IO_PASSWORD}"
+          cosign login quay.io -u "${AIPCC_QUAY_RO_USERNAME}" -p "${AIPCC_QUAY_RO_TOKEN}"
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
@@ -113,6 +125,13 @@ jobs:
           OPENSHIFT_HELM_VALUES_YAML_PATH=${HELM_RAW_INPUTS_DIR}/rhai-on-openshift-chart/values.yaml
           OPENSHIFT_HELM_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/${OPENSHIFT_HELM_CHART_COMPONENT_NAME}-push.yaml
 
+          #Declare SBOM metadata config path
+          METADATA_CONFIG_PATH=${BRANCH}/bundle/metadata-config.yaml
+          METADATA_CONFIG_FLAG=""
+          if [ -f "${METADATA_CONFIG_PATH}" ]; then
+            METADATA_CONFIG_FLAG="-mc ${METADATA_CONFIG_PATH}"
+          fi
+
           #Invoke Bundle processor to patch the catalog
           python3 utils/utils/processors/bundle-processor.py \
             -op bundle-patch \
@@ -130,7 +149,8 @@ jobs:
             -ohpp ${OPENSHIFT_HELM_PUSH_PIPELINE_PATH} \
             -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x disable \
-            -t nightly
+            -t nightly \
+            ${METADATA_CONFIG_FLAG}
 
           cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle
           cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
