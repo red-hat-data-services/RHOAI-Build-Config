@@ -7,6 +7,11 @@ on:
         description: 'RHOAI version to process (e.g. rhoai-3.5, rhoai-3.5-ea.2). Branch name used if omitted.'
         required: false
         type: string
+      dry_run:
+        description: 'Push results to BRANCH-dry-run instead of the actual branch.'
+        required: false
+        type: boolean
+        default: false
   push:
     paths:
       - bundle/additional-images-patch.yaml
@@ -160,6 +165,8 @@ jobs:
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
+          PUSH_BRANCH="${{ inputs.dry_run == true && format('{0}-dry-run-bundle', steps.get_branch.outputs.branch) || steps.get_branch.outputs.branch }}"
+          FORCE_FLAG="${{ inputs.dry_run == true && '--force' || '' }}"
           git diff --staged --quiet || (git commit -m "Updating the bundle-csv and helm chart values with latest images
 
-          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin ${{ steps.get_branch.outputs.branch }})
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push ${FORCE_FLAG} origin HEAD:${PUSH_BRANCH})
