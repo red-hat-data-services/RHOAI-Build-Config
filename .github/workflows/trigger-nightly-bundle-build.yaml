@@ -2,6 +2,11 @@ name: Trigger Nightly Bundle Build
 run-name: Trigger Nightly Bundle Build
 on:
   workflow_dispatch:
+    inputs:
+      rhoai_version:
+        description: 'RHOAI version to process (e.g. rhoai-3.5, rhoai-3.5-ea.2). Branch name used if omitted.'
+        required: false
+        type: string
   push:
     paths:
       - schedule/bundle-github-trigger.txt
@@ -25,11 +30,21 @@ jobs:
       # defined here: https://github.com/red-hat-data-services/devops-images/tree/main/builds
       image: quay.io/rhoai-devops/olm-runner:latest
     steps:
-      - name: Get Current branch name
+      - name: Resolve branch and RHOAI version
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+          VERSION_SOURCE="${{ inputs.rhoai_version || github.head_ref || github.ref_name }}"
+          VERSION_SOURCE="${VERSION_SOURCE#rhoai-}"
+          if ! [[ "$VERSION_SOURCE" =~ ^([0-9]+\.[0-9]+(-ea\.[0-9]+)?)$ ]]; then
+            echo "::error::Cannot resolve RHOAI version from '$VERSION_SOURCE'. Provide rhoai_version input (e.g. rhoai-3.5)."
+            exit 1
+          fi
+          echo "rhoai_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
         id: get_branch
-      - name: Git checkout RBC release
+      - name: Git checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ steps.get_branch.outputs.branch }}
@@ -47,6 +62,7 @@ jobs:
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RHOAI_VERSION: ${{ steps.get_branch.outputs.rhoai_version }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
@@ -59,8 +75,7 @@ jobs:
         run: |
           #Declare basic variables
           OPENSHIFT_VERSION=v4.13
-          RHOAI_VERSION=v${BRANCH/rhoai-/}
-          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
+          COMPONENT_SUFFIX=v${RHOAI_VERSION//./-}
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle-${COMPONENT_SUFFIX}
           XKS_HELM_CHART_COMPONENT_NAME=rhai-on-xks-chart-${COMPONENT_SUFFIX}
           OPENSHIFT_HELM_CHART_COMPONENT_NAME=rhai-on-openshift-chart-${COMPONENT_SUFFIX}
@@ -100,7 +115,7 @@ jobs:
             -c ${BUNDLE_CSV_PATH} \
             -p ${PATCH_YAML_PATH} \
             -o ${OUTPUT_FILE_PATH} \
-            -v ${BRANCH} \
+            -v rhoai-${RHOAI_VERSION} \
             -a ${ANNOTATION_YAML_PATH} \
             -xhp ${XKS_HELM_PATCH_YAML_PATH} \
             -xhv ${XKS_HELM_VALUES_YAML_PATH} \
