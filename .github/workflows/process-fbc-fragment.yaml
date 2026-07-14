@@ -187,15 +187,7 @@ jobs:
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
-          # Atomic commit: only commit if PCC catalog files actually changed.
-          # If only shipped_rhoai_versions_granular.txt changed (index hasn't caught up),
-          # revert it so the next run retries regeneration.
-          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
-            git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
-          else
-            echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
-            git checkout HEAD -- .
-          fi
+          git diff --staged --quiet || (git commit -m "Regeneratd the PCC Cache" && git push origin main)
 
 
       - name: Process FBC Fragment
