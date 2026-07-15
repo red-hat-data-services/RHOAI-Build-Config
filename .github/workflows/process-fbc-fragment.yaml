@@ -163,22 +163,8 @@ jobs:
           done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
           
           ls -l main/pcc/
-      - name: Validate PCC Cache
-        id: validate-pcc-cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
-        run: |
-          #Declare basic variables
-          BUILD_CONFIG_PATH=main/config/config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
-          PCC_FOLDER_PATH=main/pcc
-          GLOBAL_CONFIG_PATH=main/config/config.yaml
-          
-          #Validate PCC
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
-
       - name: Push latest PCC Cache
+        id: push-pcc-cache
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
         working-directory: main
         run: |
@@ -190,11 +176,25 @@ jobs:
           # revert it so the next run retries regeneration.
           if git diff --staged --name-only | grep -q "pcc/catalog-"; then
             git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
+            echo "pcc_committed=true" >> $GITHUB_OUTPUT
           else
             echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
             git checkout HEAD -- .
+            echo "pcc_committed=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Validate PCC Cache
+        id: validate-pcc-cache
+        if: ${{ steps.push-pcc-cache.outputs.pcc_committed == 'true' }}
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+        run: |
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
+
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
 
       - name: Process FBC Fragment
         env:
