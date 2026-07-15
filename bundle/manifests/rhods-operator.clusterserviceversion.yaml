@@ -108,8 +108,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6901676a6adca3bb6163e2245911fefd6a844a98c66937912019e6917b1375f0"
-    createdAt: "2026-07-15T07:33:49Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9211a75686601bc874fb00f33963e542e416869e14bc7dfb3dafc8b8b02983f1"
+    createdAt: "2026-07-15T09:36:54Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -2152,7 +2152,17 @@ spec:
                   value: registry.redhat.io/rhaii/vllm-gaudi-rhel9@sha256:1adc51d99455d90f758d840cb3bb5747ed29585c1b0830c051f7fe5cca3471e6
                 - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_FAST_2_IMAGE
                   value: registry.redhat.io/rhaii/vllm-gaudi-rhel9@sha256:1adc51d99455d90f758d840cb3bb5747ed29585c1b0830c051f7fe5cca3471e6
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6901676a6adca3bb6163e2245911fefd6a844a98c66937912019e6917b1375f0"
+                - name: RELATED_IMAGE_RHAII_VLLM_CUDA_IMAGE_UPSTREAM_VERSION
+                  value: "0.18.0+rhaiv.0"
+                - name: RELATED_IMAGE_RHAII_VLLM_ROCM_IMAGE_UPSTREAM_VERSION
+                  value: "0.18.0+rhaiv.0"
+                - name: RELATED_IMAGE_RHAII_VLLM_SPYRE_IMAGE_UPSTREAM_VERSION
+                  value: "0.18.0+rhaiv.1"
+                - name: RELATED_IMAGE_RHAII_VLLM_CPU_IMAGE_UPSTREAM_VERSION
+                  value: "0.18.0+rhaiv.0"
+                - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_IMAGE_UPSTREAM_VERSION
+                  value: "0.17.1+rhaiv.0"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9211a75686601bc874fb00f33963e542e416869e14bc7dfb3dafc8b8b02983f1"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2201,7 +2211,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6901676a6adca3bb6163e2245911fefd6a844a98c66937912019e6917b1375f0"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9211a75686601bc874fb00f33963e542e416869e14bc7dfb3dafc8b8b02983f1"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2553,8 +2563,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-6901676a6adca3bb6163e2245911fefd6a844a98c66937912019e6917b1375f0-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6901676a6adca3bb6163e2245911fefd6a844a98c66937912019e6917b1375f0"
+  - name: odh-rhel9-operator-9211a75686601bc874fb00f33963e542e416869e14bc7dfb3dafc8b8b02983f1-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:9211a75686601bc874fb00f33963e542e416869e14bc7dfb3dafc8b8b02983f1"
   - name: odh_ai_gateway_operator_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:78c4eea8cece9085058c9d8577a69a4d1d13701c171e739df49805031474152e"
   - name: odh_ai_gateway_payload_processing_e2e_image
