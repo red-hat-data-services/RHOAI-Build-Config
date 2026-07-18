@@ -139,8 +139,11 @@ spec:
                 - message: nodeNames and nodeSelector are mutually exclusive
                   rule: '!(has(self.nodeNames) && has(self.nodeSelector))'
               modelsAsService:
-                default: {}
-                description: Configures and enables Models as a Service integration
+                description: |-
+                  Deprecated: ModelsAsService is preserved for backward compatibility at least through 3.6.
+                  MaaS is now configured via spec.components.aigateway.modelsAsAService.
+                  Existing Managed values are still respected by the operator.
+                  One-directional CEL: Managed→Removed (cleanup) is allowed; Removed→Managed is blocked.
                 properties:
                   managementState:
                     default: Removed
@@ -150,6 +153,11 @@ spec:
                     pattern: ^(Managed|Unmanaged|Force|Removed)$
                     type: string
                 type: object
+                x-kubernetes-validations:
+                - message: modelsAsService is deprecated; cannot re-enable once Removed.
+                    Use spec.components.aigateway.modelsAsAService instead
+                  rule: self.managementState != 'Managed' || (has(oldSelf.managementState)
+                    && oldSelf.managementState == 'Managed')
               nim:
                 default: {}
                 description: Configures and enables NVIDIA NIM integration
