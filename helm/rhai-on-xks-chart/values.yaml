@@ -19,7 +19,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:48b9603fa8d8e3f1fde1384c131ecae30fc82b4215bb30cea795788fa0d02eed" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cc877397b0f0c1e7bc916aa01c03d1a40bdc1664b3a4ca7c03f60d25fde11b2f" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Number of operator replicas
@@ -159,6 +159,37 @@ rhaiOperator:
       value: "0.19.1+rhaiv.8"
     - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_FAST_2_IMAGE_UPSTREAM_VERSION
       value: "0.19.1+rhaiv.8"
+  extraEnvVars:
+    - name: RELATED_IMAGE_RHAII_VLLM_CUDA_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.10"
+    - name: RELATED_IMAGE_RHAII_VLLM_CUDA_FAST_1_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.10"
+    - name: RELATED_IMAGE_RHAII_VLLM_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.10"
+    - name: RELATED_IMAGE_RHAII_VLLM_ROCM_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_ROCM_FAST_1_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_ROCM_FAST_2_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_SPYRE_IMAGE_UPSTREAM_VERSION
+      value: "0.20.1+rhaiv.1.spyre"
+    - name: RELATED_IMAGE_RHAII_VLLM_SPYRE_FAST_1_IMAGE_UPSTREAM_VERSION
+      value: "0.20.1+rhaiv.1.spyre"
+    - name: RELATED_IMAGE_RHAII_VLLM_SPYRE_FAST_2_IMAGE_UPSTREAM_VERSION
+      value: "0.20.1+rhaiv.1.spyre"
+    - name: RELATED_IMAGE_RHAII_VLLM_CPU_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_CPU_FAST_1_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_CPU_FAST_2_IMAGE_UPSTREAM_VERSION
+      value: "0.21.0+rhaiv.9"
+    - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_IMAGE_UPSTREAM_VERSION
+      value: "0.19.1+rhaiv.8"
+    - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_FAST_1_IMAGE_UPSTREAM_VERSION
+      value: "0.19.1+rhaiv.8"
+    - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_FAST_2_IMAGE_UPSTREAM_VERSION
+      value: "0.19.1+rhaiv.8"
   # Example:
   # relatedImages:
   #   - name: RELATED_IMAGE_ODH_KSERVE_CONTROLLER_IMAGE
@@ -256,7 +287,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:48b9603fa8d8e3f1fde1384c131ecae30fc82b4215bb30cea795788fa0d02eed"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cc877397b0f0c1e7bc916aa01c03d1a40bdc1664b3a4ca7c03f60d25fde11b2f"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -296,7 +327,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:48b9603fa8d8e3f1fde1384c131ecae30fc82b4215bb30cea795788fa0d02eed"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cc877397b0f0c1e7bc916aa01c03d1a40bdc1664b3a4ca7c03f60d25fde11b2f"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -336,7 +367,7 @@ aws:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:48b9603fa8d8e3f1fde1384c131ecae30fc82b4215bb30cea795788fa0d02eed"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cc877397b0f0c1e7bc916aa01c03d1a40bdc1664b3a4ca7c03f60d25fde11b2f"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
