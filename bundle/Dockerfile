@@ -190,8 +190,6 @@ ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_URL=
 ARG ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_URL=
 ARG ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT=
-ARG ODH_AUTHBRIDGE_PROXY_GIT_URL=
-ARG ODH_AUTHBRIDGE_PROXY_GIT_COMMIT=
 ARG ODH_LLM_D_ASYNC_GIT_URL=
 ARG ODH_LLM_D_ASYNC_GIT_COMMIT=
 ARG ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_URL=
@@ -424,8 +422,6 @@ LABEL \
       odh-llm-d-batch-gateway-operator.git.commit="${ODH_LLM_D_BATCH_GATEWAY_OPERATOR_GIT_COMMIT}" \
       odh-ai-gateway-operator.git.url="${ODH_AI_GATEWAY_OPERATOR_GIT_URL}" \
       odh-ai-gateway-operator.git.commit="${ODH_AI_GATEWAY_OPERATOR_GIT_COMMIT}" \
-      odh-authbridge-proxy.git.url="${ODH_AUTHBRIDGE_PROXY_GIT_URL}" \
-      odh-authbridge-proxy.git.commit="${ODH_AUTHBRIDGE_PROXY_GIT_COMMIT}" \
       odh-llm-d-async.git.url="${ODH_LLM_D_ASYNC_GIT_URL}" \
       odh-llm-d-async.git.commit="${ODH_LLM_D_ASYNC_GIT_COMMIT}" \
       odh-llm-d-router-endpoint-picker.git.url="${ODH_LLM_D_ROUTER_ENDPOINT_PICKER_GIT_URL}" \
