@@ -212,8 +212,6 @@ ARG ODH_WORKBENCHES_OPERATOR_GIT_URL=
 ARG ODH_WORKBENCHES_OPERATOR_GIT_COMMIT=
 ARG ODH_CORE_BFF_GIT_URL=
 ARG ODH_CORE_BFF_GIT_COMMIT=
-ARG ODH_TRAINER_OPERATOR_GIT_URL=
-ARG ODH_TRAINER_OPERATOR_GIT_COMMIT=
 ARG ODH_KSERVE_MODULE_OPERATOR_GIT_URL=
 ARG ODH_KSERVE_MODULE_OPERATOR_GIT_COMMIT=
 ARG ODH_FEAST_MODULE_OPERATOR_GIT_URL=
@@ -444,8 +442,6 @@ LABEL \
       odh-workbenches-operator.git.commit="${ODH_WORKBENCHES_OPERATOR_GIT_COMMIT}" \
       odh-core-bff.git.url="${ODH_CORE_BFF_GIT_URL}" \
       odh-core-bff.git.commit="${ODH_CORE_BFF_GIT_COMMIT}" \
-      odh-trainer-operator.git.url="${ODH_TRAINER_OPERATOR_GIT_URL}" \
-      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}" \
       odh-kserve-module-operator.git.url="${ODH_KSERVE_MODULE_OPERATOR_GIT_URL}" \
       odh-kserve-module-operator.git.commit="${ODH_KSERVE_MODULE_OPERATOR_GIT_COMMIT}" \
       odh-feast-module-operator.git.url="${ODH_FEAST_MODULE_OPERATOR_GIT_URL}" \
