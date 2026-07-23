@@ -220,6 +220,8 @@ ARG ODH_MLSERVER_CUDA_GIT_URL=
 ARG ODH_MLSERVER_CUDA_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_GIT_COMMIT=
+ARG ODH_OGX_MODULE_OPERATOR_GIT_URL=
+ARG ODH_OGX_MODULE_OPERATOR_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -451,7 +453,9 @@ LABEL \
       odh-mlserver-cuda.git.url="${ODH_MLSERVER_CUDA_GIT_URL}" \
       odh-mlserver-cuda.git.commit="${ODH_MLSERVER_CUDA_GIT_COMMIT}" \
       odh-trustyai-service.git.url="${ODH_TRUSTYAI_SERVICE_GIT_URL}" \
-      odh-trustyai-service.git.commit="${ODH_TRUSTYAI_SERVICE_GIT_COMMIT}"
+      odh-trustyai-service.git.commit="${ODH_TRUSTYAI_SERVICE_GIT_COMMIT}" \
+      odh-ogx-module-operator.git.url="${ODH_OGX_MODULE_OPERATOR_GIT_URL}" \
+      odh-ogx-module-operator.git.commit="${ODH_OGX_MODULE_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
