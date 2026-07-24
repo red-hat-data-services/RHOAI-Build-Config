@@ -118,6 +118,10 @@ spec:
             - name: {{ $item.name | quote }}
               value: {{ $item.value | quote }}
             {{- end }}
+            {{- range $item := .Values.rhaiOperator.extraEnvVars }}
+            - name: {{ $item.name | quote }}
+              value: {{ $item.value | quote }}
+            {{- end }}
           image: {{ .Values.rhaiOperator.image }}
           imagePullPolicy: {{ .Values.rhaiOperator.imagePullPolicy }}
           livenessProbe:
