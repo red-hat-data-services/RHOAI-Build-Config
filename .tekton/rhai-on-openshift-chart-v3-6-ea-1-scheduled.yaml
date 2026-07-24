@@ -9,18 +9,15 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
-      && target_branch == "rhoai-3.5"
-      && "schedule/catalog-tekton-trigger.txt".pathChanged()
+      && target_branch == "rhoai-3.6-ea.1"
+      && "schedule/helm-chart-tekton-trigger.txt".pathChanged()
   labels:
-    appstudio.openshift.io/application: rhoai-v3-5
-    appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5
+    appstudio.openshift.io/application: rhoai-v3-6-ea-1
+    appstudio.openshift.io/component: rhai-on-openshift-chart-v3-6-ea-1
     pipelines.appstudio.openshift.io/type: build
-  name: rhoai-fbc-fragment-v3-5-on-schedule
+  name: rhai-on-openshift-chart-v3-6-ea-1-on-schedule
   namespace: rhoai-tenant
 spec:
-  timeouts:
-    pipeline: 10h
-    tasks: 8h
   params:
   - name: git-url
     value: '{{source_url}}'
@@ -31,35 +28,15 @@ spec:
     - '{{target_branch}}-{{revision}}'
     - '{{target_branch}}-nightly'
   - name: output-image
-    value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
+    value: quay.io/rhoai/rhai-on-openshift-chart:{{target_branch}}
   - name: rhoai-version
-    value: "3.5.0"
-  - name: build-platforms
-    value:
-    - linux/x86_64
-    - linux/ppc64le
-    - linux/s390x
-    - linux/arm64
-  - name: dockerfile
-    value: Dockerfile
+    value: "3.6.0-ea.1"
   - name: path-context
-    value: catalog/v4.19
+    value: "helm/rhai-on-openshift-chart"
   - name: hermetic
-    value: true
+    value: false
   - name: build-source-image
     value: true
-  - name: build-image-index
-    value: true
-  - name: build-args-file
-    value: catalog/catalog_build_args.map
-  - name: skip-checks
-    value: false
-  - name: build-type
-    value: "nightly"
-  - name: workflow_url
-    value: "https://github.com/red-hat-data-services/conforma-reporter/actions/workflows/conforma-reporter.yaml"
-  - name: smoke_url
-    value: "https://github.com/red-hat-data-services/rhods-devops-infra/actions/workflows/smoke-trigger.yaml"
   pipelineRef:
     resolver: git
     params:
@@ -68,9 +45,18 @@ spec:
     - name: revision
       value: '{{ target_branch }}'
     - name: pathInRepo
-      value: pipelines/fbc-fragment-build.yaml
+      value: pipelines/helm-chart-build.yaml
+  taskRunSpecs:
+  - pipelineTaskName: build-helm-chart
+    stepSpecs:
+    - name: package-and-push
+      computeResources:
+        requests:
+          memory: 0.3Gi
+        limits:
+          memory: 4Gi
   taskRunTemplate:
-    serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-5
+    serviceAccountName: build-pipeline-rhai-on-openshift-chart-v3-6-ea-1
   workspaces:
   - name: git-auth
     secret:
