@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-07-25T05:32:56Z"
+    createdAt: "2026-07-30T20:52:39Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -193,9 +193,8 @@ metadata:
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
       "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
       "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "ogxs.components.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
-      "mlflowoperators.components.platform.opendatahub.io", "modelsasservices.components.platform.opendatahub.io",
-      "sparkoperators.components.platform.opendatahub.io"]'
+      "trainers.components.platform.opendatahub.io", "mlflowoperators.components.platform.opendatahub.io",
+      "modelsasservices.components.platform.opendatahub.io", "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -296,11 +295,6 @@ spec:
       displayName: Monitoring
       kind: Monitoring
       name: monitorings.services.platform.opendatahub.io
-      version: v1alpha1
-    - description: OGX is the Schema for the OGX API
-      displayName: OGX
-      kind: OGX
-      name: ogxs.components.platform.opendatahub.io
       version: v1alpha1
     - kind: Platform
       name: platforms.config.opendatahub.io
@@ -1844,6 +1838,8 @@ spec:
                   value: /opt/manifests
                 - name: DEFAULT_CHARTS_PATH
                   value: /opt/charts
+                - name: RELATED_IMAGE_ODH_KUBERAY_OPERATOR_CONTROLLER_IMAGE
+                  value: quay.io/opendatahub/kuberay-operator:c4f391fd57b04ac96cedaebf0f8f71c8f25433c3
                 image: REPLACE_IMAGE:latest
                 imagePullPolicy: Always
                 livenessProbe:
@@ -1981,6 +1977,9 @@ spec:
   minKubeVersion: 1.25.0
   provider:
     name: Red Hat
+  relatedImages:
+  - image: quay.io/opendatahub/kuberay-operator:c4f391fd57b04ac96cedaebf0f8f71c8f25433c3
+    name: odh-kuberay-operator-controller-image
   version: 3.5.0
   webhookdefinitions:
   - admissionReviewVersions:
@@ -1996,26 +1995,6 @@ spec:
     targetPort: 9443
     type: ConversionWebhook
     webhookPath: /convert
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: connection-notebook.opendatahub.io
-    rules:
-    - apiGroups:
-      - kubeflow.org
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - notebooks
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /platform-connection-notebook
   - admissionReviewVersions:
     - v1
     containerPort: 443
@@ -2184,26 +2163,6 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dscinitialization-v2
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: hardwareprofile-notebook-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - kubeflow.org
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - notebooks
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-hardware-profile
   - admissionReviewVersions:
     - v1
     containerPort: 443
