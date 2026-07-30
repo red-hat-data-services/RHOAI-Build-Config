@@ -75,12 +75,15 @@ jobs:
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
           RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
         run: |
-          # Use skopeo login (not cosign) so we can write path-scoped entries to
-          # ~/.docker/config.json. cosign login cannot target quay.io/rhoai
+          # Use skopeo login into ~/.docker/config.json so cosign (go-containerregistry)
+          # can reuse the same auth. cosign login cannot target quay.io/rhoai
           # (registries must be RFC 3986 URI authorities), and a second
           # cosign login quay.io would overwrite AIPCC credentials.
-          # go-containerregistry (used by cosign download sbom) resolves the
-          # most specific path first, so quay.io/rhoai is preferred for rhoai images.
+          #
+          # skopeo --compat-auth-file also rejects namespaced keys like
+          # quay.io/rhoai ("Credentials cannot be recorded in Docker-compatible
+          # format"). Write that entry manually; go-containerregistry resolves
+          # the most specific path first for SBOM pulls from quay.io/rhoai/*.
           skopeo login registry.redhat.io \
             -u "${REGISTRY_REDHAT_IO_USERNAME}" \
             -p "${REGISTRY_REDHAT_IO_PASSWORD}" \
@@ -93,10 +96,20 @@ jobs:
             -u "${AIPCC_QUAY_RO_USERNAME}" \
             -p "${AIPCC_QUAY_RO_TOKEN}" \
             --compat-auth-file ~/.docker/config.json
-          skopeo login quay.io/rhoai \
-            -u "${RHOAI_QUAY_RO_USERNAME}" \
-            -p "${RHOAI_QUAY_RO_TOKEN}" \
-            --compat-auth-file ~/.docker/config.json
+          python3 - <<'PY'
+          import base64, json, os, pathlib
+          auth_file = pathlib.Path.home() / ".docker" / "config.json"
+          auth_file.parent.mkdir(parents=True, exist_ok=True)
+          cfg = json.loads(auth_file.read_text()) if auth_file.exists() else {}
+          cfg.setdefault("auths", {})
+          user = os.environ["RHOAI_QUAY_RO_USERNAME"]
+          token = os.environ["RHOAI_QUAY_RO_TOKEN"]
+          cfg["auths"]["quay.io/rhoai"] = {
+              "auth": base64.b64encode(f"{user}:{token}".encode()).decode()
+          }
+          auth_file.write_text(json.dumps(cfg, indent=2) + "\n")
+          print("Recorded credentials for quay.io/rhoai in ~/.docker/config.json")
+          PY
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
