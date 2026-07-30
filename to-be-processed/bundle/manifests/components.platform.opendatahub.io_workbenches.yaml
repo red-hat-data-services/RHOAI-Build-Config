@@ -50,8 +50,9 @@ spec:
             properties:
               workbenchNamespace:
                 default: rhods-notebooks
-                description: Namespace for workbenches to be installed, defaults to
-                  "rhods-notebooks" configurable once when component is enabled.
+                description: |-
+                  Legacy JupyterHub-era notebooks namespace. Immutable after creation; defaults to "rhods-notebooks".
+                  Notebook-controller operands are deployed into DSCI ApplicationsNamespace, not this field.
                 maxLength: 63
                 pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$
                 type: string
