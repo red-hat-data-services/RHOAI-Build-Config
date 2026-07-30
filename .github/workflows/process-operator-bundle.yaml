@@ -77,12 +77,12 @@ jobs:
           REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
           REGISTRY_STAGE_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_USERNAME }}
           REGISTRY_STAGE_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}
-          AIPCC_QUAY_RO_USERNAME: ${{ secrets.AIPCC_QUAY_RO_USERNAME }}
-          AIPCC_QUAY_RO_TOKEN: ${{ secrets.AIPCC_QUAY_RO_TOKEN }}
+          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
         run: |
           cosign login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
           cosign login registry.stage.redhat.io -u "${REGISTRY_STAGE_REDHAT_IO_USERNAME}" -p "${REGISTRY_STAGE_REDHAT_IO_PASSWORD}"
-          cosign login quay.io -u "${AIPCC_QUAY_RO_USERNAME}" -p "${AIPCC_QUAY_RO_TOKEN}"
+          cosign login quay.io -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}"
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
