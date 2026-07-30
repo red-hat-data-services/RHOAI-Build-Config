@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:24bc163a94346da246d24ce2822f55460fb0bfcdedf61d74466b8ea33f1d34c8"
-    createdAt: "2026-07-30T15:52:32Z"
+    createdAt: "2026-07-30T16:50:12Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1850,6 +1850,8 @@ spec:
                   value: /opt/manifests
                 - name: DEFAULT_CHARTS_PATH
                   value: /opt/charts
+                - name: RELATED_IMAGE_ODH_KUBERAY_OPERATOR_CONTROLLER_IMAGE
+                  value: "registry.redhat.io/rhoai/odh-kuberay-operator-controller-rhel9@sha256:742c8c23e4fea643a20d8f824350a5afeee28e7e185864e681cd3fe14b2fc966"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:1209884b5b3c8cd9317b584adcc41f365030df45491677863add02549a37c622"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE
@@ -1906,8 +1908,6 @@ spec:
                   value: "registry.redhat.io/rhoai/odh-kserve-router-rhel9@sha256:6d70a5da2494221c0debce4df9c0da18ffc457d0d7056bace1816fac64a7d635"
                 - name: RELATED_IMAGE_ODH_KSERVE_STORAGE_INITIALIZER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-kserve-storage-initializer-rhel9@sha256:65f5cb3580d55024249e5ff3ed653a80008eda8a4ec58bbd52b4865940c35c3d"
-                - name: RELATED_IMAGE_ODH_KUBERAY_OPERATOR_CONTROLLER_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-kuberay-operator-controller-rhel9@sha256:742c8c23e4fea643a20d8f824350a5afeee28e7e185864e681cd3fe14b2fc966"
                 - name: RELATED_IMAGE_ODH_KUBE_AUTH_PROXY_IMAGE
                   value: "registry.redhat.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:9678988fa6e909e261d25ca3b3c6ff967fc1c8475569e4eeeec1d8b3ca2565fe"
                 - name: RELATED_IMAGE_ODH_KUBE_RBAC_PROXY_IMAGE
@@ -2321,269 +2321,6 @@ spec:
   minKubeVersion: 1.25.0
   provider:
     name: Red Hat, Inc.
-  version: "3.5.0"
-  webhookdefinitions:
-  - admissionReviewVersions:
-    - v1
-    - v2
-    containerPort: 443
-    conversionCRDs:
-    - datascienceclusters.datasciencecluster.opendatahub.io
-    - dscinitializations.dscinitialization.opendatahub.io
-    deploymentName: rhods-operator
-    generateName: cdatascienceclustersdscinitializations.kb.io
-    sideEffects: None
-    targetPort: 9443
-    type: ConversionWebhook
-    webhookPath: /convert
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: connection-notebook.opendatahub.io
-    rules:
-    - apiGroups:
-      - kubeflow.org
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - notebooks
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /platform-connection-notebook
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: dashboard-acceleratorprofile-validator.opendatahub.io
-    rules:
-    - apiGroups:
-      - dashboard.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - acceleratorprofiles
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dashboard-acceleratorprofile
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: dashboard-hardwareprofile-validator.opendatahub.io
-    rules:
-    - apiGroups:
-      - dashboard.opendatahub.io
-      apiVersions:
-      - v1alpha1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - hardwareprofiles
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dashboard-hardwareprofile
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v1-defaulter.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v1-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v2-defaulter.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v2
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-datasciencecluster-v2
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v2-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v2
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-datasciencecluster-v2
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: dscinitialization-v1-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - dscinitialization.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      - DELETE
-      resources:
-      - dscinitializations
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dscinitialization-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: dscinitialization-v2-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - dscinitialization.opendatahub.io
-      apiVersions:
-      - v2
-      operations:
-      - CREATE
-      - UPDATE
-      - DELETE
-      resources:
-      - dscinitializations
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-dscinitialization-v2
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: hardwareprofile-notebook-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - kubeflow.org
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - notebooks
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-hardware-profile
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: podmonitor-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - monitoring.coreos.com
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - podmonitors
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-prometheus-monitors
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: servicemonitor-injector.opendatahub.io
-    rules:
-    - apiGroups:
-      - monitoring.coreos.com
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - servicemonitors
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-prometheus-monitors
   relatedImages:
   - name: odh-rhel9-operator-24bc163a94346da246d24ce2822f55460fb0bfcdedf61d74466b8ea33f1d34c8-annotation
     image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:24bc163a94346da246d24ce2822f55460fb0bfcdedf61d74466b8ea33f1d34c8"
@@ -2885,3 +2622,226 @@ spec:
     image: registry.redhat.io/rhaii-early-access/vllm-gaudi-rhel9@sha256:bb49786e915fe9789ffec6d953827fee90ef30bf9accce3db135ed4a0a26a35d
   - name: rhaii_vllm_gaudi_fast_2_image
     image: registry.redhat.io/rhaii-early-access/vllm-gaudi-rhel9@sha256:bb49786e915fe9789ffec6d953827fee90ef30bf9accce3db135ed4a0a26a35d
+  version: "3.5.0"
+  webhookdefinitions:
+  - admissionReviewVersions:
+    - v1
+    - v2
+    containerPort: 443
+    conversionCRDs:
+    - datascienceclusters.datasciencecluster.opendatahub.io
+    - dscinitializations.dscinitialization.opendatahub.io
+    deploymentName: rhods-operator
+    generateName: cdatascienceclustersdscinitializations.kb.io
+    sideEffects: None
+    targetPort: 9443
+    type: ConversionWebhook
+    webhookPath: /convert
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: dashboard-acceleratorprofile-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - dashboard.opendatahub.io
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - acceleratorprofiles
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dashboard-acceleratorprofile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: dashboard-hardwareprofile-validator.opendatahub.io
+    rules:
+    - apiGroups:
+      - dashboard.opendatahub.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - hardwareprofiles
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dashboard-hardwareprofile
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v1-defaulter.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-datasciencecluster-v1
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v1-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-datasciencecluster-v1
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v2-defaulter.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v2
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-datasciencecluster-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v2-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v2
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-datasciencecluster-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: dscinitialization-v1-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - dscinitialization.opendatahub.io
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      - DELETE
+      resources:
+      - dscinitializations
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dscinitialization-v1
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: dscinitialization-v2-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - dscinitialization.opendatahub.io
+      apiVersions:
+      - v2
+      operations:
+      - CREATE
+      - UPDATE
+      - DELETE
+      resources:
+      - dscinitializations
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-dscinitialization-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: podmonitor-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - monitoring.coreos.com
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - podmonitors
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-prometheus-monitors
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: servicemonitor-injector.opendatahub.io
+    rules:
+    - apiGroups:
+      - monitoring.coreos.com
+      apiVersions:
+      - v1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - servicemonitors
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-prometheus-monitors
