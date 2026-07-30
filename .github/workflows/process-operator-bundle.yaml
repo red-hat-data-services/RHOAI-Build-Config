@@ -79,10 +79,31 @@ jobs:
           REGISTRY_STAGE_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_STAGE_REDHAT_IO_PASSWORD }}
           AIPCC_QUAY_RO_USERNAME: ${{ secrets.AIPCC_QUAY_RO_USERNAME }}
           AIPCC_QUAY_RO_TOKEN: ${{ secrets.AIPCC_QUAY_RO_TOKEN }}
+          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
         run: |
-          cosign login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
-          cosign login registry.stage.redhat.io -u "${REGISTRY_STAGE_REDHAT_IO_USERNAME}" -p "${REGISTRY_STAGE_REDHAT_IO_PASSWORD}"
-          cosign login quay.io -u "${AIPCC_QUAY_RO_USERNAME}" -p "${AIPCC_QUAY_RO_TOKEN}"
+          # Use skopeo login (not cosign) so we can write path-scoped entries to
+          # ~/.docker/config.json. cosign login cannot target quay.io/rhoai
+          # (registries must be RFC 3986 URI authorities), and a second
+          # cosign login quay.io would overwrite AIPCC credentials.
+          # go-containerregistry (used by cosign download sbom) resolves the
+          # most specific path first, so quay.io/rhoai is preferred for rhoai images.
+          skopeo login registry.redhat.io \
+            -u "${REGISTRY_REDHAT_IO_USERNAME}" \
+            -p "${REGISTRY_REDHAT_IO_PASSWORD}" \
+            --compat-auth-file ~/.docker/config.json
+          skopeo login registry.stage.redhat.io \
+            -u "${REGISTRY_STAGE_REDHAT_IO_USERNAME}" \
+            -p "${REGISTRY_STAGE_REDHAT_IO_PASSWORD}" \
+            --compat-auth-file ~/.docker/config.json
+          skopeo login quay.io \
+            -u "${AIPCC_QUAY_RO_USERNAME}" \
+            -p "${AIPCC_QUAY_RO_TOKEN}" \
+            --compat-auth-file ~/.docker/config.json
+          skopeo login quay.io/rhoai \
+            -u "${RHOAI_QUAY_RO_USERNAME}" \
+            -p "${RHOAI_QUAY_RO_TOKEN}" \
+            --compat-auth-file ~/.docker/config.json
       - name: Process Operator Bundle
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
