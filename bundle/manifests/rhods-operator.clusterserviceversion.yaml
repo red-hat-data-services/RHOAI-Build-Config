@@ -108,8 +108,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b9b74d928a66542590c41dc3982e69be856d371a6adefe3b50f9991596ae999c"
-    createdAt: "2026-07-31T12:58:25Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2b60c1ac14971eeadeec10b0f93c124bfdc6f8a3058591161f1bd9f70d92bc55"
+    createdAt: "2026-07-31T13:06:51Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -186,14 +186,11 @@ metadata:
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
-      "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
-      "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
+      "datasciencepipelines.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
-      "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
-      "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "trainers.components.platform.opendatahub.io", "mlflowoperators.components.platform.opendatahub.io",
-      "modelsasservices.components.platform.opendatahub.io", "sparkoperators.components.platform.opendatahub.io"]'
+      "monitorings.services.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
+      "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -214,11 +211,6 @@ spec:
       displayName: Auth
       kind: Auth
       name: auths.services.platform.opendatahub.io
-      version: v1alpha1
-    - description: Dashboard is the Schema for the dashboards API
-      displayName: Dashboard
-      kind: Dashboard
-      name: dashboards.components.platform.opendatahub.io
       version: v1alpha1
     - description: DataScienceCluster is the Schema for the datascienceclusters API.
       displayName: Data Science Cluster
@@ -246,11 +238,6 @@ spec:
       kind: DSCInitialization
       name: dscinitializations.dscinitialization.opendatahub.io
       version: v2
-    - description: FeastOperator is the Schema for the FeastOperator API
-      displayName: Feast Operator
-      kind: FeastOperator
-      name: feastoperators.components.platform.opendatahub.io
-      version: v1alpha1
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
       version: v1
@@ -269,33 +256,15 @@ spec:
       kind: HardwareProfile
       name: hardwareprofiles.infrastructure.opendatahub.io
       version: v1alpha1
-    - description: Kserve is the Schema for the kserves API
-      displayName: Kserve
-      kind: Kserve
-      name: kserves.components.platform.opendatahub.io
-      version: v1alpha1
     - description: Kueue is the Schema for the kueues API
       displayName: Kueue
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
       version: v1alpha1
-    - description: MLflowOperator is the Schema for the MLflowOperators API
-      displayName: MLflow Operator
-      kind: MLflowOperator
-      name: mlflowoperators.components.platform.opendatahub.io
-      version: v1alpha1
-    - kind: ModelController
-      name: modelcontrollers.components.platform.opendatahub.io
-      version: v1alpha1
     - description: ModelRegistry is the Schema for the modelregistries API
       displayName: Model Registry
       kind: ModelRegistry
       name: modelregistries.components.platform.opendatahub.io
-      version: v1alpha1
-    - description: ModelsAsService is the Schema for the modelsasservice API
-      displayName: Models As Service
-      kind: ModelsAsService
-      name: modelsasservices.components.platform.opendatahub.io
       version: v1alpha1
     - description: Monitoring is the Schema for the monitorings API
       displayName: Monitoring
@@ -329,11 +298,6 @@ spec:
       displayName: Trusty AI
       kind: TrustyAI
       name: trustyais.components.platform.opendatahub.io
-      version: v1alpha1
-    - description: Workbenches is the Schema for the workbenches API
-      displayName: Workbenches
-      kind: Workbenches
-      name: workbenches.components.platform.opendatahub.io
       version: v1alpha1
   description: |-
     Red Hat OpenShift AI is a complete platform for the entire lifecycle of your AI/ML projects.
@@ -614,14 +578,11 @@ spec:
         - apiGroups:
           - build.openshift.io
           resources:
-          - buildconfigs/instantiate
           - builds
           verbs:
-          - create
           - delete
           - get
           - list
-          - patch
           - watch
         - apiGroups:
           - cert-manager.io
@@ -647,10 +608,8 @@ spec:
           - kueues
           - mcplifecycleoperators
           - mlflowoperators
-          - modelcontrollers
           - modelmeshservings
           - modelregistries
-          - modelsasservices
           - ogxs
           - rays
           - sparkoperators
@@ -670,16 +629,15 @@ spec:
           - components.platform.opendatahub.io
           resources:
           - aigateways/finalizers
+          - dashboards/finalizers
           - datasciencepipelines/finalizers
           - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
           - mcplifecycleoperators/finalizers
           - mlflowoperators/finalizers
-          - modelcontrollers/finalizers
           - modelmeshservings/finalizers
           - modelregistries/finalizers
-          - modelsasservices/finalizers
           - ogxs/finalizers
           - rays/finalizers
           - sparkoperators/finalizers
@@ -700,10 +658,8 @@ spec:
           - kueues/status
           - mcplifecycleoperators/status
           - mlflowoperators/status
-          - modelcontrollers/status
           - modelmeshservings/status
           - modelregistries/status
-          - modelsasservices/status
           - ogxs/status
           - rays/status
           - sparkoperators/status
@@ -729,17 +685,6 @@ spec:
           - codeflares/status
           verbs:
           - get
-        - apiGroups:
-          - components.platform.opendatahub.io
-          resources:
-          - dashboards/finalizers
-          verbs:
-          - create
-          - get
-          - list
-          - patch
-          - update
-          - watch
         - apiGroups:
           - config.opendatahub.io
           resources:
@@ -783,7 +728,6 @@ spec:
           - console.openshift.io
           resources:
           - consolelinks
-          - odhquickstarts
           verbs:
           - create
           - delete
@@ -817,24 +761,9 @@ spec:
           - dashboard.opendatahub.io
           resources:
           - acceleratorprofiles
-          - odhapplications
-          - odhdocuments
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - dashboard.opendatahub.io
-          resources:
-          - hardwareprofiles
           verbs:
           - get
           - list
-          - update
           - watch
         - apiGroups:
           - datasciencecluster.opendatahub.io
@@ -942,18 +871,6 @@ spec:
           - patch
           - watch
         - apiGroups:
-          - extensions.kuadrant.io
-          resources:
-          - telemetrypolicies
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
           - features.opendatahub.io
           resources:
           - featuretrackers
@@ -1011,27 +928,9 @@ spec:
         - apiGroups:
           - image.openshift.io
           resources:
-          - imagestreamtags
           - registry/metrics
           verbs:
           - get
-        - apiGroups:
-          - inference.networking.k8s.io
-          resources:
-          - inferencepools
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - inference.networking.x-k8s.io
-          resources:
-          - inferencemodels
-          - inferencepools
-          verbs:
-          - get
-          - list
-          - watch
         - apiGroups:
           - infrastructure.opendatahub.io
           resources:
@@ -1067,49 +966,6 @@ spec:
           - get
           - list
           - patch
-          - watch
-        - apiGroups:
-          - keda.sh
-          resources:
-          - kedacontrollers
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - keda.sh
-          resources:
-          - triggerauthentications
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kuadrant.io
-          resources:
-          - authpolicies
-          - ratelimitpolicies
-          - telemetrypolicies
-          - tokenratelimitpolicies
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kuadrant.io
-          resources:
-          - kuadrants
-          verbs:
-          - get
-          - list
           - watch
         - apiGroups:
           - kubeflow.org
@@ -1167,47 +1023,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - maastenantconfigs
-          verbs:
-          - delete
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - maastenantconfigs/status
-          verbs:
-          - get
-        - apiGroups:
           - machinelearning.seldon.io
           resources:
           - seldondeployments
@@ -1224,32 +1039,6 @@ spec:
           - get
           - list
           - watch
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows/status
-          verbs:
-          - get
-          - patch
-          - update
         - apiGroups:
           - modelregistry.opendatahub.io
           resources:
@@ -1401,12 +1190,8 @@ spec:
           resources:
           - odhdashboardconfigs
           verbs:
-          - create
-          - delete
           - get
           - list
-          - patch
-          - update
           - watch
         - apiGroups:
           - opentelemetry.io
@@ -1438,13 +1223,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - operator.authorino.kuadrant.io
-          resources:
-          - authorinos
-          verbs:
-          - get
-          - list
-        - apiGroups:
           - operator.openshift.io
           resources:
           - consoles
@@ -1459,7 +1237,6 @@ spec:
           - operator.openshift.io
           resources:
           - jobsetoperators
-          - leaderworkersetoperators
           verbs:
           - get
           - list
@@ -1649,63 +1426,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - serving.kserve.io
-          resources:
-          - clusterservingruntimes
-          - clusterservingruntimes/finalizers
-          - clusterstoragecontainers
-          - clusterstoragecontainers/finalizers
-          - inferencegraphs
-          - inferenceservices
-          - inferenceservices/finalizers
-          - llminferenceserviceconfigs
-          - localmodelnodegroups
-          - predictors
-          - servingruntimes
-          - servingruntimes/finalizers
-          - trainedmodels
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - clusterservingruntimes/status
-          - clusterstoragecontainers/status
-          - inferencegraphs/status
-          - inferenceservices/status
-          - predictors/status
-          - trainedmodels/status
-          verbs:
-          - delete
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - llminferenceserviceconfigs/status
-          - predictors/finalizers
-          - servingruntimes/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - llminferenceservices
-          - llminferenceservices/status
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
           - snapshot.storage.k8s.io
           resources:
           - volumesnapshots
@@ -1714,18 +1434,6 @@ spec:
           - delete
           - get
           - patch
-        - apiGroups:
-          - telemetry.istio.io
-          resources:
-          - telemetries
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
         - apiGroups:
           - template.openshift.io
           resources:
@@ -1853,7 +1561,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_AUTOML_IMAGE
                   value: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:b0be2e3a75433c7e2ac90781624083ad7245cec855f31ff723132f42a5a937e0"
                 - name: RELATED_IMAGE_ODH_AUTORAG_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:e43f921a27488156ea5a3b5bfad02fa0a0756276e1cb348dbf31a84c920eaa17"
+                  value: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:2b7491f4addafc3e9d9bf935681da7485d0dd75b8d5b727dfe3358991f817469"
                 - name: RELATED_IMAGE_ODH_BUILT_IN_DETECTOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:500a186f21c7fa9c4bb9c32b55e9abf45b98b6ea3ffd1c71ae810043e7a38c48"
                 - name: RELATED_IMAGE_ODH_CLI_IMAGE
@@ -1957,7 +1665,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_MODEL_CONTROLLER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-model-controller-rhel9@sha256:04aa6f6a4f6e96b05178ea3f1c291790bdec6e5ac6dccf1c834358ec3db53282"
                 - name: RELATED_IMAGE_ODH_MODEL_METADATA_COLLECTION_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:ad7cd06e81eb028cfa81b9087f7890ca5d515a7eeec318312c2385c57b4d7691"
+                  value: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:afb0dc0538547acdaac33b07839fc781c6f6b4477eaca4d44e9b20b19bcc2719"
                 - name: RELATED_IMAGE_ODH_MODEL_PERFORMANCE_DATA_IMAGE
                   value: "registry.redhat.io/rhoai/odh-model-performance-data-rhel9@sha256:f2000ef872dde33c7e1360a055cde1903f6d64a949f3595f79316158cf2fe2fb"
                 - name: RELATED_IMAGE_ODH_MODEL_REGISTRY_IMAGE
@@ -2067,7 +1775,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_MINIMAL_CPU_PY312_IMAGE
                   value: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cpu-py312-rhel9@sha256:3eb5302cd3dc2b7d98df839856c74ce7d90be5f0850e49611298dca17fd58110"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_MINIMAL_CUDA_PY312_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:04687a60a11bc9328f082fe3bb21dbf27ac95ce10de7bc585f11f32a1d56e7b2"
+                  value: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:65f7919528b81a2b4f456f4285d76dd8eac19ff8a4122dd9ae15518f1b2a8136"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_MINIMAL_ROCM_PY312_IMAGE
                   value: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-rocm-py312-rhel9@sha256:41814c7ec8076c53a57ad4eba7ed4ab3da4b6192dafcf63a8e91ff63e8859bea"
                 - name: RELATED_IMAGE_ODH_WORKBENCH_JUPYTER_PYTORCH_CUDA_PY312_IMAGE
@@ -2178,7 +1886,7 @@ spec:
                   value: "0.24.0+rhaiv.2"
                 - name: RELATED_IMAGE_RHAII_VLLM_GAUDI_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.24.0+rhaiv.2"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b9b74d928a66542590c41dc3982e69be856d371a6adefe3b50f9991596ae999c"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2b60c1ac14971eeadeec10b0f93c124bfdc6f8a3058591161f1bd9f70d92bc55"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -2227,7 +1935,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b9b74d928a66542590c41dc3982e69be856d371a6adefe3b50f9991596ae999c"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2b60c1ac14971eeadeec10b0f93c124bfdc6f8a3058591161f1bd9f70d92bc55"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2316,8 +2024,8 @@ spec:
   provider:
     name: Red Hat, Inc.
   relatedImages:
-  - name: odh-rhel9-operator-b9b74d928a66542590c41dc3982e69be856d371a6adefe3b50f9991596ae999c-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b9b74d928a66542590c41dc3982e69be856d371a6adefe3b50f9991596ae999c"
+  - name: odh-rhel9-operator-2b60c1ac14971eeadeec10b0f93c124bfdc6f8a3058591161f1bd9f70d92bc55-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2b60c1ac14971eeadeec10b0f93c124bfdc6f8a3058591161f1bd9f70d92bc55"
   - name: odh_ai_gateway_operator_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:1209884b5b3c8cd9317b584adcc41f365030df45491677863add02549a37c622"
   - name: odh_ai_gateway_payload_processing_image
@@ -2325,7 +2033,7 @@ spec:
   - name: odh_automl_image
     image: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:b0be2e3a75433c7e2ac90781624083ad7245cec855f31ff723132f42a5a937e0"
   - name: odh_autorag_image
-    image: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:e43f921a27488156ea5a3b5bfad02fa0a0756276e1cb348dbf31a84c920eaa17"
+    image: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:2b7491f4addafc3e9d9bf935681da7485d0dd75b8d5b727dfe3358991f817469"
   - name: odh_built_in_detector_image
     image: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:500a186f21c7fa9c4bb9c32b55e9abf45b98b6ea3ffd1c71ae810043e7a38c48"
   - name: odh_cli_image
@@ -2431,7 +2139,7 @@ spec:
   - name: odh_model_controller_image
     image: "registry.redhat.io/rhoai/odh-model-controller-rhel9@sha256:04aa6f6a4f6e96b05178ea3f1c291790bdec6e5ac6dccf1c834358ec3db53282"
   - name: odh_model_metadata_collection_image
-    image: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:ad7cd06e81eb028cfa81b9087f7890ca5d515a7eeec318312c2385c57b4d7691"
+    image: "registry.redhat.io/rhoai/odh-model-metadata-collection-rhel9@sha256:afb0dc0538547acdaac33b07839fc781c6f6b4477eaca4d44e9b20b19bcc2719"
   - name: odh_model_performance_data_image
     image: "registry.redhat.io/rhoai/odh-model-performance-data-rhel9@sha256:f2000ef872dde33c7e1360a055cde1903f6d64a949f3595f79316158cf2fe2fb"
   - name: odh_model_registry_image
@@ -2541,7 +2249,7 @@ spec:
   - name: odh_workbench_jupyter_minimal_cpu_py312_image
     image: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cpu-py312-rhel9@sha256:3eb5302cd3dc2b7d98df839856c74ce7d90be5f0850e49611298dca17fd58110"
   - name: odh_workbench_jupyter_minimal_cuda_py312_image
-    image: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:04687a60a11bc9328f082fe3bb21dbf27ac95ce10de7bc585f11f32a1d56e7b2"
+    image: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:65f7919528b81a2b4f456f4285d76dd8eac19ff8a4122dd9ae15518f1b2a8136"
   - name: odh_workbench_jupyter_minimal_rocm_py312_image
     image: "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-rocm-py312-rhel9@sha256:41814c7ec8076c53a57ad4eba7ed4ab3da4b6192dafcf63a8e91ff63e8859bea"
   - name: odh_workbench_jupyter_pytorch_cuda_py312_image
