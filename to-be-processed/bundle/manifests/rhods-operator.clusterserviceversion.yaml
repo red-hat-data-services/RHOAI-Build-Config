@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-07-30T20:48:28Z"
+    createdAt: "2026-07-31T13:05:23Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -187,14 +187,11 @@ metadata:
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
-      "dashboards.components.platform.opendatahub.io", "datasciencepipelines.components.platform.opendatahub.io",
-      "kserves.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
+      "datasciencepipelines.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
       "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
-      "workbenches.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
-      "modelcontrollers.components.platform.opendatahub.io", "feastoperators.components.platform.opendatahub.io",
-      "trainers.components.platform.opendatahub.io", "mlflowoperators.components.platform.opendatahub.io",
-      "modelsasservices.components.platform.opendatahub.io", "sparkoperators.components.platform.opendatahub.io"]'
+      "monitorings.services.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
+      "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -208,11 +205,6 @@ spec:
       displayName: Auth
       kind: Auth
       name: auths.services.platform.opendatahub.io
-      version: v1alpha1
-    - description: Dashboard is the Schema for the dashboards API
-      displayName: Dashboard
-      kind: Dashboard
-      name: dashboards.components.platform.opendatahub.io
       version: v1alpha1
     - description: DataScienceCluster is the Schema for the datascienceclusters API.
       displayName: Data Science Cluster
@@ -240,11 +232,6 @@ spec:
       kind: DSCInitialization
       name: dscinitializations.dscinitialization.opendatahub.io
       version: v2
-    - description: FeastOperator is the Schema for the FeastOperator API
-      displayName: Feast Operator
-      kind: FeastOperator
-      name: feastoperators.components.platform.opendatahub.io
-      version: v1alpha1
     - kind: FeatureTracker
       name: featuretrackers.features.opendatahub.io
       version: v1
@@ -263,33 +250,15 @@ spec:
       kind: HardwareProfile
       name: hardwareprofiles.infrastructure.opendatahub.io
       version: v1alpha1
-    - description: Kserve is the Schema for the kserves API
-      displayName: Kserve
-      kind: Kserve
-      name: kserves.components.platform.opendatahub.io
-      version: v1alpha1
     - description: Kueue is the Schema for the kueues API
       displayName: Kueue
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
       version: v1alpha1
-    - description: MLflowOperator is the Schema for the MLflowOperators API
-      displayName: MLflow Operator
-      kind: MLflowOperator
-      name: mlflowoperators.components.platform.opendatahub.io
-      version: v1alpha1
-    - kind: ModelController
-      name: modelcontrollers.components.platform.opendatahub.io
-      version: v1alpha1
     - description: ModelRegistry is the Schema for the modelregistries API
       displayName: Model Registry
       kind: ModelRegistry
       name: modelregistries.components.platform.opendatahub.io
-      version: v1alpha1
-    - description: ModelsAsService is the Schema for the modelsasservice API
-      displayName: Models As Service
-      kind: ModelsAsService
-      name: modelsasservices.components.platform.opendatahub.io
       version: v1alpha1
     - description: Monitoring is the Schema for the monitorings API
       displayName: Monitoring
@@ -323,11 +292,6 @@ spec:
       displayName: Trusty AI
       kind: TrustyAI
       name: trustyais.components.platform.opendatahub.io
-      version: v1alpha1
-    - description: Workbenches is the Schema for the workbenches API
-      displayName: Workbenches
-      kind: Workbenches
-      name: workbenches.components.platform.opendatahub.io
       version: v1alpha1
   description: |-
     Red Hat OpenShift AI is a complete platform for the entire lifecycle of your AI/ML projects.
@@ -608,14 +572,11 @@ spec:
         - apiGroups:
           - build.openshift.io
           resources:
-          - buildconfigs/instantiate
           - builds
           verbs:
-          - create
           - delete
           - get
           - list
-          - patch
           - watch
         - apiGroups:
           - cert-manager.io
@@ -641,10 +602,8 @@ spec:
           - kueues
           - mcplifecycleoperators
           - mlflowoperators
-          - modelcontrollers
           - modelmeshservings
           - modelregistries
-          - modelsasservices
           - ogxs
           - rays
           - sparkoperators
@@ -664,16 +623,15 @@ spec:
           - components.platform.opendatahub.io
           resources:
           - aigateways/finalizers
+          - dashboards/finalizers
           - datasciencepipelines/finalizers
           - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
           - mcplifecycleoperators/finalizers
           - mlflowoperators/finalizers
-          - modelcontrollers/finalizers
           - modelmeshservings/finalizers
           - modelregistries/finalizers
-          - modelsasservices/finalizers
           - ogxs/finalizers
           - rays/finalizers
           - sparkoperators/finalizers
@@ -694,10 +652,8 @@ spec:
           - kueues/status
           - mcplifecycleoperators/status
           - mlflowoperators/status
-          - modelcontrollers/status
           - modelmeshservings/status
           - modelregistries/status
-          - modelsasservices/status
           - ogxs/status
           - rays/status
           - sparkoperators/status
@@ -723,17 +679,6 @@ spec:
           - codeflares/status
           verbs:
           - get
-        - apiGroups:
-          - components.platform.opendatahub.io
-          resources:
-          - dashboards/finalizers
-          verbs:
-          - create
-          - get
-          - list
-          - patch
-          - update
-          - watch
         - apiGroups:
           - config.opendatahub.io
           resources:
@@ -777,7 +722,6 @@ spec:
           - console.openshift.io
           resources:
           - consolelinks
-          - odhquickstarts
           verbs:
           - create
           - delete
@@ -811,24 +755,9 @@ spec:
           - dashboard.opendatahub.io
           resources:
           - acceleratorprofiles
-          - odhapplications
-          - odhdocuments
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - dashboard.opendatahub.io
-          resources:
-          - hardwareprofiles
           verbs:
           - get
           - list
-          - update
           - watch
         - apiGroups:
           - datasciencecluster.opendatahub.io
@@ -936,18 +865,6 @@ spec:
           - patch
           - watch
         - apiGroups:
-          - extensions.kuadrant.io
-          resources:
-          - telemetrypolicies
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
           - features.opendatahub.io
           resources:
           - featuretrackers
@@ -1005,27 +922,9 @@ spec:
         - apiGroups:
           - image.openshift.io
           resources:
-          - imagestreamtags
           - registry/metrics
           verbs:
           - get
-        - apiGroups:
-          - inference.networking.k8s.io
-          resources:
-          - inferencepools
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - inference.networking.x-k8s.io
-          resources:
-          - inferencemodels
-          - inferencepools
-          verbs:
-          - get
-          - list
-          - watch
         - apiGroups:
           - infrastructure.opendatahub.io
           resources:
@@ -1061,49 +960,6 @@ spec:
           - get
           - list
           - patch
-          - watch
-        - apiGroups:
-          - keda.sh
-          resources:
-          - kedacontrollers
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - keda.sh
-          resources:
-          - triggerauthentications
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kuadrant.io
-          resources:
-          - authpolicies
-          - ratelimitpolicies
-          - telemetrypolicies
-          - tokenratelimitpolicies
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - kuadrant.io
-          resources:
-          - kuadrants
-          verbs:
-          - get
-          - list
           - watch
         - apiGroups:
           - kubeflow.org
@@ -1161,47 +1017,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - configs/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - maastenantconfigs
-          verbs:
-          - delete
-          - get
-          - list
-          - watch
-        - apiGroups:
-          - maas.opendatahub.io
-          resources:
-          - maastenantconfigs/status
-          verbs:
-          - get
-        - apiGroups:
           - machinelearning.seldon.io
           resources:
           - seldondeployments
@@ -1218,32 +1033,6 @@ spec:
           - get
           - list
           - watch
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - mlflow.opendatahub.io
-          resources:
-          - mlflows/status
-          verbs:
-          - get
-          - patch
-          - update
         - apiGroups:
           - modelregistry.opendatahub.io
           resources:
@@ -1395,12 +1184,8 @@ spec:
           resources:
           - odhdashboardconfigs
           verbs:
-          - create
-          - delete
           - get
           - list
-          - patch
-          - update
           - watch
         - apiGroups:
           - opentelemetry.io
@@ -1432,13 +1217,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - operator.authorino.kuadrant.io
-          resources:
-          - authorinos
-          verbs:
-          - get
-          - list
-        - apiGroups:
           - operator.openshift.io
           resources:
           - consoles
@@ -1453,7 +1231,6 @@ spec:
           - operator.openshift.io
           resources:
           - jobsetoperators
-          - leaderworkersetoperators
           verbs:
           - get
           - list
@@ -1643,63 +1420,6 @@ spec:
           - patch
           - update
         - apiGroups:
-          - serving.kserve.io
-          resources:
-          - clusterservingruntimes
-          - clusterservingruntimes/finalizers
-          - clusterstoragecontainers
-          - clusterstoragecontainers/finalizers
-          - inferencegraphs
-          - inferenceservices
-          - inferenceservices/finalizers
-          - llminferenceserviceconfigs
-          - localmodelnodegroups
-          - predictors
-          - servingruntimes
-          - servingruntimes/finalizers
-          - trainedmodels
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - clusterservingruntimes/status
-          - clusterstoragecontainers/status
-          - inferencegraphs/status
-          - inferenceservices/status
-          - predictors/status
-          - trainedmodels/status
-          verbs:
-          - delete
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - llminferenceserviceconfigs/status
-          - predictors/finalizers
-          - servingruntimes/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - serving.kserve.io
-          resources:
-          - llminferenceservices
-          - llminferenceservices/status
-          verbs:
-          - get
-          - list
-          - watch
-        - apiGroups:
           - snapshot.storage.k8s.io
           resources:
           - volumesnapshots
@@ -1708,18 +1428,6 @@ spec:
           - delete
           - get
           - patch
-        - apiGroups:
-          - telemetry.istio.io
-          resources:
-          - telemetries
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
         - apiGroups:
           - template.openshift.io
           resources:
