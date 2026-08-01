@@ -19,7 +19,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:824ef9fdf4fc8852e4491c646529d1c2cc0da0574eb396eeade1c5f8977b77c7" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b50280a8cf544c4f470ad93f4af6df8b42144096a985ded3efb5e71a5b562077" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Number of operator replicas
@@ -274,17 +274,21 @@ components:
         gatewayClassName: istio
         allowedRoutes:
           namespaces:
-            # Which namespaces can attach HTTPRoutes to the MaaS Gateway (All, Same, or Selector).
+            # Which namespaces can attach HTTPRoutes to the MaaS Gateway.
             # Defaults to Same (secure by default): only the Gateway's own namespace can attach routes.
-            from: Same
-            # Example for All (any namespace can attach routes):
-            # from: All
             #
-            # Example for Selector (only namespaces matching labels):
-            # from: Selector
-            # selector:
-            #   matchLabels:
-            #     maas-gateway-access: "true"
+            # MaaS creates HTTPRoutes in the model namespace (e.g. models-as-a-service),
+            # which differs from the gateway namespace (redhat-ods-applications). To allow
+            # ExternalModel/LLMInferenceService routes to attach, configure a Selector:
+            #
+            #   from: Selector
+            #   selector:
+            #     matchLabels:
+            #       maas-gateway-access: "true"
+            #
+            # Then label the model namespace:
+            #   kubectl label ns models-as-a-service maas-gateway-access=true
+            from: Same
 
 # Azure cloud configuration
 azure:
@@ -293,7 +297,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:824ef9fdf4fc8852e4491c646529d1c2cc0da0574eb396eeade1c5f8977b77c7"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b50280a8cf544c4f470ad93f4af6df8b42144096a985ded3efb5e71a5b562077"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -333,7 +337,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:824ef9fdf4fc8852e4491c646529d1c2cc0da0574eb396eeade1c5f8977b77c7"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b50280a8cf544c4f470ad93f4af6df8b42144096a985ded3efb5e71a5b562077"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -373,7 +377,7 @@ aws:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:824ef9fdf4fc8852e4491c646529d1c2cc0da0574eb396eeade1c5f8977b77c7"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:b50280a8cf544c4f470ad93f4af6df8b42144096a985ded3efb5e71a5b562077"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas

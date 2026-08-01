@@ -1,4 +1,5 @@
 {{- $appNs := .Values.rhaiOperator.applicationsNamespace -}}
+{{- $infraNs := include "rhai-on-xks-chart.infrastructureNamespace" . -}}
 {{- $tls := .Values.gateway.tls -}}
 {{- $maasGwNs := .Values.components.aigateway.modelsAsAService.gateway.namespace | default $appNs -}}
 {{- $maasGwName := .Values.components.aigateway.modelsAsAService.gateway.name -}}
@@ -99,12 +100,13 @@ wait_for "MaaS gateway Certificate to be Ready" maas_gw_cert_ready
 {{- end }}
 
 echo "Step 5: Create MaaS API serving Certificate..."
-kubectl apply -f - <<'EOF'
+INFRA_NS={{ $infraNs | quote }}
+kubectl apply -f - <<EOF
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: maas-api-serving-cert
-  namespace: {{ $appNs | quote }}
+  namespace: ${INFRA_NS}
 spec:
   secretName: maas-api-serving-cert
   issuerRef:
@@ -112,8 +114,20 @@ spec:
     kind: {{ $tls.issuerRef.kind | quote }}
     group: cert-manager.io
   dnsNames:
-    - "maas-api.{{ $appNs }}.svc"
-    - "maas-api.{{ $appNs }}.svc.cluster.local"
+    - "maas-api.${INFRA_NS}.svc"
+    - "maas-api.${INFRA_NS}.svc.cluster.local"
+EOF
+
+echo "Step 5b: Create odh-kserve-config ConfigMap (cert-manager issuer for KServe module)..."
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: odh-kserve-config
+  namespace: {{ $appNs | quote }}
+data:
+  certManager.issuer: {{ $tls.issuerRef.name | quote }}
+  certManager.issuerKind: {{ $tls.issuerRef.kind | quote }}
 EOF
 
 echo "Step 6: Create MaaS Gateway..."
@@ -172,11 +186,20 @@ if kubectl get namespace "$KUADRANT_NS" >/dev/null 2>&1; then
   kubectl create configmap rhai-ca-bundle --from-file=ca.crt=/tmp/ca.crt \
     -n "$KUADRANT_NS" --dry-run=client -o yaml | kubectl apply -f -
 
-  kubectl patch deployment authorino -n "$KUADRANT_NS" --type=json -p='[
-    {"op":"add","path":"/spec/template/spec/volumes/-","value":{"name":"rhai-ca","configMap":{"name":"rhai-ca-bundle"}}},
-    {"op":"add","path":"/spec/template/spec/containers/0/volumeMounts/-","value":{"name":"rhai-ca","mountPath":"/etc/pki/tls/custom","readOnly":true}},
-    {"op":"add","path":"/spec/template/spec/containers/0/env/-","value":{"name":"SSL_CERT_FILE","value":"/etc/pki/tls/custom/ca.crt"}}
-  ]'
+  kubectl patch deployment authorino -n "$KUADRANT_NS" --type=strategic -p='{
+    "spec": {
+      "template": {
+        "spec": {
+          "volumes": [{"name":"rhai-ca","configMap":{"name":"rhai-ca-bundle"}}],
+          "containers": [{
+            "name": "authorino",
+            "volumeMounts": [{"name":"rhai-ca","mountPath":"/etc/pki/tls/custom","readOnly":true}],
+            "env": [{"name":"SSL_CERT_FILE","value":"/etc/pki/tls/custom/ca.crt"}]
+          }]
+        }
+      }
+    }
+  }'
   echo "Authorino CA trust configured."
 else
   echo "Kuadrant namespace not found, skipping Authorino CA trust."
