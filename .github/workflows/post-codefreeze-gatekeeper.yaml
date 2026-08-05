@@ -1,0 +1,12 @@
+name: Post-Codefreeze Gatekeeper
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - 'rhoai-3.5'
+
+jobs:
+  post-codefreeze-gate:
+    uses: red-hat-data-services/devops-shared-resources/.github/workflows/post-codefreeze-gate-logic.yml@gatekeeper
+    secrets: inherit
