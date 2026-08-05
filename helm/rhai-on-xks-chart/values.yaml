@@ -19,7 +19,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cbe631298f73f14845c1334437ee8bd07cac2691643ae058022a44cfacadc82b" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:99cfbbf30da8e7577106208904a540a1e39e5391f9db705fb66d4a2fa6160e39" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Number of operator replicas
@@ -239,19 +239,18 @@ components:
     gateway:
       # Create Gateway and ConfigMaps via post-install hook
       create: true
+      # Which namespaces can attach HTTPRoutes to the Gateway (Selector or Same).
+      # Required — chart will fail if not set.
+      # When using Selector, the specified labels must be applied to each target namespace.
+      # Example:
+      #   allowedRoutes:
+      #     namespaces:
+      #       from: Selector
+      #       selector:
+      #         matchLabels:
+      #           your-label: "true"
       allowedRoutes:
-        namespaces:
-          # Which namespaces can attach HTTPRoutes to the Gateway (All, Same, or Selector).
-          # Defaults to Same (secure by default): only the Gateway's own namespace can attach routes.
-          from: Same
-          # Example for All (any namespace can attach routes):
-          # from: All
-          #
-          # Example for Selector (only namespaces matching labels):
-          # from: Selector
-          # selector:
-          #   matchLabels:
-          #     inference-gateway-access: "true"
+        namespaces: {}
 
   aigateway:
     # Enable operator-managed AIGateway module (includes Models as a Service)
@@ -272,23 +271,18 @@ components:
         name: maas-default-gateway
         # GatewayClass to use for the MaaS Gateway
         gatewayClassName: istio
+        # Which namespaces can attach HTTPRoutes to the MaaS Gateway (Selector or Same).
+        # Required — chart will fail if not set.
+        # When using Selector, the specified labels must be applied to each target namespace.
+        # Example:
+        #   allowedRoutes:
+        #     namespaces:
+        #       from: Selector
+        #       selector:
+        #         matchLabels:
+        #           maas-gateway-access: "true"
         allowedRoutes:
-          namespaces:
-            # Which namespaces can attach HTTPRoutes to the MaaS Gateway.
-            # Defaults to Same (secure by default): only the Gateway's own namespace can attach routes.
-            #
-            # MaaS creates HTTPRoutes in the model namespace (e.g. models-as-a-service),
-            # which differs from the gateway namespace (redhat-ods-applications). To allow
-            # ExternalModel/LLMInferenceService routes to attach, configure a Selector:
-            #
-            #   from: Selector
-            #   selector:
-            #     matchLabels:
-            #       maas-gateway-access: "true"
-            #
-            # Then label the model namespace:
-            #   kubectl label ns models-as-a-service maas-gateway-access=true
-            from: Same
+          namespaces: {}
 
 # Azure cloud configuration
 azure:
@@ -297,7 +291,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cbe631298f73f14845c1334437ee8bd07cac2691643ae058022a44cfacadc82b"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:99cfbbf30da8e7577106208904a540a1e39e5391f9db705fb66d4a2fa6160e39"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -337,7 +331,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cbe631298f73f14845c1334437ee8bd07cac2691643ae058022a44cfacadc82b"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:99cfbbf30da8e7577106208904a540a1e39e5391f9db705fb66d4a2fa6160e39"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -377,7 +371,7 @@ aws:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:cbe631298f73f14845c1334437ee8bd07cac2691643ae058022a44cfacadc82b"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:99cfbbf30da8e7577106208904a540a1e39e5391f9db705fb66d4a2fa6160e39"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
