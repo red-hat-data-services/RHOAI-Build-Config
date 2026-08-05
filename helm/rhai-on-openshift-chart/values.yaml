@@ -131,8 +131,14 @@ components:
               port: 443
               protocol: HTTPS
               allowedRoutes:
-                namespaces:
-                  from: All
+                # -- REQUIRED: set `from` to Selector (recommended) or Same. Template will fail if not set.
+                # When using Selector, the specified labels must be applied to each target namespace.
+                namespaces: null
+                  # from: Same
+                  # from: Selector
+                  # selector:
+                  #   matchLabels:
+                  #     maas-gateway-access: "true"
               # Uncomment to enable client-facing TLS termination (required for HTTPS).
               # security.opendatahub.io/authorino-tls-bootstrap handles Gateway-to-Authorino
               # TLS only; it does not supply client-facing certificates.
@@ -221,9 +227,10 @@ components:
             # hostname: <HOSTNAME>
             protocol: HTTPS
             allowedRoutes:
-              namespaces:
-                from: All
-                # The following is an example of how to restrict the namespaces to the interested ones.
+              # -- REQUIRED: set `from` to Selector (recommended) or Same. Template will fail if not set.
+              # When using Selector, the specified labels must be applied to each target namespace.
+              namespaces: null
+                # from: Same
                 # from: Selector
                 # selector:
                 #   matchExpressions:
@@ -232,7 +239,6 @@ components:
                 #     values:
                 #     - llm-namespace1
                 #     - llm-namespace2
-                #      - ...
             # Uncomment this to enable TLS termination for the Gateway.
             # tls:
             #   certificateRefs:
