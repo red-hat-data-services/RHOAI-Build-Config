@@ -220,6 +220,8 @@ ARG ODH_OGX_MODULE_OPERATOR_GIT_URL=
 ARG ODH_OGX_MODULE_OPERATOR_GIT_COMMIT=
 ARG ODH_TRAINER_OPERATOR_GIT_URL=
 ARG ODH_TRAINER_OPERATOR_GIT_COMMIT=
+ARG ODH_OBSERVABILITY_GIT_URL=
+ARG ODH_OBSERVABILITY_GIT_COMMIT=
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -451,7 +453,9 @@ LABEL \
       odh-ogx-module-operator.git.url="${ODH_OGX_MODULE_OPERATOR_GIT_URL}" \
       odh-ogx-module-operator.git.commit="${ODH_OGX_MODULE_OPERATOR_GIT_COMMIT}" \
       odh-trainer-operator.git.url="${ODH_TRAINER_OPERATOR_GIT_URL}" \
-      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}"
+      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}" \
+      odh-observability.git.url="${ODH_OBSERVABILITY_GIT_URL}" \
+      odh-observability.git.commit="${ODH_OBSERVABILITY_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
