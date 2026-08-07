@@ -3,6 +3,7 @@
 FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.22
 
 ARG RBC_RELEASE_BRANCH_COMMIT=
+ARG RBC_BATCH_RELEASE_BRANCH_COMMITS_JSON={}
 ARG ODH_RHEL9_OPERATOR_GIT_URL=
 ARG ODH_RHEL9_OPERATOR_GIT_COMMIT=
 ARG ODH_KF_NOTEBOOK_CONTROLLER_GIT_URL=
@@ -126,6 +127,8 @@ LABEL \
       odh-operator-bundle.git.url="${ODH_OPERATOR_BUNDLE_GIT_URL}" \
       odh-operator-bundle.git.commit="${ODH_OPERATOR_BUNDLE_GIT_COMMIT}" \
       rbc-release-branch.commit="${RBC_RELEASE_BRANCH_COMMIT}"
+
+LABEL rbc-batch-release-branch-commits="${RBC_BATCH_RELEASE_BRANCH_COMMITS_JSON}"
 
 LABEL com.redhat.component="rhoai-fbc-fragment" \
       description="rhoai-fbc-fragment" \
