@@ -1,0 +1,77 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "true"
+    pipelinesascode.tekton.dev/max-keep-runs: '3'
+    pipelinesascode.tekton.dev/on-event: '[pull_request]'
+    pipelinesascode.tekton.dev/on-target-branch: '[main]'
+  labels:
+    appstudio.openshift.io/application: automation
+    appstudio.openshift.io/component: pull-request-pipelines
+    pipelines.appstudio.openshift.io/type: build
+  name: rhoai-fbc-fragment-rhoai-225-ocp-419-on-pull-request-{{pull_request_number}}
+  namespace: rhoai-tenant
+spec:
+  timeouts:
+    pipeline: 24h
+    tasks: 12h
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  - name: additional-tags
+    value:
+    - 'ocp-4.19-rhoai-2.25'
+  - name: output-image
+    value: quay.io/rhoai/pull-request-pipelines:rhoai-fbc-fragment-ocp-4.19-rhoai-2.25-{{revision}}
+  - name: image-expires-after
+    value: 5d
+  - name: build-platforms
+    value:
+    - linux/x86_64
+    - linux/ppc64le
+    - linux/s390x
+    - linux/arm64
+  - name: dockerfile
+    value: Dockerfile
+  - name: path-context
+    value: catalog/rhoai-2.25/v4.19
+  - name: build-args-file
+    value: catalog/rhoai-2.25/catalog_build_args.map
+  - name: skip-checks
+    value: false
+  - name: build-source-image
+    value: true
+  - name: build-type
+    value: "stage"
+  - name: rhoai-version
+    value: "2.25.10"
+  - name: ocp-version
+    value: "4.19"
+  - name: disable-slack-notifications
+    value: "true"
+  - name: num-fips-buckets
+    value: "16"
+  - name: max-fips-parallel
+    value: "4"
+  pipelineRef:
+    resolver: git
+    params:
+    - name: url
+      value: https://github.com/ckhordiasma/konflux-central.git
+    - name: revision
+      value: fips-matrix-2.25
+    - name: pathInRepo
+      value: pipelines/fbc-fragment-build.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-pull-request-pipelines
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
