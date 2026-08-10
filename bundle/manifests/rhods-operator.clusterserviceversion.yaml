@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:819ad6519281169e217003d61bc4ddca65c79d9f6fd9e7e0c8396916fda7baef"
-    createdAt: "2026-08-10T18:51:05Z"
+    createdAt: "2026-08-10T20:48:39Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1535,7 +1535,9 @@ spec:
               containers:
               - args:
                 - --health-probe-bind-address=:8081
-                - --metrics-bind-address=0.0.0.0:8080
+                - --metrics-bind-address=:8443
+                - --metrics-secure=true
+                - --metrics-cert-path=/etc/metrics-certs
                 - --leader-elect
                 command:
                 - /manager
@@ -1885,8 +1887,8 @@ spec:
                 - containerPort: 9443
                   name: webhook-server
                   protocol: TCP
-                - containerPort: 8080
-                  name: http
+                - containerPort: 8443
+                  name: https
                   protocol: TCP
                 readinessProbe:
                   httpGet:
@@ -1910,6 +1912,9 @@ spec:
                 volumeMounts:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
+                  readOnly: true
+                - mountPath: /etc/metrics-certs
+                  name: metrics-cert
                   readOnly: true
                 - mountPath: /opt/manifests
                   name: manifests
@@ -1951,6 +1956,9 @@ spec:
                 secret:
                   defaultMode: 420
                   secretName: redhat-ods-operator-controller-webhook-cert
+              - name: metrics-cert
+                secret:
+                  secretName: rhods-operator-metrics-tls
               - emptyDir:
                   sizeLimit: 256Mi
                 name: manifests
