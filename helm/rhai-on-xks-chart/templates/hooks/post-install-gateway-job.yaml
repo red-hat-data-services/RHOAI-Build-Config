@@ -1,5 +1,10 @@
 {{- if .Values.enabled }}
 {{- if and .Values.components.kserve.enabled .Values.components.kserve.gateway.create }}
+{{- $gw := .Values.components.kserve.gateway }}
+{{- $ns := (($gw.allowedRoutes | default dict).namespaces | default dict) }}
+{{- if not $ns.from }}
+  {{- fail "components.kserve.gateway.allowedRoutes.namespaces.from is required. Choose: Selector (recommended) or Same.\nSet it in your values file or use: --set-json 'components.kserve.gateway.allowedRoutes.namespaces={\"from\":\"Selector\",\"selector\":{\"matchLabels\":{\"example-label\":\"true\"}}}'" }}
+{{- end }}
 {{- $appNs := .Values.rhaiOperator.applicationsNamespace }}
 apiVersion: batch/v1
 kind: Job
@@ -151,7 +156,7 @@ spec:
                     protocol: HTTP
                     allowedRoutes:
                       namespaces:
-                        from: All
+                        {{- toYaml .Values.components.kserve.gateway.allowedRoutes.namespaces | nindent 24 }}
                 infrastructure:
                   labels:
                     serving.kserve.io/gateway: kserve-ingress-gateway

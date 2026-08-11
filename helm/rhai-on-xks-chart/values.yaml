@@ -13,7 +13,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:0688d84628edaad7193b13450a022e7fbb7d084ea1948596b2b6874a99f967dc" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:682c2e02b4152f9e75c28bee482e2247444bf26b542e5fa75c879bf7c772b84e" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Related images env vars (RELATED_IMAGE_*)
@@ -65,6 +65,17 @@ components:
     gateway:
       # Create Gateway and ConfigMaps via post-install hook
       create: true
+      # Which namespaces can attach HTTPRoutes to the Gateway (Selector or Same).
+      # Required — chart will fail if not set.
+      # Example:
+      #   allowedRoutes:
+      #     namespaces:
+      #       from: Selector
+      #       selector:
+      #         matchLabels:
+      #           your-label: "true"
+      allowedRoutes:
+        namespaces: {}
 
 # Azure cloud configuration
 azure:
@@ -73,7 +84,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:0688d84628edaad7193b13450a022e7fbb7d084ea1948596b2b6874a99f967dc"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:682c2e02b4152f9e75c28bee482e2247444bf26b542e5fa75c879bf7c772b84e"
     # Image pull policy
     imagePullPolicy: Always
   kubernetesEngine:
@@ -101,7 +112,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:0688d84628edaad7193b13450a022e7fbb7d084ea1948596b2b6874a99f967dc"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:682c2e02b4152f9e75c28bee482e2247444bf26b542e5fa75c879bf7c772b84e"
     # Image pull policy
     imagePullPolicy: Always
   kubernetesEngine:
