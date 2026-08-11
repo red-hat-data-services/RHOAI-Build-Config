@@ -175,9 +175,9 @@ components:
             # hostname: <HOSTNAME>
             protocol: HTTPS
             allowedRoutes:
+              # -- REQUIRED: set `from` to Selector (recommended) or Same. Template will fail if not set.
               namespaces:
-                from: All
-                # The following is an example of how to restrict the namespaces to the interested ones.
+                # from: Same
                 # from: Selector
                 # selector:
                 #   matchExpressions:
@@ -186,7 +186,6 @@ components:
                 #     values:
                 #     - llm-namespace1
                 #     - llm-namespace2
-                #      - ...
             # Uncomment this to enable TLS termination for the Gateway.
             # tls:
             #   certificateRefs:
@@ -219,9 +218,9 @@ components:
               # hostname: <HOSTNAME> # Uncomment this line to use a specific hostname.
               protocol: HTTPS
               allowedRoutes:
+                # -- REQUIRED: set `from` to Selector (recommended) or Same. Template will fail if not set.
                 namespaces:
-                  from: All
-                  # The following is an example of how to restrict the namespaces to the interested ones.
+                  # from: Same
                   # from: Selector
                   # selector:
                   #   matchExpressions:
@@ -229,7 +228,6 @@ components:
                   #     operator: In
                   #     values:
                   #     - openshift-ingress
-                  #     - ...
               # tls: # Uncomment this to enable TLS termination for the Gateway.
               #   certificateRefs:
               #   - group: ''

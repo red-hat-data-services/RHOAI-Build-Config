@@ -38,6 +38,17 @@ components:
     gateway:
       # Create Gateway and ConfigMaps via post-install hook
       create: true
+      # Which namespaces can attach HTTPRoutes to the Gateway (Selector or Same).
+      # Required — chart will fail if not set.
+      # Example:
+      #   allowedRoutes:
+      #     namespaces:
+      #       from: Selector
+      #       selector:
+      #         matchLabels:
+      #           your-label: "true"
+      allowedRoutes:
+        namespaces: {}
 
 # Azure cloud configuration
 azure:
