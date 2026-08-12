@@ -208,6 +208,9 @@ ARG ODH_OBSERVABILITY_GIT_URL=
 ARG ODH_OBSERVABILITY_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_PY_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_PY_GIT_COMMIT=
+ARG ODH_RHOAI_MCP_GIT_URL=
+ARG ODH_RHOAI_MCP_GIT_COMMIT=
+
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
@@ -427,7 +430,9 @@ LABEL \
       odh-observability.git.url="${ODH_OBSERVABILITY_GIT_URL}" \
       odh-observability.git.commit="${ODH_OBSERVABILITY_GIT_COMMIT}" \
       odh-trustyai-service-py.git.url="${ODH_TRUSTYAI_SERVICE_PY_GIT_URL}" \
-      odh-trustyai-service-py.git.commit="${ODH_TRUSTYAI_SERVICE_PY_GIT_COMMIT}"
+      odh-trustyai-service-py.git.commit="${ODH_TRUSTYAI_SERVICE_PY_GIT_COMMIT}" \
+      odh-rhoai-mcp.git.url="${ODH_RHOAI_MCP_GIT_URL}" \
+      odh-rhoai-mcp.git.commit="${ODH_RHOAI_MCP_GIT_COMMIT}" 
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
