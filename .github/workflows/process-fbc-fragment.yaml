@@ -168,19 +168,53 @@ jobs:
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
         working-directory: main
         run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
-          git add -A
-          # Atomic commit: only commit if PCC catalog files actually changed.
-          # If only shipped_rhoai_versions_granular.txt changed (index hasn't caught up),
-          # revert it so the next run retries regeneration.
-          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
-            git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
-            echo "pcc_committed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
+
+          # Stage only catalog files first (not the versions file)
+          git add pcc/catalog-*.yaml
+
+          if ! git diff --staged --name-only | grep -q "pcc/catalog-"; then
+            # No catalog changes at all — indexes fully stale
+            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
             git checkout HEAD -- .
             echo "pcc_committed=false" >> $GITHUB_OUTPUT
+          else
+            # Some catalogs changed. Check if ALL new versions are in ALL catalogs
+            # by grepping each new version against each catalog file.
+            NEW_VERSIONS=$(git diff HEAD -- pcc/shipped_rhoai_versions_granular.txt \
+              | grep "^+" | grep -v "^+++" \
+              | sed 's/^+//' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+(-ea\.[0-9]+)?$' \
+              | sed 's/^v//')
+
+            ALL_CONSISTENT=true
+            if [ -n "$NEW_VERSIONS" ]; then
+              for ver in $NEW_VERSIONS; do
+                for catalog in pcc/catalog-v4.*.yaml; do
+                  if ! grep -q "rhods-operator\.${ver}" "$catalog" 2>/dev/null; then
+                    ocp=$(basename "$catalog" .yaml | sed 's/catalog-//')
+                    echo "Missing rhods-operator.${ver} in ${ocp} — partial update"
+                    ALL_CONSISTENT=false
+                  fi
+                done
+              done
+            fi
+
+            if [ "$ALL_CONSISTENT" = true ]; then
+              # Full update — all catalogs have all new versions. Commit everything.
+              git add pcc/shipped_rhoai_versions_granular.txt
+              git commit -m "Regeneratd the PCC Cache" -m "$RUN_URL" && git push origin main
+              echo "pcc_committed=true" >> $GITHUB_OUTPUT
+            else
+              # Partial update — commit changed catalogs but NOT the versions file.
+              # This updates what's ready without locking out future regeneration.
+              CHANGED=$(git diff --staged --name-only | grep -c "pcc/catalog-")
+              TOTAL=$(ls -1 pcc/catalog-v4.*.yaml | wc -l | tr -d ' ')
+              git commit -m "Partial PCC update (${CHANGED}/${TOTAL} catalogs)" -m "$RUN_URL" && git push origin main
+              echo "pcc_committed=partial" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Validate PCC Cache
