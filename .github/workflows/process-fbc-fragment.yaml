@@ -165,29 +165,29 @@ jobs:
           done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
           
           ls -l main/pcc/
-      - name: Push latest PCC Cache
-        id: push-pcc-cache
+      - name: Check PCC catalog changes
+        id: check-pcc-changes
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
         working-directory: main
         run: |
-          git config user.name "Openshift-AI DevOps"
-          git config user.email "openshift-ai-devops@redhat.com"
+          # Atomic commit: catalogs + versions file must be committed
+          # together. If the versions file is committed without updated
+          # catalogs, PCC_CACHE_VALID will read YES on the next run and
+          # skip regeneration — leaving stale catalogs permanently.
+          # If only the versions file changed (indexes haven't caught up),
+          # revert everything so the next run retries.
           git add -A
-          # Atomic commit: only commit if PCC catalog files actually changed.
-          # If only shipped_rhoai_versions_granular.txt changed (index hasn't caught up),
-          # revert it so the next run retries regeneration.
           if git diff --staged --name-only | grep -q "pcc/catalog-"; then
-            git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
-            echo "pcc_committed=true" >> $GITHUB_OUTPUT
+            echo "pcc_catalogs_changed=true" >> $GITHUB_OUTPUT
           else
-            echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
+            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
             git checkout HEAD -- .
-            echo "pcc_committed=false" >> $GITHUB_OUTPUT
+            echo "pcc_catalogs_changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Validate PCC Cache
         id: validate-pcc-cache
-        if: ${{ steps.push-pcc-cache.outputs.pcc_committed == 'true' }}
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
@@ -197,6 +197,16 @@ jobs:
           GLOBAL_CONFIG_PATH=main/config/config.yaml
 
           python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
+
+      - name: Push latest PCC Cache
+        id: push-pcc-cache
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
+        working-directory: main
+        run: |
+          git config user.name "Openshift-AI DevOps"
+          git config user.email "openshift-ai-devops@redhat.com"
+          git commit -m "Regenerated the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
+          echo "pcc_committed=true" >> $GITHUB_OUTPUT
 
 
       - name: Process FBC Fragment
