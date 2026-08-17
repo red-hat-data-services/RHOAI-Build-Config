@@ -165,29 +165,70 @@ jobs:
           
           ls -l main/pcc/
 
+      - name: Check PCC catalog changes
+        id: check-pcc-changes
+        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        working-directory: main
+        run: |
+          # Atomic commit: catalogs + versions file must be committed
+          # together. If the versions file is committed without updated
+          # catalogs, PCC_CACHE_VALID will read YES on the next run and
+          # skip regeneration — leaving stale catalogs permanently.
+          # If only the versions file changed (indexes haven't caught up),
+          # revert everything so the next run retries.
+          git add -A
+          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
+            echo "pcc_catalogs_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
+            git checkout HEAD -- .
+            echo "pcc_catalogs_changed=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Validate PCC Cache
         id: validate-pcc-cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
-          #Declare basic variables
           BUILD_CONFIG_PATH=main/config/config.yaml
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           PCC_FOLDER_PATH=main/pcc
+
+          # --- Old validator (legacy config) ---
           GLOBAL_CONFIG_PATH=main/config/config.yaml
-          
-          #Validate PCC
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
+          echo "=== Running OLD PCC validator with config.yaml ==="
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
+
+          # --- New validator (range-based config, testing phase) ---
+          # See: https://github.com/red-hat-data-services/RHOAI-Konflux-Automation/pull/49
+          NEW_GLOBAL_CONFIG_PATH=main/config/new-config.yaml
+          echo ""
+          echo "=== Running NEW PCC validator with new-config.yaml ==="
+          pushd utils/utils/processors
+          python3 -m validator.catalog_validator -op validate-pcc --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
+          popd
+
+          echo ""
+          echo "=== PCC Validation Summary ==="
+          echo "OLD validator: $([ $OLD_EXIT -eq 0 ] && echo 'PASSED' || echo 'FAILED')"
+          echo "NEW validator: $([ $NEW_EXIT -eq 0 ] && echo 'PASSED' || echo 'FAILED')"
+
+          if [ $OLD_EXIT -ne 0 ] || [ $NEW_EXIT -ne 0 ]; then
+            echo ""
+            echo "PCC validation failed. Please contact Rishab Prasad (riprasad@redhat.com) for assistance."
+            cd main && git checkout HEAD -- . && cd ..
+            exit 1
+          fi
 
       - name: Push latest PCC Cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        id: push-pcc-cache
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
         working-directory: main
         run: |
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
-          git add -A
-          git diff --staged --quiet || (git commit -m "Regeneratd the PCC Cache" && git push origin main)
+          git commit -m "Regenerated the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
 
 
       - name: Process FBC Fragment
@@ -303,14 +344,34 @@ jobs:
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
-          #Declare basic variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
           SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
-          GLOBAL_CONFIG_PATH=main/config/config.yaml
 
-          #Validate Catalogs
-          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH}
+          # --- Old validator (legacy config) ---
+          GLOBAL_CONFIG_PATH=main/config/config.yaml
+          echo "=== Running OLD catalog validator with config.yaml ==="
+          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
+
+          # --- New validator (range-based config, testing phase) ---
+          # See: https://github.com/red-hat-data-services/RHOAI-Konflux-Automation/pull/49
+          NEW_GLOBAL_CONFIG_PATH=main/config/new-config.yaml
+          echo ""
+          echo "=== Running NEW catalog validator with new-config.yaml ==="
+          pushd utils/utils/processors
+          python3 -m validator.catalog_validator -op validate-catalogs --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
+          popd
+
+          echo ""
+          echo "=== Catalog Validation Summary ==="
+          echo "OLD validator: $([ $OLD_EXIT -eq 0 ] && echo 'PASSED' || echo 'FAILED')"
+          echo "NEW validator: $([ $NEW_EXIT -eq 0 ] && echo 'PASSED' || echo 'FAILED')"
+
+          if [ $OLD_EXIT -ne 0 ] || [ $NEW_EXIT -ne 0 ]; then
+            echo ""
+            echo "Catalog validation failed. Please contact Rishab Prasad (riprasad@redhat.com) for assistance."
+            exit 1
+          fi
 
 
       - name: Commit and push the changes to release branch
