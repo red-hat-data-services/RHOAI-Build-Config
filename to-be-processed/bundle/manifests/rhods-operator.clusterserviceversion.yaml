@@ -70,9 +70,6 @@ metadata:
               "trainer": {
                 "managementState": "Managed"
               },
-              "trainingoperator": {
-                "managementState": "Removed"
-              },
               "trustyai": {
                 "managementState": "Managed"
               },
@@ -109,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-08-14T16:52:02Z"
+    createdAt: "2026-08-18T00:49:21Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -174,9 +171,6 @@ metadata:
             "trainer": {
               "managementState": "Managed"
             },
-            "trainingoperator": {
-              "managementState": "Removed"
-            },
             "trustyai": {
               "managementState": "Managed"
             }
@@ -189,9 +183,8 @@ metadata:
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
       "datasciencepipelines.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
-      "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
-      "monitorings.services.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
-      "sparkoperators.components.platform.opendatahub.io"]'
+      "trustyais.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
+      "trainers.components.platform.opendatahub.io", "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -283,9 +276,7 @@ spec:
       kind: Trainer
       name: trainers.components.platform.opendatahub.io
       version: v1alpha1
-    - description: TrainingOperator is the Schema for the trainingoperators API
-      displayName: Training Operator
-      kind: TrainingOperator
+    - kind: TrainingOperator
       name: trainingoperators.components.platform.opendatahub.io
       version: v1alpha1
     - description: TrustyAI is the Schema for the trustyais API
@@ -608,7 +599,6 @@ spec:
           - rays
           - sparkoperators
           - trainers
-          - trainingoperators
           - trustyais
           - workbenches
           verbs:
@@ -636,7 +626,6 @@ spec:
           - rays/finalizers
           - sparkoperators/finalizers
           - trainers/finalizers
-          - trainingoperators/finalizers
           - trustyais/finalizers
           - workbenches/finalizers
           verbs:
@@ -658,7 +647,6 @@ spec:
           - rays/status
           - sparkoperators/status
           - trainers/status
-          - trainingoperators/status
           - trustyais/status
           - workbenches/status
           verbs:
