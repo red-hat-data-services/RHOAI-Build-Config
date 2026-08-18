@@ -495,6 +495,9 @@ spec:
                           pattern: ^(Managed|Unmanaged|Force|Removed)$
                           type: string
                       type: object
+                      x-kubernetes-validations:
+                        - message: TrainingOperator v1 is obsolete in RHOAI 3.6. Set managementState to Removed, then delete the TrainingOperator CR to clean up. Use Trainer v2 instead.
+                          rule: '!has(self.managementState) || self.managementState != ''Managed'' || (has(oldSelf.managementState) && oldSelf.managementState == ''Managed'')'
                     trustyai:
                       description: TrustyAI component configuration.
                       properties:
@@ -1737,7 +1740,10 @@ spec:
                           type: string
                       type: object
                     trainingoperator:
-                      description: Training Operator component configuration.
+                      description: |-
+                        Training Operator component configuration.
+                        Deprecated: Training Operator v1 is obsolete in RHOAI 3.6. Use Trainer v2 instead.
+                        This field is kept for backward compatibility only.
                       properties:
                         managementState:
                           description: |-
@@ -1754,6 +1760,9 @@ spec:
                           pattern: ^(Managed|Unmanaged|Force|Removed)$
                           type: string
                       type: object
+                      x-kubernetes-validations:
+                        - message: TrainingOperator v1 is obsolete in RHOAI 3.6. Set managementState to Removed, then delete the TrainingOperator CR to clean up. Use Trainer v2 instead.
+                          rule: '!has(self.managementState) || self.managementState != ''Managed'' || (has(oldSelf.managementState) && oldSelf.managementState == ''Managed'')'
                     trustyai:
                       description: TrustyAI component configuration.
                       properties:
@@ -2339,7 +2348,9 @@ spec:
                           x-kubernetes-list-type: map
                       type: object
                     trainingoperator:
-                      description: Training Operator component status.
+                      description: |-
+                        Training Operator component status.
+                        Deprecated: Training Operator v1 is obsolete in RHOAI 3.6. Use Trainer v2 instead.
                       properties:
                         managementState:
                           description: |-

@@ -70,9 +70,6 @@ metadata:
               "trainer": {
                 "managementState": "Managed"
               },
-              "trainingoperator": {
-                "managementState": "Removed"
-              },
               "trustyai": {
                 "managementState": "Managed"
               },
@@ -109,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6fd8a8d1cc458a05b8971c3914e63af66d2e6e7a3a7d39eb08cb0893e786447e"
-    createdAt: "2026-08-17T23:11:38Z"
+    createdAt: "2026-08-18T00:50:48Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -173,9 +170,6 @@ metadata:
             "trainer": {
               "managementState": "Managed"
             },
-            "trainingoperator": {
-              "managementState": "Removed"
-            },
             "trustyai": {
               "managementState": "Managed"
             }
@@ -188,9 +182,8 @@ metadata:
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
       "datasciencepipelines.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
       "modelregistries.components.platform.opendatahub.io", "rays.components.platform.opendatahub.io",
-      "trainingoperators.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io",
-      "monitorings.services.platform.opendatahub.io", "trainers.components.platform.opendatahub.io",
-      "sparkoperators.components.platform.opendatahub.io"]'
+      "trustyais.components.platform.opendatahub.io", "monitorings.services.platform.opendatahub.io",
+      "trainers.components.platform.opendatahub.io", "sparkoperators.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -289,9 +282,7 @@ spec:
       kind: Trainer
       name: trainers.components.platform.opendatahub.io
       version: v1alpha1
-    - description: TrainingOperator is the Schema for the trainingoperators API
-      displayName: Training Operator
-      kind: TrainingOperator
+    - kind: TrainingOperator
       name: trainingoperators.components.platform.opendatahub.io
       version: v1alpha1
     - description: TrustyAI is the Schema for the trustyais API
@@ -614,7 +605,6 @@ spec:
           - rays
           - sparkoperators
           - trainers
-          - trainingoperators
           - trustyais
           - workbenches
           verbs:
@@ -642,7 +632,6 @@ spec:
           - rays/finalizers
           - sparkoperators/finalizers
           - trainers/finalizers
-          - trainingoperators/finalizers
           - trustyais/finalizers
           - workbenches/finalizers
           verbs:
@@ -664,7 +653,6 @@ spec:
           - rays/status
           - sparkoperators/status
           - trainers/status
-          - trainingoperators/status
           - trustyais/status
           - workbenches/status
           verbs:
