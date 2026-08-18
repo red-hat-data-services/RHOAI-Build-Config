@@ -214,6 +214,8 @@ ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL=
 ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT=
 ARG ODH_SPARK_OPERATOR_MODULE_GIT_URL=
 ARG ODH_SPARK_OPERATOR_MODULE_GIT_COMMIT=
+ARG ODH_MOD_ARCH_NOTEBOOKS_GIT_URL=
+ARG ODH_MOD_ARCH_NOTEBOOKS_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -440,7 +442,9 @@ LABEL \
       odh-workbench-jupyter-baseline-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL}" \
       odh-workbench-jupyter-baseline-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT}" \
       odh-spark-operator-module.git.url="${ODH_SPARK_OPERATOR_MODULE_GIT_URL}" \
-      odh-spark-operator-module.git.commit="${ODH_SPARK_OPERATOR_MODULE_GIT_COMMIT}"
+      odh-spark-operator-module.git.commit="${ODH_SPARK_OPERATOR_MODULE_GIT_COMMIT}" \
+      odh-mod-arch-notebooks.git.url="${ODH_MOD_ARCH_NOTEBOOKS_GIT_URL}" \
+      odh-mod-arch-notebooks.git.commit="${ODH_MOD_ARCH_NOTEBOOKS_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
