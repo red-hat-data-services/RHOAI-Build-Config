@@ -12,6 +12,9 @@ permissions:
 jobs:
   compare-pcc-regen:
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
     container:
       image: quay.io/rhoai/rhoai-task-toolset:latest
       options: --privileged
@@ -134,13 +137,26 @@ jobs:
           echo "=== 1-Step total: ${TOTAL_DURATION}s ==="
           ls -lh ${OUTPUT_DIR}/
 
+      - name: Normalize catalogs for comparison
+        run: |
+          CONFIG_PATH=main/config/config.yaml
+          for DIR in pcc-3step pcc-1step; do
+            while IFS= read -r OCP_VERSION; do
+              FILE="${DIR}/catalog-${OCP_VERSION}.yaml"
+              if [[ -f "$FILE" ]]; then
+                echo "Sorting relatedImages in ${FILE}"
+                yq -i '(select(.schema == "olm.bundle") | .relatedImages) |= sort_by(.name)' "$FILE"
+              fi
+            done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+          done
+
       - name: Compare outputs
         id: compare
         run: |
           CONFIG_PATH=main/config/config.yaml
           HAS_DIFF=false
-          COMPARISON_TABLE=""
-          TIMING_TABLE=""
+          : > /tmp/comparison_table.txt
+          : > /tmp/timing_table.txt
 
           while IFS= read -r OCP_VERSION;
           do
@@ -165,20 +181,20 @@ jobs:
 
               # --- Per-version diff ---
               if [[ ! -f "$FILE_3STEP" ]] && [[ ! -f "$FILE_1STEP" ]]; then
-                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | MISSING | MISSING | — | Both files missing |\n"
-                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                echo "| ${OCP_VERSION} | MISSING | MISSING | — | Both files missing |" >> /tmp/comparison_table.txt
+                echo "| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |" >> /tmp/timing_table.txt
                 continue
               fi
               if [[ ! -f "$FILE_3STEP" ]]; then
                 HAS_DIFF=true
-                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | MISSING | $(wc -l < "$FILE_1STEP") | :x: | 3-step file missing |\n"
-                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                echo "| ${OCP_VERSION} | MISSING | $(wc -l < "$FILE_1STEP") | :x: | 3-step file missing |" >> /tmp/comparison_table.txt
+                echo "| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |" >> /tmp/timing_table.txt
                 continue
               fi
               if [[ ! -f "$FILE_1STEP" ]]; then
                 HAS_DIFF=true
-                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | $(wc -l < "$FILE_3STEP") | MISSING | :x: | 1-step file missing |\n"
-                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                echo "| ${OCP_VERSION} | $(wc -l < "$FILE_3STEP") | MISSING | :x: | 1-step file missing |" >> /tmp/comparison_table.txt
+                echo "| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |" >> /tmp/timing_table.txt
                 continue
               fi
 
@@ -187,24 +203,22 @@ jobs:
               SIZE_3=$(du -h "$FILE_3STEP" | cut -f1)
               SIZE_1=$(du -h "$FILE_1STEP" | cut -f1)
 
-              if diff -q "$FILE_3STEP" "$FILE_1STEP" > /dev/null 2>&1; then
-                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :white_check_mark: Identical | — |\n"
+              if git diff --no-index --quiet "$FILE_3STEP" "$FILE_1STEP" 2>/dev/null; then
+                echo "| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :white_check_mark: Identical | — |" >> /tmp/comparison_table.txt
               else
                 HAS_DIFF=true
-                DIFF_LINES=$(diff "$FILE_3STEP" "$FILE_1STEP" | grep -c '^[<>]' || true)
-                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :x: Different | ${DIFF_LINES} lines differ |\n"
+                DIFF_LINES=$(git diff --no-index --stat "$FILE_3STEP" "$FILE_1STEP" 2>/dev/null | tail -1 || true)
+                echo "| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :x: Different | ${DIFF_LINES} |" >> /tmp/comparison_table.txt
 
-                echo "--- diff for ${OCP_VERSION} (first 50 lines) ---"
-                diff "$FILE_3STEP" "$FILE_1STEP" | head -50 || true
+                echo "--- git diff for ${OCP_VERSION} (first 50 lines) ---"
+                git diff --no-index --color=always "$FILE_3STEP" "$FILE_1STEP" 2>/dev/null | head -50 || true
                 echo "---"
               fi
 
-              TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+              echo "| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |" >> /tmp/timing_table.txt
           done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
 
           echo "has_diff=${HAS_DIFF}" >> $GITHUB_OUTPUT
-          echo -e "$COMPARISON_TABLE" > /tmp/comparison_table.txt
-          echo -e "$TIMING_TABLE" > /tmp/timing_table.txt
 
       - name: Generate job summary
         env:
@@ -212,6 +226,13 @@ jobs:
           DURATION_1STEP: ${{ steps.one-step.outputs.duration }}
           HAS_DIFF: ${{ steps.compare.outputs.has_diff }}
         run: |
+          echo "GITHUB_STEP_SUMMARY=${GITHUB_STEP_SUMMARY}"
+          echo "File exists: $(test -f "$GITHUB_STEP_SUMMARY" && echo YES || echo NO)"
+          echo "Dir exists: $(test -d "$(dirname "$GITHUB_STEP_SUMMARY")" && echo YES || echo NO)"
+          mkdir -p "$(dirname "$GITHUB_STEP_SUMMARY")"
+          touch "$GITHUB_STEP_SUMMARY"
+          echo "Writable: $(test -w "$GITHUB_STEP_SUMMARY" && echo YES || echo NO)"
+
           if [[ "$HAS_DIFF" == "true" ]]; then
             VERDICT=":x: **Differences found** between 1-step and 3-step outputs."
           else
@@ -232,36 +253,37 @@ jobs:
             SPEEDUP="Both approaches took the same time."
           fi
 
-          {
-            echo "## PCC Regeneration: 1-Step vs 3-Step Comparison"
-            echo ""
-            echo "### Result"
-            echo "${VERDICT}"
-            echo ""
-            echo "### Timing — Per Version"
-            echo "| OCP Version | 3-Step | 1-Step | Difference |"
-            echo "|-------------|--------|--------|------------|"
-            cat /tmp/timing_table.txt
-            echo ""
-            echo "### Timing — Total"
-            echo "| Approach | Duration |"
-            echo "|----------|----------|"
-            echo "| 3-Step (existing) | ${DURATION_3STEP}s |"
-            echo "| 1-Step (simplified) | ${DURATION_1STEP}s |"
-            echo ""
-            echo "${SPEEDUP}"
-            echo ""
-            echo "### Output Comparison — Per Version"
-            echo "| OCP Version | 3-Step (lines / size) | 1-Step (lines / size) | Match | Notes |"
-            echo "|-------------|----------------------|----------------------|-------|-------|"
-            cat /tmp/comparison_table.txt
-            echo ""
-            echo "### Method Details"
-            echo "- **3-Step (existing):** \`opm migrate\` → \`opm alpha convert-template basic\` → \`opm alpha render-template basic\`"
-            echo "- **1-Step (simplified):** \`opm migrate -o yaml\` → \`cp rhods-operator/catalog.yaml\`"
-            echo "- **opm version:** v1.47.0"
-            echo "- **Config:** \`main/config/config.yaml\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          SUMMARY_FILE="${GITHUB_STEP_SUMMARY:-/dev/null}"
+          echo "## PCC Regeneration: 1-Step vs 3-Step Comparison" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "### Result" >> "$SUMMARY_FILE"
+          echo "${VERDICT}" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "### Timing — Per Version" >> "$SUMMARY_FILE"
+          echo "| OCP Version | 3-Step | 1-Step | Difference |" >> "$SUMMARY_FILE"
+          echo "|-------------|--------|--------|------------|" >> "$SUMMARY_FILE"
+          cat /tmp/timing_table.txt >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "### Timing — Total" >> "$SUMMARY_FILE"
+          echo "| Approach | Duration |" >> "$SUMMARY_FILE"
+          echo "|----------|----------|" >> "$SUMMARY_FILE"
+          echo "| 3-Step (existing) | ${DURATION_3STEP}s |" >> "$SUMMARY_FILE"
+          echo "| 1-Step (simplified) | ${DURATION_1STEP}s |" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "${SPEEDUP}" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "### Output Comparison — Per Version" >> "$SUMMARY_FILE"
+          echo "| OCP Version | 3-Step (lines / size) | 1-Step (lines / size) | Match | Notes |" >> "$SUMMARY_FILE"
+          echo "|-------------|----------------------|----------------------|-------|-------|" >> "$SUMMARY_FILE"
+          cat /tmp/comparison_table.txt >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+          echo "### Method Details" >> "$SUMMARY_FILE"
+          echo "- **3-Step (existing):** \`opm migrate\` → \`opm alpha convert-template basic\` → \`opm alpha render-template basic\`" >> "$SUMMARY_FILE"
+          echo "- **1-Step (simplified):** \`opm migrate -o yaml\` → \`cp rhods-operator/catalog.yaml\`" >> "$SUMMARY_FILE"
+          echo "- **opm version:** v1.47.0" >> "$SUMMARY_FILE"
+          echo "- **Config:** \`main/config/config.yaml\`" >> "$SUMMARY_FILE"
+
+          echo "Summary written: $(wc -l < "$SUMMARY_FILE") lines"
 
       - name: Fail if outputs differ
         if: ${{ steps.compare.outputs.has_diff == 'true' }}
