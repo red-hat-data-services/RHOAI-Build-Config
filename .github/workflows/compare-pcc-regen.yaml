@@ -1,0 +1,270 @@
+name: Compare PCC Regeneration (1-Step vs 3-Step)
+run-name: Compare PCC Regeneration (1-Step vs 3-Step)
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Daily at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-pcc-regen:
+    runs-on: ubuntu-22.04
+    container:
+      image: quay.io/rhoai/rhoai-task-toolset:latest
+      options: --privileged
+    steps:
+      - name: Git checkout RBC main
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: main
+          path: main
+
+      - name: Install dependencies
+        env:
+          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
+          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
+        run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+
+          yq_version="v4.44.3"
+          yq_filename="yq-$yq_version"
+          echo "-> Downloading yq" >&2
+          curl -sSfLo "$yq_filename" "https://github.com/mikefarah/yq/releases/download/$yq_version/yq_${os}_${arch}"
+          chmod +x "$yq_filename"
+          cp "$yq_filename" /usr/local/bin/yq
+
+          opm_version="v1.47.0"
+          opm_filename="opm-$opm_version"
+          echo "-> Downloading opm" >&2
+          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
+          chmod +x "$opm_filename"
+          cp "$opm_filename" /usr/local/bin/opm
+
+          microdnf install -y skopeo findutils coreutils-single && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+
+          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
+
+      - name: Regenerate PCC — 3-Step (existing approach)
+        id: three-step
+        run: |
+          CONFIG_PATH=main/config/config.yaml
+          CSV_META_MIN_OCP_VERSION=417
+          OUTPUT_DIR=pcc-3step
+          mkdir -p ${OUTPUT_DIR}
+          TIMING_FILE=/tmp/timing_3step.txt
+
+          TOTAL_START=$SECONDS
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${OUTPUT_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+
+              MIGRATE_DIR=work-3step/catalog-migrate-${OCP_VERSION}
+
+              echo "=== [3-Step] Migrating ${OCP_VERSION} ==="
+              VERSION_START=$SECONDS
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ${MIGRATE_DIR}
+
+              if [[ -e "${MIGRATE_DIR}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic ${MIGRATE_DIR}/rhods-operator/catalog.json -o yaml > work-3step/catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic work-3step/catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${OUTPUT_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION}: new OCP version — copying catalog-${PREVIOUS_OCP_VERSION}.yaml"
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              VERSION_DURATION=$((SECONDS - VERSION_START))
+              echo "${OCP_VERSION}=${VERSION_DURATION}" >> ${TIMING_FILE}
+              echo "  -> ${OCP_VERSION} completed in ${VERSION_DURATION}s"
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+
+          TOTAL_DURATION=$((SECONDS - TOTAL_START))
+          echo "duration=${TOTAL_DURATION}" >> $GITHUB_OUTPUT
+          echo "=== 3-Step total: ${TOTAL_DURATION}s ==="
+          ls -lh ${OUTPUT_DIR}/
+
+      - name: Regenerate PCC — 1-Step (simplified approach)
+        id: one-step
+        run: |
+          CONFIG_PATH=main/config/config.yaml
+          OUTPUT_DIR=pcc-1step
+          mkdir -p ${OUTPUT_DIR}
+          TIMING_FILE=/tmp/timing_1step.txt
+
+          TOTAL_START=$SECONDS
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${OUTPUT_DIR}/catalog-${OCP_VERSION}.yaml
+              MIGRATE_DIR=work-1step/catalog-migrate-${OCP_VERSION}
+
+              echo "=== [1-Step] Migrating ${OCP_VERSION} ==="
+              VERSION_START=$SECONDS
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} -o yaml ${MIGRATE_DIR}
+
+              if [[ -e "${MIGRATE_DIR}/rhods-operator/catalog.yaml" ]]
+              then
+                  cp ${MIGRATE_DIR}/rhods-operator/catalog.yaml ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${OUTPUT_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION}: new OCP version — copying catalog-${PREVIOUS_OCP_VERSION}.yaml"
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              VERSION_DURATION=$((SECONDS - VERSION_START))
+              echo "${OCP_VERSION}=${VERSION_DURATION}" >> ${TIMING_FILE}
+              echo "  -> ${OCP_VERSION} completed in ${VERSION_DURATION}s"
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+
+          TOTAL_DURATION=$((SECONDS - TOTAL_START))
+          echo "duration=${TOTAL_DURATION}" >> $GITHUB_OUTPUT
+          echo "=== 1-Step total: ${TOTAL_DURATION}s ==="
+          ls -lh ${OUTPUT_DIR}/
+
+      - name: Compare outputs
+        id: compare
+        run: |
+          CONFIG_PATH=main/config/config.yaml
+          HAS_DIFF=false
+          COMPARISON_TABLE=""
+          TIMING_TABLE=""
+
+          while IFS= read -r OCP_VERSION;
+          do
+              FILE_3STEP="pcc-3step/catalog-${OCP_VERSION}.yaml"
+              FILE_1STEP="pcc-1step/catalog-${OCP_VERSION}.yaml"
+
+              # --- Per-version timing ---
+              TIME_3=$(grep "^${OCP_VERSION}=" /tmp/timing_3step.txt | cut -d= -f2 || echo "—")
+              TIME_1=$(grep "^${OCP_VERSION}=" /tmp/timing_1step.txt | cut -d= -f2 || echo "—")
+              if [[ "$TIME_3" =~ ^[0-9]+$ ]] && [[ "$TIME_1" =~ ^[0-9]+$ ]]; then
+                TIME_DIFF=$((TIME_3 - TIME_1))
+                if [[ $TIME_DIFF -gt 0 ]]; then
+                  TIME_NOTE="1-step ${TIME_DIFF}s faster"
+                elif [[ $TIME_DIFF -lt 0 ]]; then
+                  TIME_NOTE="3-step $(( -TIME_DIFF ))s faster"
+                else
+                  TIME_NOTE="same"
+                fi
+              else
+                TIME_NOTE="—"
+              fi
+
+              # --- Per-version diff ---
+              if [[ ! -f "$FILE_3STEP" ]] && [[ ! -f "$FILE_1STEP" ]]; then
+                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | MISSING | MISSING | — | Both files missing |\n"
+                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                continue
+              fi
+              if [[ ! -f "$FILE_3STEP" ]]; then
+                HAS_DIFF=true
+                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | MISSING | $(wc -l < "$FILE_1STEP") | :x: | 3-step file missing |\n"
+                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                continue
+              fi
+              if [[ ! -f "$FILE_1STEP" ]]; then
+                HAS_DIFF=true
+                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | $(wc -l < "$FILE_3STEP") | MISSING | :x: | 1-step file missing |\n"
+                TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+                continue
+              fi
+
+              LINES_3=$(wc -l < "$FILE_3STEP")
+              LINES_1=$(wc -l < "$FILE_1STEP")
+              SIZE_3=$(du -h "$FILE_3STEP" | cut -f1)
+              SIZE_1=$(du -h "$FILE_1STEP" | cut -f1)
+
+              if diff -q "$FILE_3STEP" "$FILE_1STEP" > /dev/null 2>&1; then
+                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :white_check_mark: Identical | — |\n"
+              else
+                HAS_DIFF=true
+                DIFF_LINES=$(diff "$FILE_3STEP" "$FILE_1STEP" | grep -c '^[<>]' || true)
+                COMPARISON_TABLE="${COMPARISON_TABLE}| ${OCP_VERSION} | ${LINES_3} (${SIZE_3}) | ${LINES_1} (${SIZE_1}) | :x: Different | ${DIFF_LINES} lines differ |\n"
+
+                echo "--- diff for ${OCP_VERSION} (first 50 lines) ---"
+                diff "$FILE_3STEP" "$FILE_1STEP" | head -50 || true
+                echo "---"
+              fi
+
+              TIMING_TABLE="${TIMING_TABLE}| ${OCP_VERSION} | ${TIME_3}s | ${TIME_1}s | ${TIME_NOTE} |\n"
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+
+          echo "has_diff=${HAS_DIFF}" >> $GITHUB_OUTPUT
+          echo -e "$COMPARISON_TABLE" > /tmp/comparison_table.txt
+          echo -e "$TIMING_TABLE" > /tmp/timing_table.txt
+
+      - name: Generate job summary
+        env:
+          DURATION_3STEP: ${{ steps.three-step.outputs.duration }}
+          DURATION_1STEP: ${{ steps.one-step.outputs.duration }}
+          HAS_DIFF: ${{ steps.compare.outputs.has_diff }}
+        run: |
+          if [[ "$HAS_DIFF" == "true" ]]; then
+            VERDICT=":x: **Differences found** between 1-step and 3-step outputs."
+          else
+            VERDICT=":white_check_mark: **No differences** — 1-step and 3-step produce identical output."
+          fi
+
+          SAVED=$((DURATION_3STEP - DURATION_1STEP))
+          if [[ $DURATION_3STEP -gt 0 ]]; then
+            PCT=$((SAVED * 100 / DURATION_3STEP))
+          else
+            PCT=0
+          fi
+          if [[ $SAVED -gt 0 ]]; then
+            SPEEDUP="1-step is **${SAVED}s faster** (${PCT}% improvement)."
+          elif [[ $SAVED -lt 0 ]]; then
+            SPEEDUP="1-step is **$(( -SAVED ))s slower**."
+          else
+            SPEEDUP="Both approaches took the same time."
+          fi
+
+          {
+            echo "## PCC Regeneration: 1-Step vs 3-Step Comparison"
+            echo ""
+            echo "### Result"
+            echo "${VERDICT}"
+            echo ""
+            echo "### Timing — Per Version"
+            echo "| OCP Version | 3-Step | 1-Step | Difference |"
+            echo "|-------------|--------|--------|------------|"
+            cat /tmp/timing_table.txt
+            echo ""
+            echo "### Timing — Total"
+            echo "| Approach | Duration |"
+            echo "|----------|----------|"
+            echo "| 3-Step (existing) | ${DURATION_3STEP}s |"
+            echo "| 1-Step (simplified) | ${DURATION_1STEP}s |"
+            echo ""
+            echo "${SPEEDUP}"
+            echo ""
+            echo "### Output Comparison — Per Version"
+            echo "| OCP Version | 3-Step (lines / size) | 1-Step (lines / size) | Match | Notes |"
+            echo "|-------------|----------------------|----------------------|-------|-------|"
+            cat /tmp/comparison_table.txt
+            echo ""
+            echo "### Method Details"
+            echo "- **3-Step (existing):** \`opm migrate\` → \`opm alpha convert-template basic\` → \`opm alpha render-template basic\`"
+            echo "- **1-Step (simplified):** \`opm migrate -o yaml\` → \`cp rhods-operator/catalog.yaml\`"
+            echo "- **opm version:** v1.47.0"
+            echo "- **Config:** \`main/config/config.yaml\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail if outputs differ
+        if: ${{ steps.compare.outputs.has_diff == 'true' }}
+        run: |
+          echo "::error::1-step and 3-step PCC regeneration produced different catalogs. See job summary for details."
+          exit 1
