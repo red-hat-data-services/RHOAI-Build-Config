@@ -455,6 +455,47 @@
         }
       }
     },
+    "cert-manager-operator": {
+      "type": "object",
+      "description": "cert-manager operator subchart configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable cert-manager operator subchart installation",
+          "default": true
+        },
+        "operatorNamespace": {
+          "type": "string",
+          "description": "Namespace for the cert-manager operator",
+          "default": "cert-manager-operator"
+        },
+        "operandNamespace": {
+          "type": "string",
+          "description": "Namespace for cert-manager operands (controller, webhook, cainjector)",
+          "default": "cert-manager"
+        },
+        "imagePullSecrets": {
+          "type": "array",
+          "description": "Image pull secrets for cert-manager ServiceAccounts",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
+        },
+        "bundle": {
+          "type": "object",
+          "description": "OLM bundle metadata",
+          "properties": {
+            "version": {
+              "type": "string",
+              "description": "OLM bundle version used to generate the chart"
+            }
+          }
+        }
+      }
+    },
     "imagePullSecret": {
       "type": "object",
       "description": "Pull secret configuration for private registries. Use --set-file imagePullSecret.dockerConfigJson=path/to/auth.json",

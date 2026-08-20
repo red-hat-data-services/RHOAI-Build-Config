@@ -156,7 +156,7 @@ azure:
     spec:
       dependencies:
         certManager:
-          managementPolicy: Managed
+          managementPolicy: Unmanaged
           configuration: {}
         gatewayAPI:
           managementPolicy: Managed
@@ -196,7 +196,7 @@ coreweave:
     spec:
       dependencies:
         certManager:
-          managementPolicy: Managed
+          managementPolicy: Unmanaged
           configuration: {}
         gatewayAPI:
           managementPolicy: Managed
@@ -236,7 +236,7 @@ aws:
     spec:
       dependencies:
         certManager:
-          managementPolicy: Managed
+          managementPolicy: Unmanaged
           configuration: {}
         gatewayAPI:
           managementPolicy: Managed
@@ -250,6 +250,16 @@ aws:
           configuration:
             namespace: istio-system
 
+# cert-manager operator subchart
+cert-manager-operator:
+  enabled: true
+  operatorNamespace: cert-manager-operator
+  operandNamespace: cert-manager
+  imagePullSecrets:
+    - name: rhai-pull-secret
+  bundle:
+    version: "v1.18.1"
+
 # Pull secret for private registries
 # Use --set-file imagePullSecret.dockerConfigJson=path/to/auth.json
 imagePullSecret:
@@ -259,6 +269,4 @@ imagePullSecret:
   # Docker config JSON content (populated via --set-file)
   dockerConfigJson: ""
   # Namespaces created by dependency operators where pull secrets should be injected
-  dependencyNamespaces:
-    - cert-manager-operator
-    - cert-manager
+  dependencyNamespaces: []
