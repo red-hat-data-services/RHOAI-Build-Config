@@ -177,8 +177,17 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   issuerURL:
-                    description: OIDC issuer URL
+                    description: |-
+                      OIDC issuer URL. Must be an https URL with a non-empty host and no query or
+                      fragment component (an OIDC issuer identifier has neither).
+                    format: uri
+                    maxLength: 2048
+                    minLength: 1
+                    pattern: ^https://[^?#\s]+$
                     type: string
+                    x-kubernetes-validations:
+                    - message: issuerURL must have a non-empty host
+                      rule: url(self).getHostname() != ''
                   secretNamespace:
                     description: |-
                       Namespace where the client secret is located
