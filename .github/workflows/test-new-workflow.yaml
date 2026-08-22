@@ -72,6 +72,10 @@ jobs:
       # New processor operates on ${BRANCH}-new/ and ${REL}-new/ directories.
       # Current branch uses actions/checkout (supports push with token for production).
       # Included releases use git clone (read-only — only their bundles are pulled in).
+      # xargs is needed by the clone step below. Not in the container image by default.
+      # TODO: add findutils to quay.io/rhoai/rhoai-task-toolset container image.
+      - name: Install findutils
+        run: microdnf install -y findutils && microdnf clean all && rm -rf /var/cache/dnf/*
       - name: Git checkout RBC release (new processor copy)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -115,7 +119,7 @@ jobs:
           pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt   # old processor
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt    # new processor
 
-          microdnf install -y skopeo findutils && \
+          microdnf install -y skopeo && \
               microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
 
