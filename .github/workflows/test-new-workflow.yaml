@@ -1,0 +1,558 @@
+name: Test New Workflow
+run-name: Test New Workflow
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - catalog/catalog-patch.yaml
+    branches:
+      - 'rhoai-[23].[0-9]'  # e.g. rhoai-2.1, rhoai-3.1, rhoai-3.4
+      - 'rhoai-[23].[0-9][0-9]'  # e.g. rhoai-2.10, rhoai-3.10, rhoai-3.22
+      - 'rhoai-[3].[0-9]-ea.[0-9]'  # e.g. rhoai-3.4-ea.1, rhoai-3.5-ea.2
+      - 'rhoai-[3].[0-9][0-9]-ea.[0-9]'  # e.g. rhoai-3.10-ea.3
+permissions:
+  contents: read  # TEST MODE: read-only, no commits/pushes. Restore to 'write' for production.
+
+env:
+  GITHUB_ORG: red-hat-data-services
+  GITHUB_RKA_ORG: red-hat-data-services
+  # PREVIOUS_RELEASE: used by the OLD processor only (single branch, hardcoded two-pass).
+  PREVIOUS_RELEASE: rhoai-2.25
+  # INCLUDE_RELEASES: used by the NEW processor only (comma-separated, supports N passes).
+  # Set to "" for current-branch-only catalogs. Whitespace around entries is trimmed.
+  # Examples: "rhoai-2.25" | "rhoai-2.25, rhoai-2.24" | ""
+  INCLUDE_RELEASES: rhoai-2.25
+  # RKA_REFACTOR_BRANCH: the RHOAI-Konflux-Automation branch containing the refactored
+  # fbc-processor. Both old and new processors use this single clone — old code lives at
+  # utils/utils/fbc-processor/, new code at utils/utils/processors/.
+  # TODO (production): change to 'main' once the refactor branch is merged.
+  RKA_REFACTOR_BRANCH: refactor-fbc-processor
+jobs:
+  process-fbc:
+    if: ${{ github.ref_name != 'main' }}
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/rhoai/rhoai-task-toolset:latest
+      options: --privileged
+    steps:
+      - name: Get Current branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: get_branch
+      - name: Git checkout RBC main
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: main
+          path: main
+          sparse-checkout: |
+            pcc
+            catalog/${{ steps.get_branch.outputs.branch }}
+            config
+          sparse-checkout-cone-mode: false
+      # Old processor operates on ${BRANCH}/ and ${PREVIOUS_RELEASE}/ directories.
+      - name: Git checkout RBC release
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ steps.get_branch.outputs.branch }}
+          path: ${{ steps.get_branch.outputs.branch }}
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ env.PREVIOUS_RELEASE }}
+          path: ${{ env.PREVIOUS_RELEASE }}
+      # Single RKA clone used by both old and new processors. Old code lives at
+      # utils/utils/fbc-processor/, new code at utils/utils/processors/.
+      # TODO (production): change ref to 'main' once the refactor branch is merged.
+      - name: Git checkout utils
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
+          ref: ${{ env.RKA_REFACTOR_BRANCH }}
+          path: utils
+      # New processor operates on ${BRANCH}-new/ and ${REL}-new/ directories.
+      # Current branch uses actions/checkout (supports push with token for production).
+      # Included releases use git clone (read-only — only their bundles are pulled in).
+      - name: Git checkout RBC release (new processor copy)
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ steps.get_branch.outputs.branch }}
+          path: ${{ steps.get_branch.outputs.branch }}-new
+      - name: Git checkout included releases (new processor copies)
+        env:
+          INCLUDE_RELEASES: ${{ env.INCLUDE_RELEASES }}
+        run: |
+          IFS=',' read -ra EXTRA_BRANCHES <<< "${INCLUDE_RELEASES}"
+          for RAW in "${EXTRA_BRANCHES[@]+"${EXTRA_BRANCHES[@]}"}"; do
+            REL=$(echo "${RAW}" | xargs)
+            [ -z "${REL}" ] && continue
+            [ -d "${REL}-new" ] && continue
+            echo "Cloning ${REL} into ${REL}-new"
+            git clone --branch "${REL}" --depth 1 \
+              "https://github.com/${{ env.GITHUB_ORG }}/${{ github.event.repository.name }}.git" "${REL}-new"
+          done
+      - name: Install dependencies
+        env:
+          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
+        run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+          yq_version="v4.44.3"
+          yq_filename="yq-$yq_version"
+          echo "-> Downloading yq" >&2
+          curl -sSfLo "$yq_filename" "https://github.com/mikefarah/yq/releases/download/$yq_version/yq_${os}_${arch}"
+          chmod +x $yq_filename
+          ln -s $yq_filename yq
+          cp $yq_filename /usr/local/bin/yq
+  
+          opm_version="v1.47.0"
+          opm_filename="opm-$opm_version"
+          echo "-> Downloading opm" >&2
+          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
+          chmod +x "$opm_filename"
+          ln -fs "$opm_filename" opm
+          cp "$opm_filename" /usr/local/bin/opm
+          pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt   # old processor
+          pip install --default-timeout=100 -r utils/utils/processors/requirements.txt    # new processor
+
+          microdnf install -y skopeo && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+          skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
+
+      - name: Check if PCC Cache Valid
+        id: check-if-pcc-cache-valid
+        env:
+          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
+          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
+        run: |
+          microdnf install -y coreutils-single && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
+          PCC_CACHE_VALID=YES
+          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+          echo "latest_shipped_rhoai_versions = "
+          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+          echo "shipped_rhoai_versions = "
+          cat main/pcc/shipped_rhoai_versions_granular.txt
+          
+          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
+          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
+          
+          if [[ $diff -gt 0 ]]
+          then
+            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
+            echo "following new versions are shipped - $diff"
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
+            PCC_CACHE_VALID=NO
+          fi
+          echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
+      - name: Regenerate PCC Cache
+        id: regenerate-pcc-cache
+        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        env:
+          BRANCH: ${{ github.event.inputs.release_branch }}
+          RHOAI_VERSION: ${{ github.event.inputs.rhoai_version }}
+        run: |
+          #install opm cli
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+          opm_version="v1.47.0"
+          opm_filename="opm-$opm_version"
+          echo "-> Downloading opm" >&2
+          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
+          chmod +x "$opm_filename"
+          ln -fs "$opm_filename" opm
+          cp "$opm_filename" /usr/local/bin/opm
+          
+          microdnf install -y findutils && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
+          
+          #Declare basic variables
+          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
+          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+
+          #Declare FBC processing variables
+          CONFIG_PATH=main/config/config.yaml
+          
+          CSV_META_MIN_OCP_VERSION=417
+          CATALOG_DIR=main/pcc
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+              CSV_META_FLAG=
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              then
+                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+              fi
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
+              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
+              then
+                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
+                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
+          
+          ls -l main/pcc/
+      - name: Check PCC catalog changes
+        id: check-pcc-changes
+        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        working-directory: main
+        run: |
+          git add -A
+          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
+            echo "pcc_catalogs_changed=true" >> $GITHUB_OUTPUT
+          else
+            # Atomic commit: The versions file must only be committed alongside the corresponding catalog updates.. If the versions file is committed
+            # without updated catalogs, PCC_CACHE_VALID will read YES on the next run and skip regeneration — leaving stale catalogs permanently.
+            #
+            # If only the versions file changed, the indexes have not caught up yet. Revert all changes so the next run can retry.
+            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
+            git checkout HEAD -- .
+            echo "pcc_catalogs_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # TODO (production): uses new validator only. If the old validator is also needed
+      # during transition, add it back here (see git history for the dual-validator pattern).
+      - name: Validate PCC Cache
+        id: validate-pcc-cache
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PYTHONPATH: utils/utils/processors
+        run: |
+          BUILD_CONFIG_PATH=main/config/config.yaml
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/new-config.yaml
+
+          pushd utils/utils/processors
+          python3 -m validator.catalog_validator -op validate-pcc --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${GLOBAL_CONFIG_PATH}
+          popd
+
+      # TEST MODE: PCC push step removed — read-only workflow.
+      # TODO (production): restore "Push latest PCC Cache" step (see git history).
+
+      # ════════════════════════════════════════════════════════════════════════
+      # OLD PROCESSOR — unchanged from original workflow, used as baseline
+      # for comparison with the new processor output.
+      # TODO (production): remove this entire step once the new processor is validated.
+      # ════════════════════════════════════════════════════════════════════════
+      - name: Process FBC Fragment
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
+          OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
+          CLUSTER: p02
+          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
+          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
+        run: |
+          #Declare basic variables
+          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
+          
+          RHOAI_VERSION=v${BRANCH/rhoai-/}
+          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
+          
+          PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
+          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION//./-}
+          
+          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+          
+          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
+          
+          OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
+          OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
+          echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
+
+          #Generate the catalog for the latest bundle
+          #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
+          BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
+          mkdir ${HOME}/.docker
+          echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
+          APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
+          echo "APPLICATION_NAME = $APPLICATION_NAME"
+
+          #Invoke the FBC processor to extract the snapshot images
+          CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+          LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
+          echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
+          LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
+
+          #Previous Release - Invoke the FBC processor to extract the snapshot images
+          cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH}
+          PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
+          echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_LATEST_BUNDLE_IMAGE="$PREVIOUS_LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(PREVIOUS_LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+
+          
+          
+          #Generate the single bundle catalog === sbc
+          CSV_META_MIN_OCP_VERSION=417
+          WORK_DIR=utils/utils/fbc
+          mkdir -p ${WORK_DIR}
+          BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
+          CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/csv_meta_sbc_semver.yaml
+          CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
+
+          #Previous Release - Generate the single bundle catalog === sbc
+          PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_bundle_object_sbc_semver.yaml
+          PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_csv_meta_sbc_semver.yaml
+
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}
+
+
+
+          PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
+          PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
+
+          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
+          PREVIOUS_PUSH_PIPELINE_PATH=${PREVIOUS_BRANCH}/.tekton/rhoai-fbc-fragment-${PREVIOUS_COMPONENT_SUFFIX}-push.yaml
+          
+          while IFS= read -r value;
+          do
+              #Declare FBC processing variables
+              OPENSHIFT_VERSION=$value
+              NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
+              echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
+              OUTPUT_CATALOG_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
+              
+              PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
+              SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+
+              PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              
+              #cat ${OUTPUT_CATALOG_PATH}
+          done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+
+      # ════════════════════════════════════════════════════════════════════════
+      # NEW PROCESSOR — refactored fbc-processor with shell-level image resolution.
+      # Processes current branch + all INCLUDE_RELEASES (N-pass, dynamic).
+      # Writes output to ${BRANCH}-new/ for side-by-side comparison with old processor.
+      # TODO (production): remove old processor step above, rename ${BRANCH}-new → ${BRANCH},
+      #   remove the diff step, restore commit/push step, set permissions to 'write'.
+      # ════════════════════════════════════════════════════════════════════════
+
+      # Step 1: Resolve bundle image digests and git metadata for each release via skopeo.
+      # Stores results in new-processor-work/release-metadata.json — all subsequent steps read from it.
+      # The current branch is always first; INCLUDE_RELEASES are appended (comma-separated, trimmed).
+      - name: "New Processor - Resolve bundle images"
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          INCLUDE_RELEASES: ${{ env.INCLUDE_RELEASES }}
+        run: |
+          METADATA_FILE=new-processor-work/release-metadata.json
+          mkdir -p new-processor-work
+          echo '{}' > "${METADATA_FILE}"
+
+          resolve_bundle() {
+            local TAG=$1
+            local INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${TAG}")
+            local DIGEST=$(echo "${INSPECT}" | jq -r '.Digest')
+            local IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
+            local URL=$(echo "${INSPECT}" | jq -r '.Labels["git.url"]')
+            local COMMIT=$(echo "${INSPECT}" | jq -r '.Labels["git.commit"]')
+            if [ -z "${URL}" ] || [ "${URL}" = "null" ]; then
+              echo "ERROR: git.url label not found for ${TAG}"
+              exit 1
+            fi
+            if [ -z "${COMMIT}" ] || [ "${COMMIT}" = "null" ]; then
+              echo "ERROR: git.commit label not found for ${TAG}"
+              exit 1
+            fi
+            echo "  ${TAG}: image=${IMAGE} git_url=${URL} git_commit=${COMMIT}"
+            jq --arg tag "${TAG}" --arg img "${IMAGE}" --arg url "${URL}" --arg commit "${COMMIT}" \
+              '.[$tag] = {"image": $img, "git_url": $url, "git_commit": $commit}' \
+              "${METADATA_FILE}" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "${METADATA_FILE}"
+          }
+
+          resolve_bundle "${BRANCH}"
+          IFS=',' read -ra EXTRA <<< "${INCLUDE_RELEASES}"
+          for RAW in "${EXTRA[@]+"${EXTRA[@]}"}"; do
+            REL=$(echo "${RAW}" | xargs)
+            [ -z "${REL}" ] && continue
+            resolve_bundle "${REL}"
+          done
+
+          echo "Resolved releases:"
+          # reverse: jq sorts keys alphabetically, reverse gives current branch (rhoai-3.x)
+          # before included releases (rhoai-2.x) — matching old processor's pass order
+          # (current first, previous second). This matters because the last pass's
+          # catalog-patch.yaml wins for olm.package fields like defaultChannel.
+          jq -r 'keys | reverse | .[]' "${METADATA_FILE}"
+
+      # Step 2: For each release in release-metadata.json, generate two SBC (single-bundle catalog)
+      # files using opm: one in bundle-object format, one in csv-metadata format.
+      # The OCP version determines which format is used during catalog patching (Step 3).
+      - name: "New Processor - Generate SBC files"
+        run: |
+          WORK_DIR=new-processor-work
+          METADATA_FILE="${WORK_DIR}/release-metadata.json"
+          TEMPLATE_SRC="utils/utils/processors/templates/fbc-semver-template.yaml"
+          CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
+
+          for REL in $(jq -r 'keys | reverse | .[]' "${METADATA_FILE}"); do
+            IMG=$(jq -r --arg r "${REL}" '.[$r].image' "${METADATA_FILE}")
+            TMPL="${WORK_DIR}/${REL}-sbc-template.yaml"
+            cp -f "${TEMPLATE_SRC}" "${TMPL}"
+            IMG="${IMG}" yq e -i '.stable.bundles[0].image = env(IMG)' "${TMPL}"
+            echo "Generating SBCs for ${REL} (image: ${IMG})"
+            DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml "${TMPL}" > "${WORK_DIR}/${REL}-bundle_object_sbc.yaml"
+            DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml "${TMPL}" > "${WORK_DIR}/${REL}-csv_meta_sbc.yaml"
+          done
+
+      # Step 3: For each OCP version, chain N passes (one per release in release-metadata.json).
+      # Pass 1 reads PCC base catalog, each subsequent pass reads the previous pass's output.
+      # This builds a catalog containing bundles from all releases (needed for OLM upgrade paths).
+      - name: "New Processor - Patch catalogs"
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PYTHONPATH: utils/utils/processors
+        run: |
+          PROCESSOR="utils/utils/processors/fbc-processor.py"
+          WORK_DIR=new-processor-work
+          METADATA_FILE="${WORK_DIR}/release-metadata.json"
+          CSV_META_MIN_OCP_VERSION=417
+
+          # Outer loop: one iteration per OCP version (e.g. v4.19, v4.20, v4.21, v4.22)
+          # Inner loop: one pass per release — adds that release's bundle to the catalog.
+          #   Pass 1 reads PCC base catalog as input.
+          #   Each subsequent pass reads the previous pass's output (INPUT_CATALOG is reassigned).
+          #   All passes write to the same OUTPUT_CATALOG_PATH (current branch's catalog dir).
+          #   Result: one catalog per OCP version containing bundles from all releases.
+          while IFS= read -r OCP_VERSION; do
+            echo "OCP_VERSION=${OCP_VERSION}"
+            NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
+            OUTPUT_CATALOG_PATH=${BRANCH}-new/catalog/${OCP_VERSION}/rhods-operator/catalog.yaml
+            mkdir -p "$(dirname "${OUTPUT_CATALOG_PATH}")"
+            # First pass starts from PCC base; resets for each OCP version.
+            INPUT_CATALOG=main/pcc/catalog-${OCP_VERSION}.yaml
+
+            # FOLLOW-UP: processing should be OCP version aware.
+            # Each included release may support a different set of OCP versions.
+            # Currently all releases are patched into all OCP versions (matches old processor).
+            #
+            # Example: rhoai-2.25 supports v4.16-v4.20, rhoai-3.5 supports v4.19-v4.22.
+            #   - v4.16-v4.18: no catalog generated (not in current branch's build-config,
+            #     so the outer loop never iterates over them). What happens to users on
+            #     these OCP versions who are running rhoai-2.25 and want to upgrade?
+            #   - v4.19-v4.20: both bundles added — correct.
+            #   - v4.21-v4.22: rhoai-2.25 bundle should NOT be added (unsupported), but
+            #     currently it is. Fix: check ${REL}-new/config/build-config.yaml and skip
+            #     OCP versions the included release doesn't support.
+            for REL in $(jq -r 'keys | reverse | .[]' "${METADATA_FILE}"); do
+              REL_GIT_URL=$(jq -r --arg r "${REL}" '.[$r].git_url' "${METADATA_FILE}")
+              REL_GIT_COMMIT=$(jq -r --arg r "${REL}" '.[$r].git_commit' "${METADATA_FILE}")
+              COMP_SUFFIX=$(echo "v${REL/rhoai-/}" | tr '.' '-')
+
+              SBC="${WORK_DIR}/${REL}-bundle_object_sbc.yaml"
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SBC="${WORK_DIR}/${REL}-csv_meta_sbc.yaml"; fi
+
+              # Each pass uses its own release's patch-yaml and build-config, but writes
+              # to the current branch's output catalog. The processor is idempotent —
+              # if a bundle already exists in the catalog, it skips the patch.
+              python3 "${PROCESSOR}" \
+                --rhoai-version "${REL}" \
+                --build-type "ci" \
+                --build-config-path "${REL}-new/config/build-config.yaml" \
+                --patch-yaml-path "${REL}-new/catalog/catalog-patch.yaml" \
+                --single-bundle-path "${SBC}" \
+                --input-catalog-path "${INPUT_CATALOG}" \
+                --output-catalog-path "${OUTPUT_CATALOG_PATH}" \
+                --bundle-git-url "${REL_GIT_URL}" \
+                --bundle-git-commit "${REL_GIT_COMMIT}" \
+                --catalog-build-args-file-path "${REL}-new/catalog/catalog_build_args.map" \
+                --push-pipeline-yaml-path "${REL}-new/.tekton/rhoai-fbc-fragment-${COMP_SUFFIX}-push.yaml" \
+                --push-pipeline-operation enable
+
+              # Chain: next pass reads this pass's output as input.
+              INPUT_CATALOG="${OUTPUT_CATALOG_PATH}"
+            done
+          done < <(yq eval '.config.supported-ocp-versions.build[].name' "${BRANCH}-new/config/build-config.yaml")
+
+      # Validate both old and new processor outputs using the refactored validator.
+      # Both must pass — a failure in either indicates a regression.
+      - name: Validate Catalogs
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+          PYTHONPATH: utils/utils/processors
+        run: |
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          GLOBAL_CONFIG_PATH=main/config/new-config.yaml
+
+          for LABEL_AND_PATH in "OLD:${BRANCH}" "NEW:${BRANCH}-new"; do
+            LABEL="${LABEL_AND_PATH%%:*}"; DIR="${LABEL_AND_PATH#*:}"
+            echo "=== Validating ${LABEL} processor output ==="
+            pushd utils/utils/processors
+            python3 -m validator.catalog_validator -op validate-catalogs \
+              --build-config-path "../../../${DIR}/config/build-config.yaml" \
+              --catalog-folder-path "../../../${DIR}/catalog" \
+              --shipped-rhoai-versions-path "../../../${SHIPPED_RHOAI_VERSIONS_PATH}" \
+              --global-config-path "../../../${GLOBAL_CONFIG_PATH}"
+            popd
+            echo ""
+          done
+
+      # TEST MODE: compare old vs new processor outputs using git diff.
+      # Identical output = new processor is safe to replace the old one.
+      # TODO (production): remove this step and the old processor step.
+      - name: Diff old vs new outputs
+        env:
+          BRANCH: ${{ steps.get_branch.outputs.branch }}
+        run: |
+          METADATA_FILE=new-processor-work/release-metadata.json
+          DIFF_FOUND=0
+          for REL in $(jq -r 'keys | reverse | .[]' "${METADATA_FILE}"); do
+            echo "=== Comparing old (${REL}) vs new (${REL}-new) ==="
+            if git diff --no-index --color "${REL}" "${REL}-new"; then
+              echo "  MATCH"
+            else
+              DIFF_FOUND=1
+            fi
+            echo ""
+          done
+          if [ $DIFF_FOUND -ne 0 ]; then
+            echo "Old and new processor outputs differ. See diffs above."
+            exit 1
+          fi
+          echo "All outputs match."
+
+      # ════════════════════════════════════════════════════════════════════════
+      # PRODUCTION CUTOVER CHECKLIST
+      # When the new processor is validated and ready to replace the old one:
+      #   1. permissions: contents: read → write
+      #   2. Remove PREVIOUS_RELEASE env var (replaced by INCLUDE_RELEASES)
+      #   3. Remove RKA_REFACTOR_BRANCH, change utils checkout ref to 'main'
+      #   4. Remove old processor clone steps (RBC release, RBC previous release)
+      #   5. Remove old processor pip install line
+      #   6. Remove "Process FBC Fragment" step (old processor)
+      #   7. Rename ${BRANCH}-new → ${BRANCH} in new processor steps
+      #   8. Remove diff step
+      #   9. Remove "OLD" from validation loop (only validate new output)
+      #  10. Restore "Push latest PCC Cache" step
+      #  11. Restore "Commit and push" step for the release branch
+      # ════════════════════════════════════════════════════════════════════════
+
