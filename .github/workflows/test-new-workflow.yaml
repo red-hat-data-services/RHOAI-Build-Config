@@ -2,6 +2,11 @@ name: Test New Workflow
 run-name: Test New Workflow
 on:
   workflow_dispatch:
+    inputs:
+      use_existing_digests:
+        description: 'Use bundle image digest from catalog-patch.yaml instead of resolving latest via skopeo'
+        type: boolean
+        default: false
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -367,16 +372,34 @@ jobs:
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
           INCLUDE_RELEASES: ${{ env.INCLUDE_RELEASES }}
+          USE_EXISTING_DIGESTS: ${{ github.event.inputs.use_existing_digests || 'false' }}
         run: |
           METADATA_FILE=new-processor-work/release-metadata.json
           mkdir -p new-processor-work
           echo '{}' > "${METADATA_FILE}"
 
+          # Resolve a bundle image and its git labels, then add to release-metadata.json.
+          # When USE_EXISTING_DIGESTS=true, reads the image from catalog-patch.yaml
+          # instead of resolving the latest signed digest via skopeo.
+          # TODO (nightly workflow): use ${TAG}-nightly as the skopeo tag instead of ${TAG}.
           resolve_bundle() {
             local TAG=$1
-            local INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${TAG}")
-            local DIGEST=$(echo "${INSPECT}" | jq -r '.Digest')
-            local IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
+            local IMAGE INSPECT
+
+            if [ "${USE_EXISTING_DIGESTS}" = "true" ]; then
+              IMAGE=$(yq e '.patch["olm.bundle"][0]' "${TAG}-new/catalog/catalog-patch.yaml")
+              if [ -z "${IMAGE}" ] || [ "${IMAGE}" = "null" ]; then
+                echo "ERROR: No olm.bundle entry found in ${TAG}-new/catalog/catalog-patch.yaml"
+                exit 1
+              fi
+              echo "  ${TAG}: using existing digest from catalog-patch.yaml"
+              INSPECT=$(skopeo inspect --no-tags "docker://${IMAGE}")
+            else
+              INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${TAG}")
+              local DIGEST=$(echo "${INSPECT}" | jq -r '.Digest')
+              IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
+            fi
+
             local URL=$(echo "${INSPECT}" | jq -r '.Labels["git.url"]')
             local COMMIT=$(echo "${INSPECT}" | jq -r '.Labels["git.commit"]')
             if [ -z "${URL}" ] || [ "${URL}" = "null" ]; then
@@ -556,6 +579,7 @@ jobs:
           echo "All outputs match."
 
       # Upload the full release branch repo updated by the new processor for inspection.
+      # Also upload SBC files and release-metadata.json for debugging.
       # TODO (production): upload only debug logs, not the full repo.
       - name: Upload new processor output
         if: always()
@@ -564,7 +588,7 @@ jobs:
           name: new-processor-output
           path: |
             ${{ steps.get_branch.outputs.branch }}-new/
-            new-processor-work/release-metadata.json
+            new-processor-work/
 
       # ════════════════════════════════════════════════════════════════════════
       # PRODUCTION CUTOVER CHECKLIST
