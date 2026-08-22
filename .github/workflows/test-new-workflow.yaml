@@ -115,7 +115,7 @@ jobs:
           pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt   # old processor
           pip install --default-timeout=100 -r utils/utils/processors/requirements.txt    # new processor
 
-          microdnf install -y skopeo && \
+          microdnf install -y skopeo findutils && \
               microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
 
