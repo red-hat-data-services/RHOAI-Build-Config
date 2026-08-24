@@ -74,7 +74,10 @@ metadata:
                 "managementState": "Managed"
               },
               "workbenches": {
-                "managementState": "Managed"
+                "managementState": "Managed",
+                "workbenchesV2": {
+                  "managementState": "Removed"
+                }
               }
             }
           }
@@ -106,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-08-21T12:49:33Z"
+    createdAt: "2026-08-24T11:19:48Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -188,7 +191,7 @@ metadata:
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
-  name: rhods-operator.v3.5.0
+  name: rhods-operator.v3.6.0-ea.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -586,6 +589,7 @@ spec:
           - components.platform.opendatahub.io
           resources:
           - aigateways
+          - aihubs
           - dashboards
           - datasciencepipelines
           - feastoperators
@@ -594,7 +598,6 @@ spec:
           - mcplifecycleoperators
           - mlflowoperators
           - modelmeshservings
-          - modelregistries
           - ogxs
           - rays
           - sparkoperators
@@ -613,6 +616,7 @@ spec:
           - components.platform.opendatahub.io
           resources:
           - aigateways/finalizers
+          - aihubs/finalizers
           - dashboards/finalizers
           - datasciencepipelines/finalizers
           - feastoperators/finalizers
@@ -621,7 +625,6 @@ spec:
           - mcplifecycleoperators/finalizers
           - mlflowoperators/finalizers
           - modelmeshservings/finalizers
-          - modelregistries/finalizers
           - ogxs/finalizers
           - rays/finalizers
           - sparkoperators/finalizers
@@ -634,6 +637,7 @@ spec:
           - components.platform.opendatahub.io
           resources:
           - aigateways/status
+          - aihubs/status
           - dashboards/status
           - datasciencepipelines/status
           - feastoperators/status
@@ -642,7 +646,6 @@ spec:
           - mcplifecycleoperators/status
           - mlflowoperators/status
           - modelmeshservings/status
-          - modelregistries/status
           - ogxs/status
           - rays/status
           - sparkoperators/status
@@ -1017,33 +1020,6 @@ spec:
           - list
           - watch
         - apiGroups:
-          - modelregistry.opendatahub.io
-          resources:
-          - modelregistries
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - modelregistry.opendatahub.io
-          resources:
-          - modelregistries/finalizers
-          verbs:
-          - get
-          - update
-        - apiGroups:
-          - modelregistry.opendatahub.io
-          resources:
-          - modelregistries/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
           - monitoring.coreos.com
           resources:
           - alertmanagerconfigs
@@ -1412,18 +1388,6 @@ spec:
           - get
           - patch
         - apiGroups:
-          - template.openshift.io
-          resources:
-          - templates
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
           - tempo.grafana.com
           resources:
           - tempomonolithics
@@ -1674,7 +1638,7 @@ spec:
   minKubeVersion: 1.25.0
   provider:
     name: Red Hat
-  version: 3.5.0
+  version: 3.6.0-ea.1
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
