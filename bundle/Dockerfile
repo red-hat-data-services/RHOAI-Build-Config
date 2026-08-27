@@ -224,6 +224,8 @@ ARG ODH_DATA_CONNECT_HUB_REST_GIT_URL=
 ARG ODH_DATA_CONNECT_HUB_REST_GIT_COMMIT=
 ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_URL=
 ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT=
+ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL=
+ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -460,7 +462,9 @@ LABEL \
       odh-data-connect-hub-rest.git.url="${ODH_DATA_CONNECT_HUB_REST_GIT_URL}" \
       odh-data-connect-hub-rest.git.commit="${ODH_DATA_CONNECT_HUB_REST_GIT_COMMIT}"
       odh-data-connect-hub-flight.git.url="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_URL}" \
-      odh-data-connect-hub-flight.git.commit="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT}"
+      odh-data-connect-hub-flight.git.commit="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT}" \
+      odh-pipeline-runtime-baseline-cpu-py312.git.url="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL}" \
+      odh-pipeline-runtime-baseline-cpu-py312.git.commit="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
