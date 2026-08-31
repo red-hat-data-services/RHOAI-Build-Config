@@ -208,8 +208,6 @@ ARG ODH_TRUSTYAI_SERVICE_PY_GIT_URL=
 ARG ODH_TRUSTYAI_SERVICE_PY_GIT_COMMIT=
 ARG ODH_RHOAI_MCP_GIT_URL=
 ARG ODH_RHOAI_MCP_GIT_COMMIT=
-ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL=
-ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT=
 ARG ODH_SPARK_OPERATOR_MODULE_GIT_URL=
 ARG ODH_SPARK_OPERATOR_MODULE_GIT_COMMIT=
 ARG ODH_MOD_ARCH_NOTEBOOKS_GIT_URL=
@@ -226,6 +224,8 @@ ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_URL=
 ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT=
 ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL=
 ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT=
+ARG ODH_WORKBENCHES_CONTROLLER_GIT_URL=
+ARG ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -447,8 +447,6 @@ LABEL \
       odh-trustyai-service-py.git.commit="${ODH_TRUSTYAI_SERVICE_PY_GIT_COMMIT}" \
       odh-rhoai-mcp.git.url="${ODH_RHOAI_MCP_GIT_URL}" \
       odh-rhoai-mcp.git.commit="${ODH_RHOAI_MCP_GIT_COMMIT}" \
-      odh-workbench-jupyter-baseline-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL}" \
-      odh-workbench-jupyter-baseline-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT}" \
       odh-spark-operator-module.git.url="${ODH_SPARK_OPERATOR_MODULE_GIT_URL}" \
       odh-spark-operator-module.git.commit="${ODH_SPARK_OPERATOR_MODULE_GIT_COMMIT}" \
       odh-mod-arch-notebooks.git.url="${ODH_MOD_ARCH_NOTEBOOKS_GIT_URL}" \
@@ -465,6 +463,8 @@ LABEL \
       odh-data-connect-hub-flight.git.commit="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT}" \
       odh-pipeline-runtime-baseline-cpu-py312.git.url="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL}" \
       odh-pipeline-runtime-baseline-cpu-py312.git.commit="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT}"
+      odh-workbenches-controller.git.url="${ODH_WORKBENCHES_CONTROLLER_GIT_URL}" \
+      odh-workbenches-controller.git.commit="${ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
