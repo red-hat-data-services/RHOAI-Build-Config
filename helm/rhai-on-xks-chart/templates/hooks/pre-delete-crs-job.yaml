@@ -2,6 +2,11 @@
 {{- if .Values.hooks.postInstallCrs.enabled }}
 {{- $managedDepNamespaces := (include "rhai-on-xks-chart.kubernetesEngineDependencyNamespaces" (dict "root" . "managedOnly" true) | fromJson).items }}
 {{- $depNamespaces := concat (.Values.imagePullSecret.dependencyNamespaces | default list) $managedDepNamespaces | uniq }}
+{{- if (index .Values "cert-manager-operator" "enabled") }}
+  {{- $depNamespaces = append $depNamespaces (index .Values "cert-manager-operator" "operatorNamespace") }}
+  {{- $depNamespaces = append $depNamespaces (index .Values "cert-manager-operator" "operandNamespace") }}
+  {{- $depNamespaces = $depNamespaces | uniq }}
+{{- end }}
 {{- $provider := include "rhai-on-xks-chart.activeProvider" . | fromYaml }}
 {{- $coreNamespaces := list .Values.rhaiOperator.namespace .Values.rhaiOperator.applicationsNamespace }}
 {{- if $provider }}

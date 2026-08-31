@@ -572,6 +572,17 @@ spec:
                           x-kubernetes-validations:
                             - message: WorkbenchNamespace is immutable
                               rule: self == oldSelf
+                        workbenchesV2:
+                          description: WorkbenchesV2 controls the workbenches-v2 sub-component.
+                          properties:
+                            managementState:
+                              default: Removed
+                              enum:
+                                - Managed
+                                - Removed
+                              pattern: ^(Managed|Unmanaged|Force|Removed)$
+                              type: string
+                          type: object
                       type: object
                   type: object
               type: object
@@ -1837,6 +1848,17 @@ spec:
                           x-kubernetes-validations:
                             - message: WorkbenchNamespace is immutable
                               rule: self == oldSelf
+                        workbenchesV2:
+                          description: WorkbenchesV2 controls the workbenches-v2 sub-component.
+                          properties:
+                            managementState:
+                              default: Removed
+                              enum:
+                                - Managed
+                                - Removed
+                              pattern: ^(Managed|Unmanaged|Force|Removed)$
+                              type: string
+                          type: object
                       type: object
                   type: object
               type: object
@@ -2454,6 +2476,24 @@ spec:
                             - name
                           x-kubernetes-list-type: map
                         workbenchNamespace:
+                          type: string
+                      type: object
+                    workbenchesV2:
+                      description: WorkbenchesV2 submodule status (submodule of Workbenches).
+                      properties:
+                        managementState:
+                          description: |-
+                            Set to one of the following values:
+
+                            - "Managed" : the operator is actively managing the component and trying to keep it active.
+                                          It will only upgrade the component if it is safe to do so
+
+                            - "Removed" : the operator is actively managing the component and will not install it,
+                                          or if it is installed, the operator will try to remove it
+                          enum:
+                            - Managed
+                            - Removed
+                          pattern: ^(Managed|Unmanaged|Force|Removed)$
                           type: string
                       type: object
                   type: object
