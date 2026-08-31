@@ -65,14 +65,15 @@ spec:
                           description: Configuration for the cert-manager operator.
                           type: object
                         managementPolicy:
-                          description: ManagementPolicy determines whether the operator manages this dependency.
+                          default: Managed
+                          description: |-
+                            ManagementPolicy determines whether the operator manages this dependency.
+                            Managed: the operator installs and reconciles the dependency.
+                            Unmanaged: the operator does not manage the dependency; the user is responsible.
                           enum:
                             - Managed
                             - Unmanaged
                           type: string
-                          x-kubernetes-validations:
-                            - message: cert-manager managementPolicy cannot be set to Managed
-                              rule: self != 'Managed' || self == oldSelf
                       type: object
                     gatewayAPI:
                       description: GatewayAPI defines the Gateway API dependency.
