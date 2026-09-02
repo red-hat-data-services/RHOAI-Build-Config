@@ -226,6 +226,10 @@ ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL=
 ARG ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT=
 ARG ODH_WORKBENCHES_CONTROLLER_GIT_URL=
 ARG ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT=
+ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL=
+ARG ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT=
+ARG ODH_WORKBENCH_CODESERVER_BASELINE_CPU_PY312_GIT_URL=
+ARG ODH_WORKBENCH_CODESERVER_BASELINE_CPU_PY312_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -464,7 +468,11 @@ LABEL \
       odh-pipeline-runtime-baseline-cpu-py312.git.url="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_URL}" \
       odh-pipeline-runtime-baseline-cpu-py312.git.commit="${ODH_PIPELINE_RUNTIME_BASELINE_CPU_PY312_GIT_COMMIT}"
       odh-workbenches-controller.git.url="${ODH_WORKBENCHES_CONTROLLER_GIT_URL}" \
-      odh-workbenches-controller.git.commit="${ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT}"
+      odh-workbenches-controller.git.commit="${ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT}" \
+      odh-workbench-jupyter-baseline-cpu-py312.git.url="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_URL}" \
+      odh-workbench-jupyter-baseline-cpu-py312.git.commit="${ODH_WORKBENCH_JUPYTER_BASELINE_CPU_PY312_GIT_COMMIT}" \
+      odh-workbench-codeserver-baseline-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_BASELINE_CPU_PY312_GIT_URL}" \
+      odh-workbench-codeserver-baseline-cpu-py312.git.commit="${ODH_WORKBENCH_CODESERVER_BASELINE_CPU_PY312_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
