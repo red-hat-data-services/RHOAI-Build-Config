@@ -109,7 +109,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:0a300938b6c4a789eb27905b5e61375ba57430db27f997fefb596ba508aa048d"
-    createdAt: "2026-09-03T09:12:01Z"
+    createdAt: "2026-09-03T12:46:34Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -980,6 +980,14 @@ spec:
           - update
           - watch
         - apiGroups:
+          - kubeflow.org
+          resources:
+          - pytorchjobs
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
           - kueue.openshift.io
           resources:
           - kueues
@@ -1223,6 +1231,14 @@ spec:
           - patch
           - update
         - apiGroups:
+          - operator.authorino.kuadrant.io
+          resources:
+          - authorinos
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
           - operator.openshift.io
           resources:
           - consoles
@@ -1426,6 +1442,16 @@ spec:
           - patch
           - update
         - apiGroups:
+          - serving.kserve.io
+          resources:
+          - inferenceservices
+          - llminferenceservices
+          - servingruntimes
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
           - snapshot.storage.k8s.io
           resources:
           - volumesnapshots
@@ -1470,6 +1496,14 @@ spec:
           - list
           - patch
           - update
+          - watch
+        - apiGroups:
+          - trustyai.opendatahub.io
+          resources:
+          - trustyaiservices
+          verbs:
+          - get
+          - list
           - watch
         - apiGroups:
           - user.openshift.io
