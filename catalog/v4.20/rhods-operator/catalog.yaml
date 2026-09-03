@@ -42750,7 +42750,7 @@ relatedImages:
   name: ubi_minimal_image
 schema: olm.bundle
 ---
-image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:54cb93118a7b3f0b0830944ce83a30258fd71099fcbb48b8e69cb73bad2eaa2c
+image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:be3a22b499f10f11f75256b5abac43d232eb923dde03c14059552233676db642
 name: rhods-operator.3.6.0-ea.2
 package: rhods-operator
 properties:
@@ -42861,9 +42861,6 @@ properties:
                 },
                 "kserve": {
                   "managementState": "Managed",
-                  "modelsAsService": {
-                    "managementState": "Removed"
-                  },
                   "nim": {
                     "managementState": "Managed"
                   },
@@ -42872,9 +42869,6 @@ properties:
                   }
                 },
                 "kueue": {
-                  "managementState": "Removed"
-                },
-                "llamastackoperator": {
                   "managementState": "Removed"
                 },
                 "mcplifecycleoperator": {
@@ -42938,7 +42932,7 @@ properties:
       categories: AI/Machine Learning, Big Data
       certified: "False"
       containerImage: registry.redhat.io/rhoai/odh-rhel9-operator@sha256:5d1e0dd62b5ef107b835c49d6ebca2d9aa4e2e79e03bad62f3f500fa17782439
-      createdAt: "2026-09-03T19:40:33Z"
+      createdAt: "2026-09-03T20:38:15Z"
       description: Operator for deployment and management of Red Hat OpenShift AI
       features.operators.openshift.io/cnf: "false"
       features.operators.openshift.io/cni: "false"
@@ -42962,26 +42956,54 @@ properties:
           },
           "spec": {
             "components": {
+              "aigateway": {
+                "managementState": "Removed",
+                "batchGateway": {
+                  "managementState": "Removed"
+                }
+              },
               "dashboard": {
                 "managementState": "Managed"
               },
               "aipipelines": {
                 "managementState": "Managed"
               },
-              "feastoperator": {
-                "managementState": "Managed"
-              },
               "kserve": {
-                "managementState": "Managed"
-              },
-              "llamastackoperator": {
-                "managementState": "Removed"
-              },
-              "ogx": {
-                "managementState": "Managed"
+                "managementState": "Managed",
+                "nim": {
+                  "managementState": "Managed"
+                },
+                "wva": {
+                  "managementState": "Removed"
+                }
               },
               "kueue": {
                 "managementState": "Removed"
+              },
+              "trainer": {
+                "managementState": "Managed"
+              },
+              "ray": {
+                "managementState": "Managed"
+              },
+              "workbenches": {
+                "managementState": "Managed",
+                "workbenchesV2": {
+                  "managementState": "Removed"
+                }
+              },
+              "trustyai": {
+                "managementState": "Managed"
+              },
+              "modelregistry": {
+                "managementState": "Managed",
+                "registriesNamespace": "rhoai-model-registries"
+              },
+              "feastoperator": {
+                "managementState": "Managed"
+              },
+              "ogx": {
+                "managementState": "Managed"
               },
               "mlflowoperator": {
                 "managementState": "Managed"
@@ -42989,21 +43011,8 @@ properties:
               "sparkoperator": {
                 "managementState": "Removed"
               },
-              "modelregistry": {
-                "managementState": "Managed",
-                "registriesNamespace": "rhoai-model-registries"
-              },
-              "ray": {
-                "managementState": "Managed"
-              },
-              "workbenches": {
-                "managementState": "Managed"
-              },
-              "trainer": {
-                "managementState": "Managed"
-              },
-              "trustyai": {
-                "managementState": "Managed"
+              "mcplifecycleoperator": {
+                "managementState": "Removed"
               }
             }
           }
@@ -43178,7 +43187,7 @@ properties:
     provider:
       name: Red Hat, Inc.
 relatedImages:
-- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:54cb93118a7b3f0b0830944ce83a30258fd71099fcbb48b8e69cb73bad2eaa2c
+- image: registry.redhat.io/rhoai/odh-operator-bundle@sha256:be3a22b499f10f11f75256b5abac43d232eb923dde03c14059552233676db642
   name: ""
 - image: registry.redhat.io/cluster-observability-operator/perses-rhel9@sha256:a811b9345d884ba1c575584bec9be1d2a237902164a99887458a82d07e7c2376
   name: perses_image
