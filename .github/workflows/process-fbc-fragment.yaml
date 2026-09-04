@@ -104,8 +104,11 @@ jobs:
           RELEASED_RHOAI_VERSIONS_FILE=main/pcc/released_rhoai_versions.txt
           PCC_CACHE_VALID=YES
 
+          echo "Authenticating to registry.redhat.io"
+          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
+
           if [[ "${FORCE_PCC_REGENERATION}" == "true" ]]; then
-            echo "FORCE_PCC_REGENERATION is set to true; skipping cache validity checks"
+            echo "FORCE_PCC_REGENERATION is set to true; skipping the PCC cache validity check"
             PCC_CACHE_VALID=NO
             echo "PCC_CACHE_VALID: ${PCC_CACHE_VALID}"
             echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
@@ -116,9 +119,6 @@ jobs:
             echo "ERROR: ${RELEASED_RHOAI_VERSIONS_FILE} not found" >&2
             exit 1
           fi
-
-          echo "Authenticating to registry.redhat.io"
-          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
 
           echo "Fetching released RHOAI versions from odh-operator-bundle"
           skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
