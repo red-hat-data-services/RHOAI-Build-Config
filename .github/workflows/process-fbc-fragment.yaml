@@ -125,8 +125,9 @@ jobs:
           NEW_RELEASED_RHOAI_VERSIONS=$(python -c 'import sys; latest = set(open(sys.argv[1]).readlines()); released = set(open(sys.argv[2]).readlines()); print("\n".join(sorted(latest - released)))' "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}" "${RELEASED_RHOAI_VERSIONS_FILE}")
 
           if [[ -n "${NEW_RELEASED_RHOAI_VERSIONS}" ]]; then
-            echo "\nFound new released RHOAI versions:"
-            printf '%s' "${NEW_RELEASED_RHOAI_VERSIONS}"
+            echo ""
+            echo "Found new released RHOAI versions:"
+            printf '%s\n' "${NEW_RELEASED_RHOAI_VERSIONS}"
             echo "Updating ${RELEASED_RHOAI_VERSIONS_FILE} and triggering PCC cache regeneration..."
             cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} ${RELEASED_RHOAI_VERSIONS_FILE}
             PCC_CACHE_VALID=NO
@@ -134,7 +135,8 @@ jobs:
             echo "FORCE_PCC_REGENERATION is set to true; forcing PCC cache regeneration"
             PCC_CACHE_VALID=NO
           else
-            echo "\nNo new released RHOAI versions found; PCC cache is valid"
+            echo ""
+            echo "No new released RHOAI versions found; PCC cache is valid"
           fi
 
           echo "PCC_CACHE_VALID: ${PCC_CACHE_VALID}"
@@ -164,7 +166,8 @@ jobs:
               CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
               MIGRATE_DIR=./catalog-migrate-${OCP_VERSION}
 
-              echo "\n=== Regenerating PCC catalog for ${OCP_VERSION} ==="
+              echo ""
+              echo "=== Regenerating PCC catalog for ${OCP_VERSION} ==="
               opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} -o yaml ${MIGRATE_DIR}
               if [[ -e "${MIGRATE_DIR}/rhods-operator/catalog.yaml" ]]
               then
