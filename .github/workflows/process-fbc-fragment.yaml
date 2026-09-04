@@ -77,9 +77,10 @@ jobs:
           chmod +x "$opm_filename"
           ln -fs "$opm_filename" opm
           cp "$opm_filename" /usr/local/bin/opm
+          opm version
           pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt
 
-          microdnf install -y skopeo && \
+          microdnf install -y skopeo findutils coreutils-single && \
               microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
 
@@ -89,27 +90,44 @@ jobs:
           RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
           RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
         run: |
-          microdnf install -y coreutils-single && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
+          set -o pipefail
+
+          echo "=== Checking PCC cache validity ==="
           LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
+          RELEASED_RHOAI_VERSIONS_FILE=main/pcc/released_rhoai_versions.txt
           PCC_CACHE_VALID=YES
-          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
-          echo "latest_shipped_rhoai_versions = "
-          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
-          echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions_granular.txt
-          
-          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
-          
-          if [[ $diff -gt 0 ]]
-          then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
-            echo "following new versions are shipped - $diff"
-            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
-            PCC_CACHE_VALID=NO
+
+          if [[ ! -f "${RELEASED_RHOAI_VERSIONS_FILE}" ]]; then
+            echo "ERROR: ${RELEASED_RHOAI_VERSIONS_FILE} not found" >&2
+            exit 1
           fi
+
+          echo "Authenticating to registry.redhat.io"
+          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
+
+          echo "Fetching released RHOAI versions from odh-operator-bundle"
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+
+          echo "Latest shipped RHOAI versions from the registry:"
+          cat "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}"
+          echo ""
+          echo "Released RHOAI versions recorded in the PCC cache:"
+          cat "${RELEASED_RHOAI_VERSIONS_FILE}"
+
+          echo "Checking for newly released RHOAI versions..."
+          NEW_RELEASED_RHOAI_VERSIONS=$(python -c 'import sys; latest = set(open(sys.argv[1]).readlines()); released = set(open(sys.argv[2]).readlines()); print("\n".join(sorted(latest - released)))' "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}" "${RELEASED_RHOAI_VERSIONS_FILE}")
+
+          if [[ -n "${NEW_RELEASED_RHOAI_VERSIONS}" ]]; then
+            echo "Found new released RHOAI versions:"
+            printf '%s\n' "${NEW_RELEASED_RHOAI_VERSIONS}"
+            echo "Updating ${RELEASED_RHOAI_VERSIONS_FILE} and triggering PCC cache regeneration..."
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} ${RELEASED_RHOAI_VERSIONS_FILE}
+            PCC_CACHE_VALID=NO
+          else
+            echo "No new released RHOAI versions found; PCC cache is valid"
+          fi
+
+          echo "PCC cache validity: ${PCC_CACHE_VALID}"
           echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
       - name: Regenerate PCC Cache
         id: regenerate-pcc-cache
@@ -118,53 +136,35 @@ jobs:
           BRANCH: ${{ github.event.inputs.release_branch }}
           RHOAI_VERSION: ${{ github.event.inputs.rhoai_version }}
         run: |
-          #install opm cli
-          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-          arch="$(uname -m | sed 's/x86_64/amd64/')"
-          opm_version="v1.47.0"
-          opm_filename="opm-$opm_version"
-          echo "-> Downloading opm" >&2
-          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
-          chmod +x "$opm_filename"
-          ln -fs "$opm_filename" opm
-          cp "$opm_filename" /usr/local/bin/opm
-          
-          microdnf install -y findutils && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
-          
-          #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
-
-          #Declare FBC processing variables
+          # Declare PCC regeneration variables
           CONFIG_PATH=main/config/config.yaml
-          
-          CSV_META_MIN_OCP_VERSION=417
           CATALOG_DIR=main/pcc
+          echo "Regenerating PCC catalogs from ${CONFIG_PATH} into ${CATALOG_DIR}"
+          echo "Supported OCP versions:"
+          yq e '.config.supported-ocp-versions[].version' "${CONFIG_PATH}"
+
           PREVIOUS_OCP_VERSION=
           while IFS= read -r OCP_VERSION;
           do
               CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
-              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
-              CSV_META_FLAG=
-              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
+              MIGRATE_DIR=./catalog-migrate-${OCP_VERSION}
+
+              echo "=== Regenerating PCC catalog for ${OCP_VERSION} ==="
+              echo "Migrating registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} directly to YAML"
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} -o yaml ${MIGRATE_DIR}
+              if [[ -e "${MIGRATE_DIR}/rhods-operator/catalog.yaml" ]]
               then
-                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
-              fi
-              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
-              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
-              then
-                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
-                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
+                  echo "Found rhods-operator catalog; copying to ${CATALOG_YAML_PATH}"
+                  cp ${MIGRATE_DIR}/rhods-operator/catalog.yaml ${CATALOG_YAML_PATH}
               else
                 PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
-                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
+                echo "${OCP_VERSION} has no rhods-operator catalog; copying ${PREVIOUS_OCP_VERSION} catalog as the expected fallback"
                 cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
               fi
               PREVIOUS_OCP_VERSION=${OCP_VERSION}
           done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
-          
-          ls -l main/pcc/
+
+          echo "=== PCC cache regeneration complete ==="
       - name: Check PCC catalog changes
         id: check-pcc-changes
         if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
@@ -190,13 +190,13 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           BUILD_CONFIG_PATH=main/config/config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          RELEASED_RHOAI_VERSIONS_PATH=main/pcc/released_rhoai_versions.txt
           PCC_FOLDER_PATH=main/pcc
 
           # --- Old validator (legacy config) ---
           GLOBAL_CONFIG_PATH=main/config/config.yaml
           echo "=== Running OLD PCC validator with config.yaml ==="
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
+          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${RELEASED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
 
           # --- New validator (range-based config, testing phase) ---
           # See: https://github.com/red-hat-data-services/RHOAI-Konflux-Automation/pull/49
@@ -204,7 +204,7 @@ jobs:
           echo ""
           echo "=== Running NEW PCC validator with new-config.yaml ==="
           pushd utils/utils/processors
-          python3 -m validator.catalog_validator -op validate-pcc --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
+          python3 -m validator.catalog_validator -op validate-pcc --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${RELEASED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
           popd
 
           echo ""
@@ -339,13 +339,13 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          RELEASED_RHOAI_VERSIONS_PATH=main/pcc/released_rhoai_versions.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
 
           # --- Old validator (legacy config) ---
           GLOBAL_CONFIG_PATH=main/config/config.yaml
           echo "=== Running OLD catalog validator with config.yaml ==="
-          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
+          python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${RELEASED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
 
           # --- New validator (range-based config, testing phase) ---
           # See: https://github.com/red-hat-data-services/RHOAI-Konflux-Automation/pull/49
@@ -353,7 +353,7 @@ jobs:
           echo ""
           echo "=== Running NEW catalog validator with new-config.yaml ==="
           pushd utils/utils/processors
-          python3 -m validator.catalog_validator -op validate-catalogs --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
+          python3 -m validator.catalog_validator -op validate-catalogs --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${RELEASED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${NEW_GLOBAL_CONFIG_PATH} && NEW_EXIT=0 || NEW_EXIT=$?
           popd
 
           echo ""
@@ -374,4 +374,3 @@ jobs:
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
           git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
-
