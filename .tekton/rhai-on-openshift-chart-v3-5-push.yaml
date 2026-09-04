@@ -1,6 +1,5 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
-# konflux build manual retrigger - 2026-08-11 10:00:58
 metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
@@ -9,7 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push"
+      "non-existent-file.non-existent-ext".pathChanged() && event == "push"
       && target_branch == "rhoai-3.5"
       && ( "helm/rhai-on-openshift-chart/**".pathChanged() || ".tekton/rhai-on-openshift-chart-v3-5-push.yaml".pathChanged() )
   labels:
@@ -62,4 +61,3 @@ spec:
     secret:
       secretName: '{{ git_auth_secret }}'
 status: {}
-#restart
