@@ -1,0 +1,204 @@
+name: Refresh PCC Cache
+run-name: Refresh PCC Cache
+
+on:
+  workflow_call:
+    inputs:
+      force-pcc-regeneration:
+        description: Force regeneration of the PCC cache
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      REGISTRY_REDHAT_IO_USERNAME:
+        description: Username used to read the Red Hat catalog registry
+        required: true
+      REGISTRY_REDHAT_IO_PASSWORD:
+        description: Password used to read the Red Hat catalog registry
+        required: true
+      RBC_WRITE_TOKEN:
+        description: Token with contents write access to RHOAI-Build-Config; required for callers in other repositories
+        required: false
+  workflow_dispatch:
+    inputs:
+      force-pcc-regeneration:
+        description: Force regeneration of the PCC cache
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pcc-refresh
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  refresh-pcc:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    container:
+      image: quay.io/rhoai-devops/olm-runner:latest
+      options: --privileged
+    steps:
+      - name: Git checkout RBC main
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: red-hat-data-services/RHOAI-Build-Config
+          token: ${{ secrets.RBC_WRITE_TOKEN || github.token }}
+          ref: main
+          path: main
+          sparse-checkout: |
+            pcc
+            config
+          sparse-checkout-cone-mode: false
+
+      - name: Git checkout utils
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: red-hat-data-services/RHOAI-Konflux-Automation
+          ref: main
+          path: utils
+
+      - name: Install Python dependencies
+        run: |
+          pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
+
+      - name: Check if PCC Cache Valid
+        id: check-if-pcc-cache-valid
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+          FORCE_PCC_REGENERATION: ${{ inputs.force-pcc-regeneration }}
+        run: |
+          set -o pipefail
+
+          echo "=== Checking PCC cache validity ==="
+          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
+          RELEASED_RHOAI_VERSIONS_FILE=main/pcc/released_rhoai_versions.txt
+          PCC_CACHE_VALID=YES
+
+          echo "Authenticating to registry.redhat.io"
+          skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+
+          if [[ "${FORCE_PCC_REGENERATION}" == "true" ]]; then
+            echo "FORCE_PCC_REGENERATION is set to true; skipping the PCC cache validity check"
+            PCC_CACHE_VALID=NO
+            echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ ! -f "${RELEASED_RHOAI_VERSIONS_FILE}" ]]; then
+            echo "ERROR: ${RELEASED_RHOAI_VERSIONS_FILE} not found" >&2
+            exit 1
+          fi
+
+          echo "Fetching released RHOAI versions..."
+          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
+
+          echo "Latest shipped RHOAI versions from the registry:"
+          cat "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}"
+          echo "Released RHOAI versions recorded in the PCC cache:"
+          cat "${RELEASED_RHOAI_VERSIONS_FILE}"
+
+          echo "Checking for newly released RHOAI versions..."
+          NEW_RELEASED_RHOAI_VERSIONS=$(python -c 'import sys; latest = set(open(sys.argv[1]).readlines()); released = set(open(sys.argv[2]).readlines()); print("\n".join(sorted(latest - released)))' "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}" "${RELEASED_RHOAI_VERSIONS_FILE}")
+
+          if [[ -n "${NEW_RELEASED_RHOAI_VERSIONS}" ]]; then
+            echo "Found new released RHOAI versions:"
+            printf '%s\n' "${NEW_RELEASED_RHOAI_VERSIONS}"
+            echo "Updating ${RELEASED_RHOAI_VERSIONS_FILE} and triggering PCC cache regeneration..."
+            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} ${RELEASED_RHOAI_VERSIONS_FILE}
+            PCC_CACHE_VALID=NO
+          else
+            echo "No new released RHOAI versions found; PCC cache is valid"
+          fi
+
+          echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Regenerate PCC Cache
+        id: regenerate-pcc-cache
+        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        run: |
+          # Declare PCC regeneration variables
+          CONFIG_PATH=main/config/new-config.yaml
+          CATALOG_DIR=main/pcc
+          SUPPORTED_OCP_VERSIONS=$(yq e '.config.supported-ocp-versions[].version' "${CONFIG_PATH}")
+          if [[ -z "${SUPPORTED_OCP_VERSIONS}" ]]; then
+            echo "ERROR: No supported OCP versions found in ${CONFIG_PATH}" >&2
+            exit 1
+          fi
+
+          echo "Supported OCP versions in ${CONFIG_PATH}:"
+          printf '%s\n' "${SUPPORTED_OCP_VERSIONS}"
+
+          PREVIOUS_OCP_VERSION=
+          while IFS= read -r OCP_VERSION;
+          do
+              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
+              MIGRATE_DIR=./catalog-migrate-${OCP_VERSION}
+
+              echo "----------------------------------------------------------------------"
+              echo "Regenerating PCC catalog for ${OCP_VERSION}"
+              echo "----------------------------------------------------------------------"
+              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} -o yaml ${MIGRATE_DIR}
+              if [[ -e "${MIGRATE_DIR}/rhods-operator/catalog.yaml" ]]
+              then
+                  echo "Found rhods-operator catalog; copying to ${CATALOG_YAML_PATH}"
+                  cp ${MIGRATE_DIR}/rhods-operator/catalog.yaml ${CATALOG_YAML_PATH}
+              else
+                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
+                echo "${OCP_VERSION} has no rhods-operator catalog; copying ${PREVIOUS_OCP_VERSION} catalog as the expected fallback"
+                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
+              fi
+              PREVIOUS_OCP_VERSION=${OCP_VERSION}
+          done <<< "${SUPPORTED_OCP_VERSIONS}"
+
+          echo "=== PCC cache regeneration complete ==="
+
+      - name: Check PCC catalog changes
+        id: check-pcc-changes
+        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
+        working-directory: main
+        run: |
+          git add -A
+          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
+            echo "pcc_catalogs_changed=true" >> $GITHUB_OUTPUT
+          else
+            # Atomic commit: The versions file must only be committed alongside the corresponding catalog updates. If the versions file is committed
+            # without updated catalogs, PCC_CACHE_VALID will read YES on the next run and skip regeneration — leaving stale catalogs permanently.
+            #
+            # If only the versions file changed, the indexes have not caught up yet. Revert all changes so the next run can retry.
+            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
+            git checkout HEAD -- .
+            echo "pcc_catalogs_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate PCC Cache
+        id: validate-pcc-cache
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
+        run: |
+          BUILD_CONFIG_PATH=main/config/new-config.yaml
+          RELEASED_RHOAI_VERSIONS_PATH=main/pcc/released_rhoai_versions.txt
+          PCC_FOLDER_PATH=main/pcc
+          GLOBAL_CONFIG_PATH=main/config/new-config.yaml
+
+          PYTHONPATH=utils/utils/processors python3 -m validator.catalog_validator \
+            -op validate-pcc \
+            --build-config-path "${BUILD_CONFIG_PATH}" \
+            --catalog-folder-path "${PCC_FOLDER_PATH}" \
+            --shipped-rhoai-versions-path "${RELEASED_RHOAI_VERSIONS_PATH}" \
+            --global-config-path "${GLOBAL_CONFIG_PATH}"
+
+      - name: Push latest PCC Cache
+        id: push-pcc-cache
+        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
+        working-directory: main
+        run: |
+          git config user.name "Openshift-AI DevOps"
+          git config user.email "openshift-ai-devops@redhat.com"
+          git commit -m "Regenerated the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
