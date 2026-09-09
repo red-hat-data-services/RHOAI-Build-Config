@@ -106,7 +106,7 @@ jobs:
           cat "${RELEASED_RHOAI_VERSIONS_FILE}"
 
           echo "Checking for newly released RHOAI versions..."
-          NEW_RELEASED_RHOAI_VERSIONS=$(python -c 'import sys; latest = set(open(sys.argv[1]).readlines()); released = set(open(sys.argv[2]).readlines()); print("\n".join(sorted(latest - released)))' "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}" "${RELEASED_RHOAI_VERSIONS_FILE}")
+          NEW_RELEASED_RHOAI_VERSIONS=$(python3 -c 'import sys; latest = set(open(sys.argv[1]).readlines()); released = set(open(sys.argv[2]).readlines()); print("\n".join(sorted(latest - released)))' "${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}" "${RELEASED_RHOAI_VERSIONS_FILE}")
 
           if [[ -n "${NEW_RELEASED_RHOAI_VERSIONS}" ]]; then
             echo "Found new released RHOAI versions:"
