@@ -9,7 +9,7 @@ metadata:
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
-      && target_branch == "rhoai-3.5"
+      && target_branch == "rhoai-3.5.1"
       && "schedule/catalog-tekton-trigger.txt".pathChanged()
   labels:
     appstudio.openshift.io/application: rhoai-v3-5
@@ -28,10 +28,10 @@ spec:
     value: '{{revision}}'
   - name: additional-tags
     value:
-    - '{{target_branch}}-{{revision}}'
-    - '{{target_branch}}-nightly'
+    - 'rhoai-3.5-{{revision}}'
+    - 'rhoai-3.5-nightly'
   - name: output-image
-    value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
+    value: quay.io/rhoai/rhoai-fbc-fragment:rhoai-3.5
   - name: rhoai-version
     value: "3.5.1"
   - name: build-platforms
@@ -66,7 +66,7 @@ spec:
     - name: url
       value: https://github.com/red-hat-data-services/konflux-central.git
     - name: revision
-      value: '{{ target_branch }}'
+      value: 'rhoai-3.5'
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
