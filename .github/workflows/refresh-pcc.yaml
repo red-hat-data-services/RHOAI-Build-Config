@@ -19,6 +19,12 @@ on:
       RBC_WRITE_TOKEN:
         description: Token with contents write access to RHOAI-Build-Config; required for callers in other repositories
         required: false
+      GITHUB_APP_ID:
+        description: GitHub App ID for generating a write token; used when RBC_WRITE_TOKEN is not provided
+        required: false
+      GITHUB_APP_PRIVATE_KEY:
+        description: GitHub App private key for generating a write token; used when RBC_WRITE_TOKEN is not provided
+        required: false
   workflow_dispatch:
     inputs:
       force-pcc-regeneration:
@@ -45,11 +51,21 @@ jobs:
       image: quay.io/rhoai-devops/olm-runner:latest
       options: --privileged
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ secrets.GITHUB_APP_ID != "" && secrets.GITHUB_APP_PRIVATE_KEY != "" && secrets.RBC_WRITE_TOKEN == "" }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.GITHUB_APP_ID }}
+          private-key: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          owner: red-hat-data-services
+          repositories: RHOAI-Build-Config
+
       - name: Git checkout RBC main
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: red-hat-data-services/RHOAI-Build-Config
-          token: ${{ secrets.RBC_WRITE_TOKEN || github.token }}
+          token: ${{ secrets.RBC_WRITE_TOKEN || steps.app-token.outputs.token || github.token }}
           ref: main
           path: main
           sparse-checkout: |
