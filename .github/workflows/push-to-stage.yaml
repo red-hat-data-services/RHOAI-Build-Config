@@ -50,8 +50,16 @@ jobs:
           echo "### git_commit: ${{ github.event.inputs.git_commit }}" >> $GITHUB_STEP_SUMMARY
           echo "### force_build: ${{ github.event.inputs.force_build }}" >> $GITHUB_STEP_SUMMARY          
 
+  refresh-pcc:
+    if: ${{ github.ref_name == 'main' }}
+    uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
+    secrets:
+      REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
+      REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
+
   push-to-stage:
     if: ${{ github.ref_name == 'main' }}
+    needs: refresh-pcc
     runs-on: ubuntu-22.04
     container:
       image: quay.io/rhoai/rhoai-task-toolset:latest
@@ -131,123 +139,6 @@ jobs:
       - name: Install python dependencies
         run: |
           pip install --default-timeout=100 -r utils/utils/bundle-processor/requirements.txt
-      - name: Check if PCC Cache Valid
-        id: check-if-pcc-cache-valid
-        env:
-          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
-          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
-        run: |
-          microdnf install -y coreutils-single && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
-          PCC_CACHE_VALID=YES
-          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > latest_shipped_rhoai_versions.txt
-          echo "latest_shipped_rhoai_versions = "
-          cat latest_shipped_rhoai_versions.txt
-          echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions.txt
-          
-          #diff=$(cmp --silent latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())).__len__())')
-          
-          if [[ $diff -gt 0 ]]
-          then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions.txt").readlines())))')
-            echo "following new versions are shipped - $diff"
-            cp latest_shipped_rhoai_versions.txt main/pcc/shipped_rhoai_versions.txt
-            PCC_CACHE_VALID=NO
-          fi
-          echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
-      - name: Regenerate PCC Cache
-        id: regenerate-pcc-cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branch }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_version }}
-        run: |
-          #install opm cli
-          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-          arch="$(uname -m | sed 's/x86_64/amd64/')"
-          opm_version="v1.47.0"
-          opm_filename="opm-$opm_version"
-          echo "-> Downloading opm" >&2
-          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
-          chmod +x "$opm_filename"
-          ln -fs "$opm_filename" opm
-          cp "$opm_filename" /usr/local/bin/opm
-          
-          microdnf install -y findutils && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
-          
-          #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION/./-}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
-
-          #Declare FBC processing variables
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
-          
-          CATALOG_GENERATION_REF_OCP_VERSION=v4.17
-          CSV_META_MIN_OCP_VERSION=417
-          BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
-          CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
-          
-          opm migrate registry.redhat.io/redhat/redhat-operator-index:${CATALOG_GENERATION_REF_OCP_VERSION} ./catalog-migrate
-          opm alpha convert-template basic catalog-migrate/rhods-operator/catalog.json -o yaml > catalog-template.yaml
-          opm alpha render-template basic catalog-template.yaml -o yaml > ${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          opm alpha render-template basic catalog-template.yaml --migrate-level=bundle-object-to-csv-metadata -o yaml > ${CSV_META_CATALOG_YAML_PATH}
-          
-          #while IFS= read -r value;
-          #do
-          #    OPENSHIFT_VERSION=$value
-          #    NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
-          #    echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
-          #
-          #    CATALOG_YAML_PATH=${BUNDLE_OBJECT_CATALOG_YAML_PATH}
-          #    CATALOG_DIR=main/pcc/${OPENSHIFT_VERSION}/rhods-operator
-          #    mkdir -p ${CATALOG_DIR}
-          #
-          #    if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-          #    then
-          #      CATALOG_YAML_PATH=${CSV_META_CATALOG_YAML_PATH}
-          #    fi
-          #    cp ${CATALOG_YAML_PATH} ${CATALOG_DIR}/catalog.yaml
-          #done < <(find main/pcc/ -maxdepth 1 -mindepth 1 -type d -printf '%f\n')
-          
-          ls -l main/pcc/
-
-      - name: Push latest PCC Cache
-        id: push-pcc-cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        working-directory: main
-        run: |
-          git config user.name "Openshift-AI DevOps"
-          git config user.email "openshift-ai-devops@redhat.com"
-          git add -A
-          # Atomic commit: only commit if PCC catalog files actually changed.
-          # If only shipped_rhoai_versions_granular.txt changed (index hasn't caught up),
-          # revert it so the next run retries regeneration.
-          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
-            git commit -m "Regeneratd the PCC Cache" -m "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push origin main
-            echo "pcc_committed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No PCC catalog files changed — index may not have caught up yet. Skipping commit to retry on next run."
-            git checkout HEAD -- .
-            echo "pcc_committed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Validate PCC Cache
-        id: validate-pcc-cache
-        if: ${{ steps.push-pcc-cache.outputs.pcc_committed == 'true' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branch }}
-        run: |
-          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions.txt
-          PCC_FOLDER_PATH=main/pcc
-
-          python3 utils/utils/validators/catalog_validator.py -op validate-pcc --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH}
-
       - name: Push To Stage
         id: push-to-stage
         env:
