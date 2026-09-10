@@ -16,8 +16,11 @@ on:
       REGISTRY_REDHAT_IO_PASSWORD:
         description: Password used to read the Red Hat catalog registry
         required: true
-      RBC_WRITE_TOKEN:
-        description: Token with contents write access to RHOAI-Build-Config; required for callers in other repositories
+      DEVOPS_APP_ID:
+        description: GitHub App ID used by callers outside RHOAI-Build-Config
+        required: false
+      DEVOPS_APP_PRIVATE_KEY:
+        description: GitHub App private key used by callers outside RHOAI-Build-Config
         required: false
   workflow_dispatch:
     inputs:
@@ -45,11 +48,21 @@ jobs:
       image: quay.io/rhoai-devops/olm-runner:latest
       options: --privileged
     steps:
+      - name: Generate GitHub App token
+        if: ${{ github.repository != 'red-hat-data-services/RHOAI-Build-Config' }}
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.DEVOPS_APP_ID }}
+          private-key: ${{ secrets.DEVOPS_APP_PRIVATE_KEY }}
+          owner: red-hat-data-services
+          repositories: RHOAI-Build-Config
+
       - name: Git checkout RBC main
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           repository: red-hat-data-services/RHOAI-Build-Config
-          token: ${{ secrets.RBC_WRITE_TOKEN || github.token }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
           ref: main
           path: main
           sparse-checkout: |
