@@ -21,6 +21,8 @@ This chart installs the RHAI operator and its cloud manager components. Exactly 
   - [Managed Dependencies](#managed-dependencies)
   - [Configuration Reference](#configuration-reference)
   - [Testing with kind](#testing-with-kind)
+  - [Upgrading](#upgrading)
+    - [Upgrading from 3.5 to 3.6](#upgrading-from-35-to-36)
   - [Uninstall](#uninstall)
     - [Clean up CRDs](#clean-up-crds)
     - [Clean up namespaces](#clean-up-namespaces)
@@ -190,6 +192,15 @@ azure:
           managementPolicy: Unmanaged
 ```
 
+To use an existing cluster cert-manager install, disable the cert-manager-operator subchart before `helm upgrade`:
+
+```yaml
+cert-manager-operator:
+  enabled: false
+```
+
+Keep `certManager.managementPolicy: Unmanaged` on the KubernetesEngine CR (default in values).
+
 ## Configuration Reference
 
 For the configuration reference, please refer to the [API reference](api-docs.md) file and the [values.yaml](values.yaml) file.
@@ -210,6 +221,28 @@ helm upgrade rhaii ./charts/rhai-on-xks-chart/ \
   --set-json 'components.kserve.gateway.allowedRoutes.namespaces={"from":"Selector","selector":{"matchLabels":{"inference-gateway-access":"true"}}}' \
   --set-file imagePullSecret.dockerConfigJson=/path/to/auth.json
 ```
+
+## Upgrading
+
+### Upgrading from 3.5 to 3.6
+
+Version 3.6 moves cert-manager installation from a kubectl-based Job hook to a Helm subchart.
+Because the cert-manager resources in 3.5 were created outside of Helm, they have no Helm
+ownership metadata. Helm will refuse to adopt them during a standard upgrade.
+
+For this one-time upgrade, pass `--take-ownership --force-conflicts` to let Helm claim those existing resources and resolve field manager conflicts:
+
+```bash
+helm upgrade rhaii ./charts/rhai-on-xks-chart/ \
+  --namespace rhai-gitops \
+  --take-ownership --force-conflicts \
+  --set azure.enabled=true \
+  --set-file imagePullSecret.dockerConfigJson=/path/to/auth.json
+```
+
+> [!NOTE]
+> `--take-ownership` and `--force-conflicts` require Helm 4.x. These flags are only needed for
+> the 3.5→3.6 upgrade; subsequent upgrades do not require them.
 
 ## Uninstall
 
@@ -249,3 +282,25 @@ kubectl delete crd coreweavekubernetesengines.infrastructure.opendatahub.io
 ### Clean up namespaces
 
 The namespaces created by the chart are not automatically removed. Clean up the namespaces as needed based on your configuration.
+
+### Clean up cert-manager-operator
+
+If `cert-manager-operator.enabled` was `true` at any point, RHAI's cert-manager resources
+(the `cert-manager-operator`/`cert-manager` namespaces, the `CertManager` CR, and its
+cluster-scoped RBAC) are **not** automatically removed on `helm uninstall`, nor when later
+setting `cert-manager-operator.enabled: false`. The chart never deletes them automatically —
+on uninstall or otherwise. If you point `cert-manager-operator.enabled: false` at a cluster
+where cert-manager was installed some other way (e.g. via OLM): treat it as unmanaged by this
+chart and remove it yourself. As with chart-managed CRDs above, remove them manually if you no
+longer need them:
+
+```bash
+# Remove the finalizer first so the CR is not stuck in Terminating after the operator is gone
+kubectl patch certmanager cluster --type=merge -p '{"metadata":{"finalizers":[]}}' 2>/dev/null || true
+# Delete the operator namespace to stop the operator before deleting the CR (otherwise it recreates it)
+kubectl delete namespace cert-manager-operator
+kubectl delete certmanager cluster --ignore-not-found
+kubectl delete namespace cert-manager
+kubectl delete clusterrole cert-manager-operator-controller-manager-clusterrole cert-manager-operator-metrics-reader
+kubectl delete clusterrolebinding cert-manager-operator-controller-manager-clusterrolebinding
+```
