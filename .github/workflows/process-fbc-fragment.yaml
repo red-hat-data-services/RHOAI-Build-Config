@@ -200,11 +200,11 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/released_rhoai_versions.txt
           CATALOG_FOLDER_PATH=${BRANCH}/catalog
 
           # --- Old validator (legacy config) ---
-          GLOBAL_CONFIG_PATH=main/config/config.yaml
+          GLOBAL_CONFIG_PATH=main/config/new-config.yaml
           echo "=== Running OLD catalog validator with config.yaml ==="
           python3 utils/utils/validators/catalog_validator.py -op validate-catalogs --build-config-path ${BUILD_CONFIG_PATH} --catalog-folder-path ${CATALOG_FOLDER_PATH} --shipped-rhoai-versions-path ${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ${GLOBAL_CONFIG_PATH} && OLD_EXIT=0 || OLD_EXIT=$?
 
