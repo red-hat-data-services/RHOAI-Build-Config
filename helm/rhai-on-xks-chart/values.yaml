@@ -19,7 +19,7 @@ rhaiOperator:
   namespace: redhat-ods-operator
   applicationsNamespace: redhat-ods-applications
   # Manager container image
-  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3aa228b5e5c21acb76d472b373cf830cf25c689527d9e78966559ccadb91b764" # image is updated during Helm chart build by konflux
+  image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:16ab6c2cdf4f42cf49f44e900434b7bbc57d2b0929e02a7673626d4dc76d67cb" # image is updated during Helm chart build by konflux
   # Image pull policy
   imagePullPolicy: Always
   # Number of operator replicas
@@ -236,7 +236,7 @@ rhaiOperator:
   #     value: quay.io/opendatahub/kserve-controller:latest
 
 hooks:
-  cliImage: "registry.redhat.io/openshift4/ose-cli-rhel9@sha256:18d9d46126acfe8ca89549d0e56c3b0c6fe978578dd8c57b2c131adff663df26"
+  cliImage: "registry.redhat.io/openshift4/ose-cli-rhel9@sha256:050b7df556b47c541259a290f7eb80ecb483610eabadd371ab0b5873dd816b7e"
   # Default resources for all hook job containers
   resources:
     limits:
@@ -325,7 +325,7 @@ azure:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3aa228b5e5c21acb76d472b373cf830cf25c689527d9e78966559ccadb91b764"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:16ab6c2cdf4f42cf49f44e900434b7bbc57d2b0929e02a7673626d4dc76d67cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -357,6 +357,8 @@ azure:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
 
 # CoreWeave cloud configuration
 coreweave:
@@ -365,7 +367,7 @@ coreweave:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3aa228b5e5c21acb76d472b373cf830cf25c689527d9e78966559ccadb91b764"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:16ab6c2cdf4f42cf49f44e900434b7bbc57d2b0929e02a7673626d4dc76d67cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -397,6 +399,8 @@ coreweave:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
 
 # AWS cloud configuration
 aws:
@@ -405,7 +409,7 @@ aws:
     # Cloud Manager operator namespace
     namespace: rhai-cloudmanager-system
     # Cloud Manager container image
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3aa228b5e5c21acb76d472b373cf830cf25c689527d9e78966559ccadb91b764"
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:16ab6c2cdf4f42cf49f44e900434b7bbc57d2b0929e02a7673626d4dc76d67cb"
     # Image pull policy
     imagePullPolicy: Always
     # Number of cloud manager replicas
@@ -437,6 +441,8 @@ aws:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
 
 # cert-manager operator subchart
 cert-manager-operator:
