@@ -230,6 +230,8 @@ ARG ODH_MOD_ARCH_DATA_REGISTRY_GIT_URL=
 ARG ODH_MOD_ARCH_DATA_REGISTRY_GIT_COMMIT=
 ARG ODH_PRAXIS_EXTPROC_GIT_URL=
 ARG ODH_PRAXIS_EXTPROC_GIT_COMMIT=
+ARG ODH_RAY_MODULE_OPERATOR_GIT_URL=
+ARG ODH_RAY_MODULE_OPERATOR_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -472,7 +474,9 @@ LABEL \
       odh-mod-arch-data-registry.git.url="${ODH_MOD_ARCH_DATA_REGISTRY_GIT_URL}" \
       odh-mod-arch-data-registry.git.commit="${ODH_MOD_ARCH_DATA_REGISTRY_GIT_COMMIT}" \
       odh-praxis-extproc.git.url="${ODH_PRAXIS_EXTPROC_GIT_URL}" \
-      odh-praxis-extproc.git.commit="${ODH_PRAXIS_EXTPROC_GIT_COMMIT}"
+      odh-praxis-extproc.git.commit="${ODH_PRAXIS_EXTPROC_GIT_COMMIT}" \
+      odh-ray-module-operator.git.url="${ODH_RAY_MODULE_OPERATOR_GIT_URL}" \
+      odh-ray-module-operator.git.commit="${ODH_RAY_MODULE_OPERATOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
