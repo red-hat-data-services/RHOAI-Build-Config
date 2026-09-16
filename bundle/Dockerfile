@@ -228,6 +228,8 @@ ARG ODH_RAY_MODULE_OPERATOR_GIT_URL=
 ARG ODH_RAY_MODULE_OPERATOR_GIT_COMMIT=
 ARG ODH_TRUSTYAI_MODULE_OPERATOR_GIT_URL=
 ARG ODH_TRUSTYAI_MODULE_OPERATOR_GIT_COMMIT=
+ARG ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_URL=
+ARG ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -468,7 +470,9 @@ LABEL \
       odh-ray-module-operator.git.url="${ODH_RAY_MODULE_OPERATOR_GIT_URL}" \
       odh-ray-module-operator.git.commit="${ODH_RAY_MODULE_OPERATOR_GIT_COMMIT}" \
       odh-trustyai-module-operator.git.url="${ODH_TRUSTYAI_MODULE_OPERATOR_GIT_URL}" \
-      odh-trustyai-module-operator.git.commit="${ODH_TRUSTYAI_MODULE_OPERATOR_GIT_COMMIT}"
+      odh-trustyai-module-operator.git.commit="${ODH_TRUSTYAI_MODULE_OPERATOR_GIT_COMMIT}" \
+      odh-mod-arch-data-connect-hub.git.url="${ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_URL}" \
+      odh-mod-arch-data-connect-hub.git.commit="${ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
