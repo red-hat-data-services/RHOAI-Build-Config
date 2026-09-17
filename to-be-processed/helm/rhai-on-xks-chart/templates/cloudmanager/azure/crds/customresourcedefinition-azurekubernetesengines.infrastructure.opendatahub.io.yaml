@@ -59,13 +59,20 @@ spec:
                   description: Dependencies defines the dependency configurations for the Azure Kubernetes Engine.
                   properties:
                     certManager:
-                      description: CertManager defines the cert-manager operator dependency.
+                      description: |-
+                        Deprecated: cert-manager is no longer a Cloud Controller Manager dependency.
+                        The XKS chart owns its installation. This field has no runtime effect and
+                        is retained for backwards compatibility.
                       properties:
                         configuration:
-                          description: Configuration for the cert-manager operator.
+                          description: |-
+                            Deprecated: cert-manager configuration is no longer used by the Cloud
+                            Controller Manager. This field has no runtime effect.
                           type: object
                         managementPolicy:
-                          description: ManagementPolicy determines whether the operator manages this dependency.
+                          description: |-
+                            Deprecated: cert-manager installation is no longer managed by the Cloud
+                            Controller Manager. This field has no runtime effect.
                           enum:
                             - Managed
                             - Unmanaged

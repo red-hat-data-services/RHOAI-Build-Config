@@ -175,7 +175,6 @@ The KubernetesEngine CRs (AWS, Azure, or CoreWeave) manage the following depende
 
 | Dependency | Description |
 | --- | --- |
-| `certManager` | Certificate management (cert-manager) |
 | `gatewayAPI` | Gateway API CRDs and controller |
 | `lws` | LeaderWorkerSet (LWS) operator |
 | `sailOperator` | Sail Operator (Istio service mesh) |
@@ -188,18 +187,19 @@ azure:
   kubernetesEngine:
     spec:
       dependencies:
-        certManager:
+        gatewayAPI:
           managementPolicy: Unmanaged
 ```
 
-To use an existing cluster cert-manager install, disable the cert-manager-operator subchart before `helm upgrade`:
+cert-manager is managed by the chart, not by the KubernetesEngine CR. To use an
+existing cluster cert-manager installation, disable the cert-manager-operator
+subchart before `helm upgrade`:
 
 ```yaml
 cert-manager-operator:
   enabled: false
 ```
 
-Keep `certManager.managementPolicy: Unmanaged` on the KubernetesEngine CR (default in values).
 
 ## Configuration Reference
 
