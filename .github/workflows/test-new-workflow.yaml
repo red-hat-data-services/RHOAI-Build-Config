@@ -16,7 +16,7 @@ on:
       - 'rhoai-[3].[0-9]-ea.[0-9]'  # e.g. rhoai-3.4-ea.1, rhoai-3.5-ea.2
       - 'rhoai-[3].[0-9][0-9]-ea.[0-9]'  # e.g. rhoai-3.10-ea.3
 permissions:
-  contents: read  # TEST MODE: read-only, no commits/pushes. Restore to 'write' for production.
+  contents: write
 
 env:
   GITHUB_ORG: red-hat-data-services
@@ -32,8 +32,16 @@ env:
   # TODO (production): change to 'main' once the refactor branch is merged.
   RKA_REFACTOR_BRANCH: refactor-fbc-processor
 jobs:
+  refresh-pcc:
+    if: ${{ github.ref_name != 'main' }}
+    uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
+    secrets:
+      REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+      REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+
   process-fbc:
     if: ${{ github.ref_name != 'main' }}
+    needs: refresh-pcc
     runs-on: ubuntu-latest
     container:
       image: quay.io/rhoai/rhoai-task-toolset:latest
@@ -126,129 +134,6 @@ jobs:
           microdnf install -y skopeo && \
               microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
-
-      - name: Check if PCC Cache Valid
-        id: check-if-pcc-cache-valid
-        env:
-          RHOAI_CATALOG_SA_USERNAME: ${{ secrets.RHOAI_CATALOG_SA_USERNAME }}
-          RHOAI_CATALOG_SA_TOKEN: ${{ secrets.RHOAI_CATALOG_SA_TOKEN }}
-        run: |
-          microdnf install -y coreutils-single && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
-          LATEST_SHIPPED_RHOAI_VERSIONS_FILE=latest_shipped_rhoai_versions.txt
-          PCC_CACHE_VALID=YES
-          skopeo login registry.redhat.io -u "${RHOAI_CATALOG_SA_USERNAME}" -p "${RHOAI_CATALOG_SA_TOKEN}"
-          skopeo list-tags docker://registry.redhat.io/rhoai/odh-operator-bundle | jq -r '.Tags | .[] | select(. | startswith ("v"))' | sort > ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
-          echo "latest_shipped_rhoai_versions = "
-          cat ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE}
-          echo "shipped_rhoai_versions = "
-          cat main/pcc/shipped_rhoai_versions_granular.txt
-
-          #diff=$(cmp --silent ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt || echo "files are different")
-          diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())).__len__())')
-
-          if [[ $diff -gt 0 ]]
-          then
-            diff=$(python -c 'print(list(set(open("latest_shipped_rhoai_versions.txt").readlines()) - set(open("main/pcc/shipped_rhoai_versions_granular.txt").readlines())))')
-            echo "following new versions are shipped - $diff"
-            cp ${LATEST_SHIPPED_RHOAI_VERSIONS_FILE} main/pcc/shipped_rhoai_versions_granular.txt
-            PCC_CACHE_VALID=NO
-          fi
-          echo "PCC_CACHE_VALID=${PCC_CACHE_VALID}" >> $GITHUB_OUTPUT
-      - name: Regenerate PCC Cache
-        id: regenerate-pcc-cache
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        env:
-          BRANCH: ${{ github.event.inputs.release_branch }}
-          RHOAI_VERSION: ${{ github.event.inputs.rhoai_version }}
-        run: |
-          #install opm cli
-          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-          arch="$(uname -m | sed 's/x86_64/amd64/')"
-          opm_version="v1.47.0"
-          opm_filename="opm-$opm_version"
-          echo "-> Downloading opm" >&2
-          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
-          chmod +x "$opm_filename"
-          ln -fs "$opm_filename" opm
-          cp "$opm_filename" /usr/local/bin/opm
-
-          microdnf install -y findutils && \
-              microdnf clean all && rm -rf /var/cache/dnf/*
-
-          #Declare basic variables
-          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
-          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
-
-          #Declare FBC processing variables
-          CONFIG_PATH=main/config/config.yaml
-
-          CSV_META_MIN_OCP_VERSION=417
-          CATALOG_DIR=main/pcc
-          PREVIOUS_OCP_VERSION=
-          while IFS= read -r OCP_VERSION;
-          do
-              CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${OCP_VERSION}.yaml
-              NUMERIC_OCP_VERSION=${OCP_VERSION/v4./4}
-              CSV_META_FLAG=
-              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]
-              then
-                CSV_META_FLAG="--migrate-level=bundle-object-to-csv-metadata"
-              fi
-              opm migrate registry.redhat.io/redhat/redhat-operator-index:${OCP_VERSION} ./catalog-migrate-${OCP_VERSION}
-              if [[ -e "catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json" ]]
-              then
-                  opm alpha convert-template basic catalog-migrate-${OCP_VERSION}/rhods-operator/catalog.json -o yaml > catalog-template-${OCP_VERSION}.yaml
-                  opm alpha render-template basic catalog-template-${OCP_VERSION}.yaml ${CSV_META_FLAG} -o yaml > ${CATALOG_YAML_PATH}
-              else
-                PREVIOUS_CATALOG_YAML_PATH=${CATALOG_DIR}/catalog-${PREVIOUS_OCP_VERSION}.yaml
-                echo "${OCP_VERSION} seems to be a new OCP version being used for RHOAI for the first time, ...copying contents of catalog-${PREVIOUS_OCP_VERSION}.yaml to catalog-${OCP_VERSION}.yaml.."
-                cp -f ${PREVIOUS_CATALOG_YAML_PATH} ${CATALOG_YAML_PATH}
-              fi
-              PREVIOUS_OCP_VERSION=${OCP_VERSION}
-          done < <(yq e '.config.supported-ocp-versions[].version' ${CONFIG_PATH})
-
-          ls -l main/pcc/
-      - name: Check PCC catalog changes
-        id: check-pcc-changes
-        if: ${{ steps.check-if-pcc-cache-valid.outputs.PCC_CACHE_VALID == 'NO' }}
-        working-directory: main
-        run: |
-          # Atomic commit: catalogs + versions file must be committed
-          # together. If the versions file is committed without updated
-          # catalogs, PCC_CACHE_VALID will read YES on the next run and
-          # skip regeneration — leaving stale catalogs permanently.
-          # If only the versions file changed (indexes haven't caught up),
-          # revert everything so the next run retries.
-          git add -A
-          if git diff --staged --name-only | grep -q "pcc/catalog-"; then
-            echo "pcc_catalogs_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No PCC catalog files changed — indexes may not have caught up yet. Skipping commit to retry on next run."
-            git checkout HEAD -- .
-            echo "pcc_catalogs_changed=false" >> $GITHUB_OUTPUT
-          fi
-
-      # TODO (production): uses new validator only. If the old validator is also needed
-      # during transition, add it back here (see git history for the dual-validator pattern).
-      - name: Validate PCC Cache
-        id: validate-pcc-cache
-        if: ${{ steps.check-pcc-changes.outputs.pcc_catalogs_changed == 'true' }}
-        env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
-          PYTHONPATH: utils/utils/processors
-        run: |
-          BUILD_CONFIG_PATH=main/config/config.yaml
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
-          PCC_FOLDER_PATH=main/pcc
-          GLOBAL_CONFIG_PATH=main/config/new-config.yaml
-
-          pushd utils/utils/processors
-          python3 -m validator.catalog_validator -op validate-pcc --build-config-path ../../../${BUILD_CONFIG_PATH} --catalog-folder-path ../../../${PCC_FOLDER_PATH} --shipped-rhoai-versions-path ../../../${SHIPPED_RHOAI_VERSIONS_PATH} --global-config-path ../../../${GLOBAL_CONFIG_PATH}
-          popd
-
-      # TEST MODE: PCC push step removed — read-only workflow.
-      # TODO (production): restore "Push latest PCC Cache" step (see git history).
 
       # ════════════════════════════════════════════════════════════════════════
       # RUN BOTH PROCESSORS IN PARALLEL
@@ -503,7 +388,7 @@ jobs:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
           PYTHONPATH: utils/utils/processors
         run: |
-          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/shipped_rhoai_versions_granular.txt
+          SHIPPED_RHOAI_VERSIONS_PATH=main/pcc/released_rhoai_versions.txt
           GLOBAL_CONFIG_PATH=main/config/new-config.yaml
 
           for LABEL_AND_PATH in "OLD:${BRANCH}" "NEW:${BRANCH}-new"; do
@@ -562,15 +447,13 @@ jobs:
       # ════════════════════════════════════════════════════════════════════════
       # PRODUCTION CUTOVER CHECKLIST
       # When the new processor is validated and ready to replace the old one:
-      #   1. permissions: contents: read → write
-      #   2. Remove PREVIOUS_RELEASE env var (replaced by INCLUDE_RELEASES)
-      #   3. Remove RKA_REFACTOR_BRANCH, change utils checkout ref to 'main'
-      #   4. Remove old processor from the parallel run step
-      #   5. Remove old processor clone steps (RBC release, RBC previous release)
-      #   6. Remove old processor pip install line
-      #   7. Remove diff step
-      #   8. Remove "OLD" from validation loop (only validate new output)
-      #   9. Rename ${BRANCH}-new → ${BRANCH} in new processor steps
-      #  10. Restore "Push latest PCC Cache" step
-      #  11. Restore "Commit and push" step for the release branch
+      #   1. Remove PREVIOUS_RELEASE env var (replaced by INCLUDE_RELEASES)
+      #   2. Remove RKA_REFACTOR_BRANCH, change utils checkout ref to 'main'
+      #   3. Remove old processor from the parallel run step
+      #   4. Remove old processor clone steps (RBC release, RBC previous release)
+      #   5. Remove old processor pip install line
+      #   6. Remove diff step
+      #   7. Remove "OLD" from validation loop (only validate new output)
+      #   8. Rename ${BRANCH}-new → ${BRANCH} in new processor steps
+      #   9. Restore "Commit and push" step for the release branch
       # ════════════════════════════════════════════════════════════════════════
