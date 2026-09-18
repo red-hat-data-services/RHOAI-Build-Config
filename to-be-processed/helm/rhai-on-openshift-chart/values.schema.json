@@ -198,6 +198,9 @@
         "tempo": {
           "$ref": "#/definitions/dependency"
         },
+        "loki": {
+          "$ref": "#/definitions/dependency"
+        },
         "customMetricsAutoscaler": {
           "$ref": "#/definitions/dependency"
         },
@@ -350,6 +353,18 @@
         "namespace": {
           "type": "string",
           "description": "Namespace where the operator will be installed"
+        },
+        "createNamespace": {
+          "type": "boolean",
+          "description": "Whether Helm should create the operator namespace. Set to false if the namespace already exists."
+        },
+        "createOperatorGroup": {
+          "type": "boolean",
+          "description": "Whether Helm should create an OperatorGroup in the namespace. Set to false if an OperatorGroup already exists in the namespace."
+        },
+        "operatorGroupName": {
+          "type": "string",
+          "description": "Custom name for the OperatorGroup (defaults to operator name or namespace)"
         },
         "source": {
           "type": "string",

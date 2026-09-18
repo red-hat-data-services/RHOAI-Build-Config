@@ -10,6 +10,8 @@ Generate Namespace for an operator
 Arguments (passed as dict):
   - namespace: namespace name
   - root: root context ($)
+  - namespaceLabels: additional Namespace labels (optional)
+  - namespaceAnnotations: additional Namespace annotations (optional)
 */}}
 {{- define "rhoai-dependencies.operator.namespace" -}}
 apiVersion: v1
@@ -18,13 +20,21 @@ metadata:
   name: {{ .namespace }}
   annotations:
     helm.sh/resource-policy: keep
+    {{- with .namespaceAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   labels:
     {{- include "rhoai-dependencies.labels" .root | nindent 4 }}
+    {{- with .namespaceLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 {{- end }}
 
 {{/*
 Generate OperatorGroup for an operator
 Arguments (passed as dict):
+  - name: operator name
+  - operatorGroupName: custom OperatorGroup name (optional, defaults to name)
   - namespace: namespace name
   - targetNamespaces: list of target namespaces (optional, omit for AllNamespaces mode)
   - root: root context ($)
@@ -33,7 +43,7 @@ Arguments (passed as dict):
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: {{ .name }}
+  name: {{ .operatorGroupName | default .name }}
   namespace: {{ .namespace }}
   labels:
     {{- include "rhoai-dependencies.labels" .root | nindent 4 }}
@@ -94,10 +104,13 @@ spec:
 {{- end }}
 
 {{/*
-Generate complete OLM operator installation (Namespace + OperatorGroup + Subscription)
+Generate complete OLM operator installation (Namespace, OperatorGroup, Subscription)
 Arguments (passed as dict):
   - name: operator name
+  - operatorGroupName: custom OperatorGroup name (optional, defaults to name)
   - namespace: namespace name
+  - createNamespace: whether to generate Namespace (optional, defaults to true)
+  - createOperatorGroup: whether to generate OperatorGroup (optional, defaults to true)
   - channel: subscription channel
   - source: catalog source (optional)
   - sourceNamespace: catalog source namespace (optional)
@@ -111,10 +124,21 @@ Arguments (passed as dict):
   - root: root context ($)
 */}}
 {{- define "rhoai-dependencies.operator.olm" -}}
+{{- $createNamespace := true -}}
+{{- if hasKey . "createNamespace" -}}
+{{- $createNamespace = .createNamespace -}}
+{{- end -}}
+{{- if $createNamespace }}
 {{ include "rhoai-dependencies.operator.namespace" . }}
 ---
+{{- end }}
+{{- $createOperatorGroup := true -}}
+{{- if hasKey . "createOperatorGroup" -}}
+{{- $createOperatorGroup = .createOperatorGroup -}}
+{{- end -}}
+{{- if $createOperatorGroup }}
 {{ include "rhoai-dependencies.operator.operatorgroup" . }}
 ---
+{{- end }}
 {{ include "rhoai-dependencies.operator.subscription" . }}
 {{- end }}
-
