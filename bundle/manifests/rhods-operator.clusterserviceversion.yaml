@@ -106,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:84a5a859daacab2f3a40302dc54bccc1b488bce517bbfcafb92b7cffea4f1bb6"
-    createdAt: "2026-09-18T23:23:12Z"
+    createdAt: "2026-09-19T01:08:15Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -199,7 +199,7 @@ metadata:
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
       "datasciencepipelines.components.platform.opendatahub.io", "kueues.components.platform.opendatahub.io",
-      "rays.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io"]'
+      "trustyais.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -272,11 +272,6 @@ spec:
       version: v1alpha1
     - kind: Platform
       name: platforms.config.opendatahub.io
-      version: v1alpha1
-    - description: Ray is the Schema for the rays API
-      displayName: Ray
-      kind: Ray
-      name: rays.components.platform.opendatahub.io
       version: v1alpha1
     - description: TrustyAI is the Schema for the trustyais API
       displayName: Trusty AI
@@ -1135,6 +1130,14 @@ spec:
           - update
           - watch
         - apiGroups:
+          - olm.operatorframework.io
+          resources:
+          - clusterextensions
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
           - opendatahub.io
           resources:
           - odhdashboardconfigs
@@ -1263,29 +1266,6 @@ spec:
           - policy
           resources:
           - poddisruptionbudgets
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - ray.io
-          resources:
-          - rayclusters
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-        - apiGroups:
-          - ray.io
-          resources:
-          - rayjobs
-          - rayservices
           verbs:
           - create
           - delete
