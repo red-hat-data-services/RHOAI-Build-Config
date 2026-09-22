@@ -106,7 +106,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-09-22T01:08:43Z"
+    createdAt: "2026-09-22T16:39:57Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1121,8 +1121,17 @@ spec:
         - apiGroups:
           - olm.operatorframework.io
           resources:
+          - clustercatalogs
+          verbs:
+          - get
+          - list
+          - watch
+        - apiGroups:
+          - olm.operatorframework.io
+          resources:
           - clusterextensions
           verbs:
+          - delete
           - get
           - list
           - watch
