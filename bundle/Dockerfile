@@ -230,6 +230,8 @@ ARG ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_URL=
 ARG ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_COMMIT=
 ARG ODH_AUTORAG_INFERENCE_GIT_URL=
 ARG ODH_AUTORAG_INFERENCE_GIT_COMMIT=
+ARG ODH_OPENSHELL_GATEWAY_GIT_URL=
+ARG ODH_OPENSHELL_GATEWAY_GIT_COMMIT=
 ARG ODH_OPENSHELL_CLI_GIT_URL=
 ARG ODH_OPENSHELL_CLI_GIT_COMMIT=
 ARG ODH_OPENSHELL_SUPERVISOR_GIT_URL=
@@ -477,6 +479,8 @@ LABEL \
       odh-mod-arch-data-connect-hub.git.commit="${ODH_MOD_ARCH_DATA_CONNECT_HUB_GIT_COMMIT}" \
       odh-autorag-inference.git.url="${ODH_AUTORAG_INFERENCE_GIT_URL}" \
       odh-autorag-inference.git.commit="${ODH_AUTORAG_INFERENCE_GIT_COMMIT}" \
+      odh-openshell-gateway.git.url="${ODH_OPENSHELL_GATEWAY_GIT_URL}" \
+      odh-openshell-gateway.git.commit="${ODH_OPENSHELL_GATEWAY_GIT_COMMIT}" \
       odh-openshell-cli.git.url="${ODH_OPENSHELL_CLI_GIT_URL}" \
       odh-openshell-cli.git.commit="${ODH_OPENSHELL_CLI_GIT_COMMIT}" \
       odh-openshell-supervisor.git.url="${ODH_OPENSHELL_SUPERVISOR_GIT_URL}" \
