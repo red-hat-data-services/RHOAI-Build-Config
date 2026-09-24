@@ -187,7 +187,7 @@ spec:
                           pattern: ^(0(\.[0-9]+)?|1(\.0+)?)$
                           type: string
                         storage:
-                          description: TracesStorage defines the storage configuration for tracing
+                          description: Storage configures the built-in Tempo backend. Omit when using exporters only (external observability).
                           properties:
                             backend:
                               description: |-
@@ -238,15 +238,16 @@ spec:
                                 TLS is disabled by default to maintain backward compatibility
                               type: boolean
                           type: object
-                      required:
-                        - storage
                       type: object
+                      x-kubernetes-validations:
+                        - message: traces requires storage and/or at least one exporter
+                          rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
                       rule: 'has(self.alerting) ? has(self.metrics.storage) : true'
-                    - message: CollectorReplicas can only be set when metrics.storage or traces are configured, and must be > 0
-                      rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && (self.metrics.storage != null || self.traces != null))'
+                    - message: CollectorReplicas can only be set when metrics (storage or exporters) or traces are configured, and must be > 0
+                      rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
                 serviceMesh:
                   description: |-
                     Configures Service Mesh as networking layer for Data Science Clusters components.
@@ -624,7 +625,7 @@ spec:
                           pattern: ^(0(\.[0-9]+)?|1(\.0+)?)$
                           type: string
                         storage:
-                          description: TracesStorage defines the storage configuration for tracing
+                          description: Storage configures the built-in Tempo backend. Omit when using exporters only (external observability).
                           properties:
                             backend:
                               description: |-
@@ -675,15 +676,16 @@ spec:
                                 TLS is disabled by default to maintain backward compatibility
                               type: boolean
                           type: object
-                      required:
-                        - storage
                       type: object
+                      x-kubernetes-validations:
+                        - message: traces requires storage and/or at least one exporter
+                          rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
                       rule: 'has(self.alerting) ? has(self.metrics.storage) : true'
-                    - message: CollectorReplicas can only be set when metrics.storage or traces are configured, and must be > 0
-                      rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && (self.metrics.storage != null || self.traces != null))'
+                    - message: CollectorReplicas can only be set when metrics (storage or exporters) or traces are configured, and must be > 0
+                      rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
                 trustedCABundle:
                   description: |-
                     When set to `Managed`, adds odh-trusted-ca-bundle Configmap to all namespaces that includes
