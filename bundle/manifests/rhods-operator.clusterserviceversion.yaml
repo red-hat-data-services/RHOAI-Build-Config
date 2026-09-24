@@ -105,8 +105,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7faca6813063d5bc742ad032e1c37126734704f18771ecd331f988d3f90a44fa"
-    createdAt: "2026-09-24T20:38:49Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:a234b2fce92e2f80c3f76089199feae7509a0491b3ed2873ab6b2d52f4dc3367"
+    createdAt: "2026-09-24T20:50:28Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -468,18 +468,6 @@ spec:
           - update
           - watch
         - apiGroups:
-          - argoproj.io
-          resources:
-          - workflows
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
           - authentication.k8s.io
           resources:
           - tokenreviews
@@ -571,7 +559,6 @@ spec:
           - aihubs
           - aipipelines
           - dashboards
-          - datasciencepipelines
           - feastoperators
           - kserves
           - kueues
@@ -598,7 +585,6 @@ spec:
           - aigateways/finalizers
           - aihubs/finalizers
           - dashboards/finalizers
-          - datasciencepipelines/finalizers
           - feastoperators/finalizers
           - kserves/finalizers
           - kueues/finalizers
@@ -619,7 +605,6 @@ spec:
           - aigateways/status
           - aihubs/status
           - dashboards/status
-          - datasciencepipelines/status
           - feastoperators/status
           - kserves/status
           - kueues/status
@@ -759,27 +744,6 @@ spec:
           - datasciencecluster.opendatahub.io
           resources:
           - datascienceclusters/status
-          verbs:
-          - get
-          - patch
-          - update
-        - apiGroups:
-          - datasciencepipelinesapplications.opendatahub.io
-          resources:
-          - datasciencepipelinesapplications
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - datasciencepipelinesapplications.opendatahub.io
-          resources:
-          - datasciencepipelinesapplications/finalizers
-          - datasciencepipelinesapplications/status
           verbs:
           - get
           - patch
@@ -1830,7 +1794,7 @@ spec:
                   value: "0.24.0+cpu"
                 - name: RELATED_IMAGE_ODH_VLLM_CPU_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.24.0+cpu"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7faca6813063d5bc742ad032e1c37126734704f18771ecd331f988d3f90a44fa"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:a234b2fce92e2f80c3f76089199feae7509a0491b3ed2873ab6b2d52f4dc3367"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1882,7 +1846,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7faca6813063d5bc742ad032e1c37126734704f18771ecd331f988d3f90a44fa"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:a234b2fce92e2f80c3f76089199feae7509a0491b3ed2873ab6b2d52f4dc3367"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2197,8 +2161,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-7faca6813063d5bc742ad032e1c37126734704f18771ecd331f988d3f90a44fa-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7faca6813063d5bc742ad032e1c37126734704f18771ecd331f988d3f90a44fa"
+  - name: odh-rhel9-operator-a234b2fce92e2f80c3f76089199feae7509a0491b3ed2873ab6b2d52f4dc3367-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:a234b2fce92e2f80c3f76089199feae7509a0491b3ed2873ab6b2d52f4dc3367"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:b4b8b5da3d7506ac52ff0064cde91ebf4d04677331b3f706a4a7f75e3f650097"
   - name: odh_ai_gateway_operator_image
