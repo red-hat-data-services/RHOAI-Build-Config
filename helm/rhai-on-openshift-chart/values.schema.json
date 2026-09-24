@@ -23,9 +23,9 @@
     },
     "profile": {
       "type": "string",
-      "enum": ["default", "rhaii"],
+      "enum": ["default", "maas", "rhaii"],
       "default": "default",
-      "description": "Deploy profile that sets default component managementStates. 'default' keeps all components Removed. 'rhaii' enables only KServe for inference/model serving. Explicit managementState values override the profile."
+      "description": "Deploy profile that sets default component managementStates. 'default' keeps all components Removed. 'maas' enables AIGateway with modelsAsAService + KServe for MaaS deployments. 'rhaii' enables only KServe for inference/model serving. Explicit managementState values override the profile."
     },
     "olm": {
       "type": "object",
@@ -198,6 +198,9 @@
         "tempo": {
           "$ref": "#/definitions/dependency"
         },
+        "loki": {
+          "$ref": "#/definitions/dependency"
+        },
         "customMetricsAutoscaler": {
           "$ref": "#/definitions/dependency"
         },
@@ -256,6 +259,24 @@
             "source": {
               "type": "string",
               "description": "Catalog source"
+            },
+            "config": {
+              "type": "object",
+              "description": "Additional Subscription config merged with chart defaults (e.g., RELATED_IMAGE env vars)",
+              "properties": {
+                "env": {
+                  "type": "array",
+                  "description": "Environment variables to inject into the operator Subscription config",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": { "type": "string" },
+                      "value": { "type": "string" }
+                    },
+                    "required": ["name", "value"]
+                  }
+                }
+              }
             }
           },
           "required": ["channel", "name", "namespace", "source"],
@@ -332,6 +353,18 @@
         "namespace": {
           "type": "string",
           "description": "Namespace where the operator will be installed"
+        },
+        "createNamespace": {
+          "type": "boolean",
+          "description": "Whether Helm should create the operator namespace. Set to false if the namespace already exists."
+        },
+        "createOperatorGroup": {
+          "type": "boolean",
+          "description": "Whether Helm should create an OperatorGroup in the namespace. Set to false if an OperatorGroup already exists in the namespace."
+        },
+        "operatorGroupName": {
+          "type": "string",
+          "description": "Custom name for the OperatorGroup (defaults to operator name or namespace)"
         },
         "source": {
           "type": "string",
@@ -825,6 +858,19 @@
           "type": "object",
           "description": "Gateway spec",
           "additionalProperties": true
+        },
+        "openshiftRoute": {
+          "type": "object",
+          "description": "Optional ClusterIP Gateway service fronted by an OpenShift re-encrypt Route",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "name": { "type": "string" },
+            "host": { "type": "string" },
+            "gatewayParametersName": { "type": "string" },
+            "servingCertSecretName": { "type": "string" }
+          },
+          "required": ["enabled", "name", "host", "gatewayParametersName", "servingCertSecretName"],
+          "additionalProperties": false
         }
       },
       "required": ["create", "name", "namespace", "spec"],

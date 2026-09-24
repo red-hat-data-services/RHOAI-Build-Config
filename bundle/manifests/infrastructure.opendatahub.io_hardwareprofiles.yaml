@@ -39,6 +39,23 @@ spec:
           spec:
             description: HardwareProfileSpec defines the desired state of HardwareProfile.
             properties:
+              dra:
+                description: |-
+                  DRA references an existing Dynamic Resource Allocation ResourceClaimTemplate that workloads
+                  using this hardware profile should attach. The referenced object must already exist in the
+                  workload's namespace and is not created, owned, or cleaned up by the operator.
+                properties:
+                  resourceClaimTemplateName:
+                    description: |-
+                      ResourceClaimTemplateName names a pre-existing ResourceClaimTemplate in the workload's
+                      namespace. The consuming module validates that the object exists at admission time.
+                    maxLength: 253
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                required:
+                - resourceClaimTemplateName
+                type: object
               identifiers:
                 description: The array of identifiers
                 items:
@@ -223,6 +240,22 @@ spec:
           spec:
             description: HardwareProfileSpec defines the desired state of HardwareProfile.
             properties:
+              dra:
+                description: |-
+                  DRA is mirrored here to preserve the field during conversion to and from v1.
+                  It is not consumed by any v1alpha1 code path.
+                properties:
+                  resourceClaimTemplateName:
+                    description: |-
+                      ResourceClaimTemplateName names a pre-existing ResourceClaimTemplate in the workload's
+                      namespace. The consuming module validates that the object exists at admission time.
+                    maxLength: 253
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                required:
+                - resourceClaimTemplateName
+                type: object
               identifiers:
                 description: The array of identifiers
                 items:

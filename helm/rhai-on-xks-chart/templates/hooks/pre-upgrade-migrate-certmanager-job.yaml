@@ -59,6 +59,16 @@ rules:
     verbs:
       - get
       - list
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    resourceNames:
+      - cert-manager-operator-lock
+    verbs:
+      - get
+      - patch
   - apiGroups:
       - infrastructure.opendatahub.io
     resources:
