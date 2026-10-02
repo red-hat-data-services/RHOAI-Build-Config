@@ -238,6 +238,8 @@ ARG ODH_OPENSHELL_SUPERVISOR_GIT_URL=
 ARG ODH_OPENSHELL_SUPERVISOR_GIT_COMMIT=
 ARG ODH_MAAS_DISCOVERY_GIT_URL=
 ARG ODH_MAAS_DISCOVERY_GIT_COMMIT=
+ARG ODH_OPENSHELL_SANDBOX_GIT_URL=
+ARG ODH_OPENSHELL_SANDBOX_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -488,7 +490,9 @@ LABEL \
       odh-openshell-supervisor.git.url="${ODH_OPENSHELL_SUPERVISOR_GIT_URL}" \
       odh-openshell-supervisor.git.commit="${ODH_OPENSHELL_SUPERVISOR_GIT_COMMIT}" \
       odh-maas-discovery.git.url="${ODH_MAAS_DISCOVERY_GIT_URL}" \
-      odh-maas-discovery.git.commit="${ODH_MAAS_DISCOVERY_GIT_COMMIT}"
+      odh-maas-discovery.git.commit="${ODH_MAAS_DISCOVERY_GIT_COMMIT}" \
+      odh-openshell-sandbox.git.url="${ODH_OPENSHELL_SANDBOX_GIT_URL}" \
+      odh-openshell-sandbox.git.commit="${ODH_OPENSHELL_SANDBOX_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
