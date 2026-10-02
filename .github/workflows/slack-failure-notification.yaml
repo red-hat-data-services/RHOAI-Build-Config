@@ -28,11 +28,12 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
           SLACK_COLOR: failure
-          SLACK_TITLE: ":red_circle: ${{ inputs.workflow_name }} Failed"
+          SLACK_TITLE: ":red_circle: Workflow Failed"
           SLACK_MESSAGE: |
+            *Status:* :x: *FAILED*
             *Workflow:* ${{ inputs.workflow_name }}
             *Branch:* `${{ inputs.branch }}`
-            *Run:* <${{ inputs.run_url }}|View Details>
+            *Run:* <${{ inputs.run_url }}|View Failed Run>
 
             <!subteam^S0ABFF86BNE> Please investigate
           MSG_MINIMAL: true
