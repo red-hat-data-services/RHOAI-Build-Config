@@ -130,8 +130,6 @@ ARG ODH_VLLM_CPU_GIT_URL=
 ARG ODH_VLLM_CPU_GIT_COMMIT=
 ARG ODH_VLLM_CUDA_GIT_URL=
 ARG ODH_VLLM_CUDA_GIT_COMMIT=
-ARG ODH_VLLM_GAUDI_GIT_URL=
-ARG ODH_VLLM_GAUDI_GIT_COMMIT=
 ARG ODH_VLLM_ROCM_GIT_URL=
 ARG ODH_VLLM_ROCM_GIT_COMMIT=
 ARG ODH_WORKBENCH_CODESERVER_DATASCIENCE_CPU_PY312_GIT_URL=
@@ -298,8 +296,6 @@ LABEL \
       odh-vllm-cpu.git.commit="${ODH_VLLM_CPU_GIT_COMMIT}" \
       odh-vllm-cuda.git.url="${ODH_VLLM_CUDA_GIT_URL}" \
       odh-vllm-cuda.git.commit="${ODH_VLLM_CUDA_GIT_COMMIT}" \
-      odh-vllm-gaudi.git.url="${ODH_VLLM_GAUDI_GIT_URL}" \
-      odh-vllm-gaudi.git.commit="${ODH_VLLM_GAUDI_GIT_COMMIT}" \
       odh-vllm-rocm.git.url="${ODH_VLLM_ROCM_GIT_URL}" \
       odh-vllm-rocm.git.commit="${ODH_VLLM_ROCM_GIT_COMMIT}" \
       odh-workbench-codeserver-datascience-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_DATASCIENCE_CPU_PY312_GIT_URL}" \
