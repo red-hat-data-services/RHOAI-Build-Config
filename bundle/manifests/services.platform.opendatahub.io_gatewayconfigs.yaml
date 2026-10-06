@@ -50,11 +50,10 @@ spec:
             properties:
               additionalIngresses:
                 description: |-
-                  AdditionalIngresses defines additional listeners on the managed Gateway.
-                  Authentication and scaling fields are defined by the per-ingress auth contract.
+                  AdditionalIngresses defines additional Gateways managed by GatewayConfig.
+                  Component controllers manage the HTTPRoutes attached to these Gateways.
                 items:
-                  description: AdditionalIngress defines topology for an additional
-                    Gateway listener.
+                  description: AdditionalIngress defines an additional Gateway.
                   properties:
                     hostname:
                       description: Hostname is the externally visible hostname for
@@ -62,40 +61,33 @@ spec:
                       maxLength: 253
                       type: string
                     ingressControllerName:
-                      description: IngressControllerName identifies the OpenShift
-                        IngressController that admits the bridge Route.
+                      description: IngressControllerName is the IngressController
+                        whose Route admission is used for readiness.
                       maxLength: 63
                       pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
                       type: string
-                    listenerPort:
-                      description: |-
-                        ListenerPort is the stable internal port used by this Gateway listener.
-                        It is immutable after the ingress is created.
-                      format: int32
-                      maximum: 65535
-                      minimum: 1
-                      type: integer
-                      x-kubernetes-validations:
-                      - message: ListenerPort is immutable
-                        rule: self == oldSelf
                     name:
-                      description: Name is the stable identity of this ingress and
-                        the Gateway listener name.
-                      maxLength: 63
-                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                      description: |-
+                        Name is the Gateway name and stable identity of this ingress.
+                        The 36-character limit keeps Istio's <Gateway>-<GatewayClass> Service name within 63 characters.
+                      maxLength: 36
+                      pattern: ^[a-z]([-a-z0-9]*[a-z0-9])?$
                       type: string
+                      x-kubernetes-validations:
+                      - message: name conflicts with a default Gateway
+                        rule: self != 'data-science-gateway' && self != 'rh-ai-gateway'
                     routeLabels:
                       additionalProperties:
                         type: string
                       description: |-
-                        RouteLabels are applied to the bridge Route and matched against the target
-                        IngressController route selector.
+                        RouteLabels are applied to the bridge Route and can match the target
+                        IngressController route selector. They do not prevent other matching
+                        IngressControllers from admitting the Route.
                       minProperties: 1
                       type: object
                   required:
                   - hostname
                   - ingressControllerName
-                  - listenerPort
                   - name
                   - routeLabels
                   type: object
@@ -334,15 +326,16 @@ spec:
             description: GatewayConfigStatus defines the observed state of GatewayConfig
             properties:
               additionalIngresses:
-                description: AdditionalIngresses contains configured additional ingresses,
-                  including entries that are not ready.
+                description: |-
+                  AdditionalIngresses contains configured additional ingresses, including entries that are not ready.
+                  Their GatewayReady conditions feed the top-level AdditionalGatewaysReady condition.
                 items:
                   description: AdditionalIngressStatus reports readiness for one additional
                     ingress.
                   properties:
                     conditions:
-                      description: Conditions report independent listener, Route,
-                        authentication, and aggregate readiness.
+                      description: Conditions report Gateway, Route, authentication,
+                        and aggregate readiness.
                       items:
                         properties:
                           lastHeartbeatTime:
@@ -401,6 +394,21 @@ spec:
                       x-kubernetes-list-map-keys:
                       - type
                       x-kubernetes-list-type: map
+                    gatewayRef:
+                      description: |-
+                        GatewayRef identifies the operator-managed Gateway for component HTTPRoute parentRefs.
+                        The reference remains published while the ingress is configured, regardless of readiness.
+                      properties:
+                        name:
+                          description: Name is the Gateway name.
+                          type: string
+                        namespace:
+                          description: Namespace is the namespace containing the Gateway.
+                          type: string
+                      required:
+                      - name
+                      - namespace
+                      type: object
                     hostname:
                       description: Hostname is the configured externally visible hostname.
                       type: string
