@@ -220,3 +220,14 @@ jobs:
           git add -A
           git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
 
+  notify-failure:
+    needs: [refresh-pcc, process-fbc]
+    if: ${{ failure() }}
+    uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/slack-failure-notification.yaml@main
+    with:
+      workflow_name: "Process FBC Fragment"
+      branch: ${{ github.head_ref || github.ref_name }}
+      run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets:
+      SLACK_NOTIFICATIONS_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
+
