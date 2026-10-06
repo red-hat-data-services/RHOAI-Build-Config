@@ -180,3 +180,14 @@ jobs:
           git diff --staged --quiet || (git commit -m "Updating the bundle-csv and helm chart values with latest images
 
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push ${FORCE_FLAG} origin HEAD:${PUSH_BRANCH})
+
+  notify-failure:
+    needs: process-bundle
+    if: ${{ failure() }}
+    uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/slack-failure-notification.yaml@main
+    with:
+      workflow_name: "Nightly Bundle Build"
+      branch: ${{ github.head_ref || github.ref_name }}
+      run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets:
+      SLACK_NOTIFICATIONS_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
