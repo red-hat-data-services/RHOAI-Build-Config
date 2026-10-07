@@ -113,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c04c385e9a6287d5d9cf215432532070316df446f17b7372eed6f39defd79fd2"
-    createdAt: "2026-10-07T16:07:19Z"
+    createdAt: "2026-10-07T16:45:32Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -211,9 +211,8 @@ metadata:
     operatorframework.io/suggested-namespace: redhat-ods-operator
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
-    operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
-      "kueues.components.platform.opendatahub.io", "platforms.config.opendatahub.io",
-      "trustyais.components.platform.opendatahub.io"]'
+    operators.operatorframework.io/internal-objects: '["kueues.components.platform.opendatahub.io",
+      "platforms.config.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -255,9 +254,6 @@ spec:
       kind: DSCInitialization
       name: dscinitializations.dscinitialization.opendatahub.io
       version: v2
-    - kind: FeatureTracker
-      name: featuretrackers.features.opendatahub.io
-      version: v1
     - description: GatewayConfig is the Schema for the gatewayconfigs API
       displayName: Gateway Config
       kind: GatewayConfig
@@ -820,27 +816,6 @@ spec:
           - list
           - patch
           - watch
-        - apiGroups:
-          - features.opendatahub.io
-          resources:
-          - featuretrackers
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - features.opendatahub.io
-          resources:
-          - featuretrackers/finalizers
-          - featuretrackers/status
-          verbs:
-          - get
-          - patch
-          - update
         - apiGroups:
           - gateway.networking.k8s.io
           resources:
@@ -1970,6 +1945,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
