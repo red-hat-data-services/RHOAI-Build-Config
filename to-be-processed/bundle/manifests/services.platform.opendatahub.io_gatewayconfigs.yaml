@@ -55,6 +55,77 @@ spec:
                 items:
                   description: AdditionalIngress defines an additional Gateway.
                   properties:
+                    auth:
+                      default: {}
+                      description: |-
+                        Auth configures this ingress's client credentials and auth proxy capacity.
+                        Authentication mode and provider settings are inherited from the default gateway.
+                      properties:
+                        maxReplicas:
+                          default: 10
+                          description: |-
+                            MaxReplicas is the maximum number of replicas for this ingress's auth proxy.
+                            The minimum remains fixed at 2. This does not configure the default proxy.
+                            A value of 2 requests two fixed replicas without an HPA; larger values enable autoscaling.
+                          format: int32
+                          maximum: 10
+                          minimum: 2
+                          type: integer
+                        oidc:
+                          description: |-
+                            OIDC supplies this ingress's distinct client identity in OIDC mode.
+                            Required in OIDC mode; omit in integrated OpenShift OAuth mode, where the
+                            operator generates a distinct OAuthClient. The issuer comes from spec.oidc.
+                          properties:
+                            clientID:
+                              description: ClientID is distinct from the default ingress
+                                and sibling ingress client IDs.
+                              minLength: 1
+                              type: string
+                            clientSecretRef:
+                              description: |-
+                                ClientSecretRef references an administrator-managed Secret containing the client secret.
+                                Each ingress must reference a distinct Secret, including from the default ingress.
+                                The operator must not own or delete this source Secret.
+                                Name and key must be nonempty; optional must be omitted or false.
+                              properties:
+                                key:
+                                  description: The key of the secret to select from.  Must
+                                    be a valid secret key.
+                                  type: string
+                                name:
+                                  default: ""
+                                  description: |-
+                                    Name of the referent.
+                                    This field is effectively required, but due to backwards compatibility is
+                                    allowed to be empty. Instances of this type with an empty value here are
+                                    almost certainly wrong.
+                                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  type: string
+                                optional:
+                                  description: Specify whether the Secret or its key
+                                    must be defined
+                                  type: boolean
+                              required:
+                              - key
+                              type: object
+                              x-kubernetes-map-type: atomic
+                              x-kubernetes-validations:
+                              - message: clientSecretRef.name must be non-empty
+                                rule: has(self.name) && size(self.name) > 0
+                              - message: clientSecretRef.key must be non-empty
+                                rule: size(self.key) > 0
+                              - message: clientSecretRef.optional must be false
+                                rule: '!has(self.optional) || !self.optional'
+                            secretNamespace:
+                              description: SecretNamespace is the source Secret's
+                                namespace; defaults to the gateway namespace.
+                              type: string
+                          required:
+                          - clientID
+                          - clientSecretRef
+                          type: object
+                      type: object
                     hostname:
                       description: Hostname is the externally visible hostname for
                         this ingress.
@@ -95,6 +166,16 @@ spec:
                 x-kubernetes-list-map-keys:
                 - name
                 x-kubernetes-list-type: map
+              authProxyMaxReplicas:
+                default: 10
+                description: |-
+                  AuthProxyMaxReplicas is the maximum number of replicas for the default gateway's auth proxy.
+                  The HPA minimum is fixed at 2; setting the maximum to 2 fixes the replica count.
+                  Additional ingress proxies are configured independently through their auth.maxReplicas.
+                format: int32
+                maximum: 10
+                minimum: 2
+                type: integer
               authProxyTimeout:
                 description: |-
                   AuthProxyTimeout defines the timeout for external authorization service calls (e.g., "5s", "10s")
