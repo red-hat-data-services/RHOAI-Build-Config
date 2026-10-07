@@ -97,6 +97,55 @@ spec:
                         to 1 on single-node clusters and 2 on multi-node clusters.
                       format: int32
                       type: integer
+                    logs:
+                      description: Logs configures cluster log forwarding via the ClusterLogForwarder operator.
+                      properties:
+                        inferenceNamespaces:
+                          description: InferenceNamespaces lists the namespaces whose application logs should be forwarded to Loki.
+                          items:
+                            maxLength: 63
+                            pattern: ^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$
+                            type: string
+                          type: array
+                        storage:
+                          description: |-
+                            Storage configures the LokiStack storage backend for log forwarding.
+                            Required: the operator deploys a shared LokiStack used by both log forwarding and usage logs.
+                          properties:
+                            credentialMode:
+                              default: static
+                              description: |-
+                                CredentialMode specifies how credentials are provided to LokiStack.
+                                Valid values: "static", "token", "token-cco".
+                              enum:
+                                - static
+                                - token
+                                - token-cco
+                              type: string
+                            secretName:
+                              description: |-
+                                SecretName is the name of the Secret containing storage credentials.
+                                For S3: must contain keys: access_key_id, access_key_secret, bucketnames, endpoint, region, insecure, s3ForcePathStyle
+                              maxLength: 253
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            storageClassName:
+                              default: gp3-csi
+                              description: StorageClassName specifies the storage class for LokiStack PVCs.
+                              maxLength: 253
+                              type: string
+                            type:
+                              description: 'Type specifies the storage backend: "s3".'
+                              enum:
+                                - s3
+                              type: string
+                          required:
+                            - secretName
+                            - type
+                          type: object
+                      required:
+                        - storage
+                      type: object
                     managementState:
                       description: |-
                         Set to one of the following values:
@@ -242,12 +291,58 @@ spec:
                       x-kubernetes-validations:
                         - message: traces requires storage and/or at least one exporter
                           rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
+                    usageLogs:
+                      description: UsageLogs configures usage log collection and forwarding to Loki.
+                      properties:
+                        storage:
+                          description: |-
+                            Storage configures the LokiStack storage backend (S3).
+                            When configured, the operator deploys a LokiStack instance and auto-configures the collector endpoint.
+                          properties:
+                            credentialMode:
+                              default: static
+                              description: |-
+                                CredentialMode specifies how credentials are provided to LokiStack.
+                                Valid values: "static", "token", "token-cco".
+                              enum:
+                                - static
+                                - token
+                                - token-cco
+                              type: string
+                            secretName:
+                              description: |-
+                                SecretName is the name of the Secret containing storage credentials.
+                                For S3: must contain keys: access_key_id, access_key_secret, bucketnames, endpoint, region, insecure, s3ForcePathStyle
+                              maxLength: 253
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            storageClassName:
+                              default: gp3-csi
+                              description: StorageClassName specifies the storage class for LokiStack PVCs.
+                              maxLength: 253
+                              type: string
+                            type:
+                              description: 'Type specifies the storage backend: "s3".'
+                              enum:
+                                - s3
+                              type: string
+                          required:
+                            - secretName
+                            - type
+                          type: object
+                      required:
+                        - storage
+                      type: object
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
                       rule: 'has(self.alerting) ? has(self.metrics.storage) : true'
                     - message: CollectorReplicas can only be set when metrics (storage or exporters) or traces are configured, and must be > 0
                       rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
+                    - message: Log forwarding requires logs.storage to be configured for the LokiStack instance
+                      rule: 'has(self.logs) ? has(self.logs.storage) : true'
+                    - message: Usage logs require usageLogs.storage to be configured for the LokiStack instance
+                      rule: 'has(self.usageLogs) ? has(self.usageLogs.storage) : true'
                 serviceMesh:
                   description: |-
                     Configures Service Mesh as networking layer for Data Science Clusters components.
@@ -535,6 +630,55 @@ spec:
                         to 1 on single-node clusters and 2 on multi-node clusters.
                       format: int32
                       type: integer
+                    logs:
+                      description: Logs configures cluster log forwarding via the ClusterLogForwarder operator.
+                      properties:
+                        inferenceNamespaces:
+                          description: InferenceNamespaces lists the namespaces whose application logs should be forwarded to Loki.
+                          items:
+                            maxLength: 63
+                            pattern: ^[a-z0-9]([a-z0-9\-]{0,61}[a-z0-9])?$
+                            type: string
+                          type: array
+                        storage:
+                          description: |-
+                            Storage configures the LokiStack storage backend for log forwarding.
+                            Required: the operator deploys a shared LokiStack used by both log forwarding and usage logs.
+                          properties:
+                            credentialMode:
+                              default: static
+                              description: |-
+                                CredentialMode specifies how credentials are provided to LokiStack.
+                                Valid values: "static", "token", "token-cco".
+                              enum:
+                                - static
+                                - token
+                                - token-cco
+                              type: string
+                            secretName:
+                              description: |-
+                                SecretName is the name of the Secret containing storage credentials.
+                                For S3: must contain keys: access_key_id, access_key_secret, bucketnames, endpoint, region, insecure, s3ForcePathStyle
+                              maxLength: 253
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            storageClassName:
+                              default: gp3-csi
+                              description: StorageClassName specifies the storage class for LokiStack PVCs.
+                              maxLength: 253
+                              type: string
+                            type:
+                              description: 'Type specifies the storage backend: "s3".'
+                              enum:
+                                - s3
+                              type: string
+                          required:
+                            - secretName
+                            - type
+                          type: object
+                      required:
+                        - storage
+                      type: object
                     managementState:
                       description: |-
                         Set to one of the following values:
@@ -680,12 +824,58 @@ spec:
                       x-kubernetes-validations:
                         - message: traces requires storage and/or at least one exporter
                           rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
+                    usageLogs:
+                      description: UsageLogs configures usage log collection and forwarding to Loki.
+                      properties:
+                        storage:
+                          description: |-
+                            Storage configures the LokiStack storage backend (S3).
+                            When configured, the operator deploys a LokiStack instance and auto-configures the collector endpoint.
+                          properties:
+                            credentialMode:
+                              default: static
+                              description: |-
+                                CredentialMode specifies how credentials are provided to LokiStack.
+                                Valid values: "static", "token", "token-cco".
+                              enum:
+                                - static
+                                - token
+                                - token-cco
+                              type: string
+                            secretName:
+                              description: |-
+                                SecretName is the name of the Secret containing storage credentials.
+                                For S3: must contain keys: access_key_id, access_key_secret, bucketnames, endpoint, region, insecure, s3ForcePathStyle
+                              maxLength: 253
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                              type: string
+                            storageClassName:
+                              default: gp3-csi
+                              description: StorageClassName specifies the storage class for LokiStack PVCs.
+                              maxLength: 253
+                              type: string
+                            type:
+                              description: 'Type specifies the storage backend: "s3".'
+                              enum:
+                                - s3
+                              type: string
+                          required:
+                            - secretName
+                            - type
+                          type: object
+                      required:
+                        - storage
+                      type: object
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
                       rule: 'has(self.alerting) ? has(self.metrics.storage) : true'
                     - message: CollectorReplicas can only be set when metrics (storage or exporters) or traces are configured, and must be > 0
                       rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
+                    - message: Log forwarding requires logs.storage to be configured for the LokiStack instance
+                      rule: 'has(self.logs) ? has(self.logs.storage) : true'
+                    - message: Usage logs require usageLogs.storage to be configured for the LokiStack instance
+                      rule: 'has(self.usageLogs) ? has(self.usageLogs.storage) : true'
                 trustedCABundle:
                   description: |-
                     When set to `Managed`, adds odh-trusted-ca-bundle Configmap to all namespaces that includes
