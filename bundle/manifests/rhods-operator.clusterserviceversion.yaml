@@ -5,7 +5,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "datasciencecluster.opendatahub.io/v2",
+          "apiVersion": "datasciencecluster.opendatahub.io/v3",
           "kind": "DataScienceCluster",
           "metadata": {
             "labels": {
@@ -15,23 +15,34 @@ metadata:
           },
           "spec": {
             "components": {
+              "aiHub": {
+                "instancesNamespace": "rhoai-model-registries",
+                "managementState": "Managed"
+              },
               "aigateway": {
                 "batchGateway": {
                   "managementState": "Removed"
                 },
-                "managementState": "Removed"
+                "managementState": "Removed",
+                "modelsAsAService": {
+                  "managementState": "Removed"
+                }
               },
               "aipipelines": {
                 "managementState": "Managed"
               },
               "dashboard": {
-                "maasConsumerPortal": {
+                "maasPortal": {
                   "managementState": "Removed"
                 },
-                "managementState": "Managed"
+                "standard": {
+                  "managementState": "Managed"
+                }
               },
-              "feastoperator": {
-                "managementState": "Managed"
+              "data": {
+                "featureStore": {
+                  "managementState": "Managed"
+                }
               },
               "kserve": {
                 "managementState": "Managed",
@@ -50,10 +61,6 @@ metadata:
               },
               "mlflowoperator": {
                 "managementState": "Managed"
-              },
-              "modelregistry": {
-                "managementState": "Managed",
-                "registriesNamespace": "rhoai-model-registries"
               },
               "ogx": {
                 "managementState": "Managed"
@@ -105,8 +112,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7f230cb30cb9d86249665a2791e9aa8a27f88cc24dd102b7177fb3445382a010"
-    createdAt: "2026-10-07T11:02:14Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ba06d15deaf0ecebfdfca261765fe603cd63904c5313ad2fe0fc1587aef0d54c"
+    createdAt: "2026-10-07T12:55:32Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -120,7 +127,7 @@ metadata:
     features.operators.openshift.io/token-auth-gcp: "false"
     operatorframework.io/initialization-resource: |-
       {
-        "apiVersion": "datasciencecluster.opendatahub.io/v2",
+        "apiVersion": "datasciencecluster.opendatahub.io/v3",
         "kind": "DataScienceCluster",
         "metadata": {
           "name": "default-dsc",
@@ -132,13 +139,18 @@ metadata:
           "components": {
             "aigateway": {
               "managementState": "Removed",
+              "modelsAsAService": {
+                "managementState": "Removed"
+              },
               "batchGateway": {
                 "managementState": "Removed"
               }
             },
             "dashboard": {
-              "managementState": "Managed",
-              "maasConsumerPortal": {
+              "standard": {
+                "managementState": "Managed"
+              },
+              "maasPortal": {
                 "managementState": "Removed"
               }
             },
@@ -172,12 +184,14 @@ metadata:
             "trustyai": {
               "managementState": "Managed"
             },
-            "modelregistry": {
+            "aiHub": {
               "managementState": "Managed",
-              "registriesNamespace": "rhoai-model-registries"
+              "instancesNamespace": "rhoai-model-registries"
             },
-            "feastoperator": {
-              "managementState": "Managed"
+            "data": {
+              "featureStore": {
+                "managementState": "Managed"
+              }
             },
             "ogx": {
               "managementState": "Managed"
@@ -198,7 +212,8 @@ metadata:
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
-      "kueues.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io"]'
+      "kueues.components.platform.opendatahub.io", "platforms.config.opendatahub.io",
+      "trustyais.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -224,12 +239,12 @@ spec:
       displayName: Data Science Cluster
       kind: DataScienceCluster
       name: datascienceclusters.datasciencecluster.opendatahub.io
-      version: v1
+      version: v2
     - description: DataScienceCluster is the Schema for the datascienceclusters API.
       displayName: Data Science Cluster
       kind: DataScienceCluster
       name: datascienceclusters.datasciencecluster.opendatahub.io
-      version: v2
+      version: v3
     - description: DSCInitialization is the Schema for the dscinitializations API.
       displayName: DSCInitialization
       kind: DSCInitialization
@@ -263,9 +278,16 @@ spec:
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
       version: v1alpha1
-    - kind: Platform
+    - description: Platform is the Schema for the platforms API.
+      displayName: Platform
+      kind: Platform
       name: platforms.config.opendatahub.io
       version: v1alpha1
+    - description: Platform is the Schema for the platforms API.
+      displayName: Platform
+      kind: Platform
+      name: platforms.config.opendatahub.io
+      version: v1alpha2
   description: |-
     Red Hat OpenShift AI is a complete platform for the entire lifecycle of your AI/ML projects.
 
@@ -1438,9 +1460,9 @@ spec:
                 - name: RELATED_IMAGE_ODH_AUTOML_IMAGE
                   value: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:9daa30fb09d0c69bed95220f237cfc83d867a0771f50f860c2d6d08c18462abd"
                 - name: RELATED_IMAGE_ODH_AUTORAG_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:9a71f3da5a569dbaa24a41d2910c4b95e86ede8b03fdc4eb8d56476598127c4b"
+                  value: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:60e3c24b4f87c79292a0c2504212e9a97fe5630b0847a89113abd84dcd30bc51"
                 - name: RELATED_IMAGE_ODH_AUTORAG_INFERENCE_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-autorag-inference-rhel9@sha256:acfacf7c452ee8fd1d3597103138cf20f9914566881f00ef5b26c7f440453646"
+                  value: "registry.redhat.io/rhoai/odh-autorag-inference-rhel9@sha256:97571e16fe7348a5b7b60a17f597d7f1ac9725334bafd99c769e3a6c3350575c"
                 - name: RELATED_IMAGE_ODH_BUILT_IN_DETECTOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:7bba156eb70f1ccc3d958a61aafa380d44aacdf0e9ee69c19cab854a5b8d8d9a"
                 - name: RELATED_IMAGE_ODH_CLI_IMAGE
@@ -1504,7 +1526,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_APISERVER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:66c15fc8c6f06c7ca24017ca14476a8718b0c06d6f479268f5b18dfaf57ad186"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_GC_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:e88140fc416175172fd3915e0a0430513b4652b30d82d925de792530da35f686"
+                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:02c367f97bdfe5dadf2229fc703e9486d7aaa235cd97a359c0ad9a71e44600f1"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-operator-rhel9@sha256:d3cde2764a920e8c5a75dd5bee47b9f2aba050f96e1e03bf7df807631bb2e0ed"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_PROCESSOR_IMAGE
@@ -1801,7 +1823,7 @@ spec:
                   value: "0.26.0+rhaiv.5"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.26.0+rhaiv.5"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7f230cb30cb9d86249665a2791e9aa8a27f88cc24dd102b7177fb3445382a010"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ba06d15deaf0ecebfdfca261765fe603cd63904c5313ad2fe0fc1587aef0d54c"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1853,7 +1875,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7f230cb30cb9d86249665a2791e9aa8a27f88cc24dd102b7177fb3445382a010"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ba06d15deaf0ecebfdfca261765fe603cd63904c5313ad2fe0fc1587aef0d54c"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -1948,13 +1970,13 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
-    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
     - dscinitializations.dscinitialization.opendatahub.io
+    - platforms.config.opendatahub.io
     deploymentName: rhods-operator
-    generateName: cdatascienceclustersdscinitializations.kb.io
+    generateName: cdatascienceclustersdscinitializationsplatforms.kb.io
     sideEffects: None
     targetPort: 9443
     type: ConversionWebhook
@@ -2004,48 +2026,6 @@ spec:
     containerPort: 443
     deploymentName: rhods-operator
     failurePolicy: Fail
-    generateName: datasciencecluster-v1-defaulter.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v1-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
     generateName: datasciencecluster-v2-defaulter.opendatahub.io
     matchPolicy: Exact
     rules:
@@ -2083,6 +2063,48 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-datasciencecluster-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v3-defaulter.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v3
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-datasciencecluster-v3
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v3-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v3
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-datasciencecluster-v3
   - admissionReviewVersions:
     - v1
     containerPort: 443
@@ -2168,8 +2190,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-7f230cb30cb9d86249665a2791e9aa8a27f88cc24dd102b7177fb3445382a010-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7f230cb30cb9d86249665a2791e9aa8a27f88cc24dd102b7177fb3445382a010"
+  - name: odh-rhel9-operator-ba06d15deaf0ecebfdfca261765fe603cd63904c5313ad2fe0fc1587aef0d54c-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:ba06d15deaf0ecebfdfca261765fe603cd63904c5313ad2fe0fc1587aef0d54c"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:3c38d24956d23bb3ebb2fa471755816e96f7cd9853728d7163ec882e29f9bbeb"
   - name: odh_ai_gateway_operator_image
@@ -2179,9 +2201,9 @@ spec:
   - name: odh_automl_image
     image: "registry.redhat.io/rhoai/odh-automl-rhel9@sha256:9daa30fb09d0c69bed95220f237cfc83d867a0771f50f860c2d6d08c18462abd"
   - name: odh_autorag_image
-    image: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:9a71f3da5a569dbaa24a41d2910c4b95e86ede8b03fdc4eb8d56476598127c4b"
+    image: "registry.redhat.io/rhoai/odh-autorag-rhel9@sha256:60e3c24b4f87c79292a0c2504212e9a97fe5630b0847a89113abd84dcd30bc51"
   - name: odh_autorag_inference_image
-    image: "registry.redhat.io/rhoai/odh-autorag-inference-rhel9@sha256:acfacf7c452ee8fd1d3597103138cf20f9914566881f00ef5b26c7f440453646"
+    image: "registry.redhat.io/rhoai/odh-autorag-inference-rhel9@sha256:97571e16fe7348a5b7b60a17f597d7f1ac9725334bafd99c769e3a6c3350575c"
   - name: odh_built_in_detector_image
     image: "registry.redhat.io/rhoai/odh-built-in-detector-rhel9@sha256:7bba156eb70f1ccc3d958a61aafa380d44aacdf0e9ee69c19cab854a5b8d8d9a"
   - name: odh_cli_image
@@ -2245,7 +2267,7 @@ spec:
   - name: odh_llm_d_batch_gateway_apiserver_image
     image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:66c15fc8c6f06c7ca24017ca14476a8718b0c06d6f479268f5b18dfaf57ad186"
   - name: odh_llm_d_batch_gateway_gc_image
-    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:e88140fc416175172fd3915e0a0430513b4652b30d82d925de792530da35f686"
+    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:02c367f97bdfe5dadf2229fc703e9486d7aaa235cd97a359c0ad9a71e44600f1"
   - name: odh_llm_d_batch_gateway_operator_image
     image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-operator-rhel9@sha256:d3cde2764a920e8c5a75dd5bee47b9f2aba050f96e1e03bf7df807631bb2e0ed"
   - name: odh_llm_d_batch_gateway_processor_image
