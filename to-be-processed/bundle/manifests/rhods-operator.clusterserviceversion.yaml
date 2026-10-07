@@ -5,7 +5,7 @@ metadata:
     alm-examples: |-
       [
         {
-          "apiVersion": "datasciencecluster.opendatahub.io/v2",
+          "apiVersion": "datasciencecluster.opendatahub.io/v3",
           "kind": "DataScienceCluster",
           "metadata": {
             "labels": {
@@ -15,23 +15,34 @@ metadata:
           },
           "spec": {
             "components": {
+              "aiHub": {
+                "instancesNamespace": "rhoai-model-registries",
+                "managementState": "Managed"
+              },
               "aigateway": {
                 "batchGateway": {
                   "managementState": "Removed"
                 },
-                "managementState": "Removed"
+                "managementState": "Removed",
+                "modelsAsAService": {
+                  "managementState": "Removed"
+                }
               },
               "aipipelines": {
                 "managementState": "Managed"
               },
               "dashboard": {
-                "maasConsumerPortal": {
+                "maasPortal": {
                   "managementState": "Removed"
                 },
-                "managementState": "Managed"
+                "standard": {
+                  "managementState": "Managed"
+                }
               },
-              "feastoperator": {
-                "managementState": "Managed"
+              "data": {
+                "featureStore": {
+                  "managementState": "Managed"
+                }
               },
               "kserve": {
                 "managementState": "Managed",
@@ -50,10 +61,6 @@ metadata:
               },
               "mlflowoperator": {
                 "managementState": "Managed"
-              },
-              "modelregistry": {
-                "managementState": "Managed",
-                "registriesNamespace": "rhoai-model-registries"
               },
               "ogx": {
                 "managementState": "Managed"
@@ -106,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-10-06T16:42:58Z"
+    createdAt: "2026-10-07T12:53:28Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -121,7 +128,7 @@ metadata:
     olm.skipRange: '>=1.0.0 <2.0.0'
     operatorframework.io/initialization-resource: |-
       {
-        "apiVersion": "datasciencecluster.opendatahub.io/v2",
+        "apiVersion": "datasciencecluster.opendatahub.io/v3",
         "kind": "DataScienceCluster",
         "metadata": {
           "name": "default-dsc",
@@ -133,13 +140,18 @@ metadata:
           "components": {
             "aigateway": {
               "managementState": "Removed",
+              "modelsAsAService": {
+                "managementState": "Removed"
+              },
               "batchGateway": {
                 "managementState": "Removed"
               }
             },
             "dashboard": {
-              "managementState": "Managed",
-              "maasConsumerPortal": {
+              "standard": {
+                "managementState": "Managed"
+              },
+              "maasPortal": {
                 "managementState": "Removed"
               }
             },
@@ -173,12 +185,14 @@ metadata:
             "trustyai": {
               "managementState": "Managed"
             },
-            "modelregistry": {
+            "aiHub": {
               "managementState": "Managed",
-              "registriesNamespace": "rhoai-model-registries"
+              "instancesNamespace": "rhoai-model-registries"
             },
-            "feastoperator": {
-              "managementState": "Managed"
+            "data": {
+              "featureStore": {
+                "managementState": "Managed"
+              }
             },
             "ogx": {
               "managementState": "Managed"
@@ -199,7 +213,8 @@ metadata:
     operators.openshift.io/infrastructure-features: '["disconnected"]'
     operators.operatorframework.io/builder: operator-sdk-v1.39.2
     operators.operatorframework.io/internal-objects: '["featuretrackers.features.opendatahub.io",
-      "kueues.components.platform.opendatahub.io", "trustyais.components.platform.opendatahub.io"]'
+      "kueues.components.platform.opendatahub.io", "platforms.config.opendatahub.io",
+      "trustyais.components.platform.opendatahub.io"]'
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v4
     repository: https://github.com/red-hat-data-services/rhods-operator
     support: Red Hat OpenShift AI
@@ -218,12 +233,12 @@ spec:
       displayName: Data Science Cluster
       kind: DataScienceCluster
       name: datascienceclusters.datasciencecluster.opendatahub.io
-      version: v1
+      version: v2
     - description: DataScienceCluster is the Schema for the datascienceclusters API.
       displayName: Data Science Cluster
       kind: DataScienceCluster
       name: datascienceclusters.datasciencecluster.opendatahub.io
-      version: v2
+      version: v3
     - description: DSCInitialization is the Schema for the dscinitializations API.
       displayName: DSCInitialization
       kind: DSCInitialization
@@ -257,9 +272,16 @@ spec:
       kind: Kueue
       name: kueues.components.platform.opendatahub.io
       version: v1alpha1
-    - kind: Platform
+    - description: Platform is the Schema for the platforms API.
+      displayName: Platform
+      kind: Platform
       name: platforms.config.opendatahub.io
       version: v1alpha1
+    - description: Platform is the Schema for the platforms API.
+      displayName: Platform
+      kind: Platform
+      name: platforms.config.opendatahub.io
+      version: v1alpha2
   description: |-
     Red Hat OpenShift AI is a complete platform for the entire lifecycle of your AI/ML projects.
 
@@ -1570,13 +1592,13 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
-    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
     - dscinitializations.dscinitialization.opendatahub.io
+    - platforms.config.opendatahub.io
     deploymentName: rhods-operator
-    generateName: cdatascienceclustersdscinitializations.kb.io
+    generateName: cdatascienceclustersdscinitializationsplatforms.kb.io
     sideEffects: None
     targetPort: 9443
     type: ConversionWebhook
@@ -1626,48 +1648,6 @@ spec:
     containerPort: 443
     deploymentName: rhods-operator
     failurePolicy: Fail
-    generateName: datasciencecluster-v1-defaulter.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: MutatingAdmissionWebhook
-    webhookPath: /mutate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
-    generateName: datasciencecluster-v1-validator.opendatahub.io
-    matchPolicy: Exact
-    rules:
-    - apiGroups:
-      - datasciencecluster.opendatahub.io
-      apiVersions:
-      - v1
-      operations:
-      - CREATE
-      - UPDATE
-      resources:
-      - datascienceclusters
-    sideEffects: None
-    targetPort: 9443
-    type: ValidatingAdmissionWebhook
-    webhookPath: /validate-datasciencecluster-v1
-  - admissionReviewVersions:
-    - v1
-    containerPort: 443
-    deploymentName: rhods-operator
-    failurePolicy: Fail
     generateName: datasciencecluster-v2-defaulter.opendatahub.io
     matchPolicy: Exact
     rules:
@@ -1705,6 +1685,48 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-datasciencecluster-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v3-defaulter.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v3
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: MutatingAdmissionWebhook
+    webhookPath: /mutate-datasciencecluster-v3
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: datasciencecluster-v3-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - datasciencecluster.opendatahub.io
+      apiVersions:
+      - v3
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - datascienceclusters
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-datasciencecluster-v3
   - admissionReviewVersions:
     - v1
     containerPort: 443
