@@ -110,7 +110,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:eb4f3acf41e42b8f041268189c930fd67e71c87a86ecde08327da2883c391eb7"
-    createdAt: "2026-10-08T17:29:23Z"
+    createdAt: "2026-10-08T20:43:16Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1939,7 +1939,6 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
-    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2119,6 +2118,27 @@ spec:
     targetPort: 9443
     type: ValidatingAdmissionWebhook
     webhookPath: /validate-dscinitialization-v2
+  - admissionReviewVersions:
+    - v1
+    containerPort: 443
+    deploymentName: rhods-operator
+    failurePolicy: Fail
+    generateName: gatewayconfig-validator.opendatahub.io
+    matchPolicy: Exact
+    rules:
+    - apiGroups:
+      - services.platform.opendatahub.io
+      apiVersions:
+      - v1alpha1
+      operations:
+      - CREATE
+      - UPDATE
+      resources:
+      - gatewayconfigs
+    sideEffects: None
+    targetPort: 9443
+    type: ValidatingAdmissionWebhook
+    webhookPath: /validate-gatewayconfig
   - admissionReviewVersions:
     - v1
     containerPort: 443
