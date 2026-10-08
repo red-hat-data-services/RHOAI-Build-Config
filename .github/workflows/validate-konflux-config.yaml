@@ -1,0 +1,19 @@
+name: Validate Konflux Config
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - 'rhoai-*'
+
+jobs:
+  validate:
+    # Skip automated PRs from bots and Konflux automation
+    if: >-
+      github.actor != 'renovate[bot]'
+      && !startsWith(github.head_ref, 'konflux/')
+    uses: red-hat-data-services/rhods-devops-infra/.github/workflows/reusable-konflux-config-validator.yaml@main
+    with:
+      RHOAI_VERSION: ${{ github.base_ref }}
+      OVERRIDE_DATASOURCE: release-RHOAI-Build-Config
+      OVERRIDE_REF: ${{ github.event.pull_request.head.sha }}
