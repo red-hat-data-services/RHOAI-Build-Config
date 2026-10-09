@@ -44,6 +44,9 @@ metadata:
                   "managementState": "Managed"
                 }
               },
+              "databaseservice": {
+                "managementState": "Removed"
+              },
               "kserve": {
                 "managementState": "Managed",
                 "nim": {
@@ -110,7 +113,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: REPLACE_IMAGE:v0.0.0-placeholder
-    createdAt: "2026-10-09T06:16:45Z"
+    createdAt: "2026-10-09T12:51:02Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -199,6 +202,9 @@ metadata:
             },
             "mcplifecycleoperator": {
               "managementState": "Managed"
+            },
+            "databaseservice": {
+              "managementState": "Removed"
             }
           }
         }
@@ -1269,6 +1275,7 @@ spec:
           - services.platform.opendatahub.io
           resources:
           - auths
+          - databaseservices
           - gatewayconfigs
           - monitorings
           verbs:
@@ -1283,6 +1290,7 @@ spec:
           - services.platform.opendatahub.io
           resources:
           - auths/finalizers
+          - databaseservices/finalizers
           - gatewayconfigs/finalizers
           - monitorings/finalizers
           verbs:
@@ -1291,6 +1299,7 @@ spec:
           - services.platform.opendatahub.io
           resources:
           - auths/status
+          - databaseservices/status
           - gatewayconfigs/status
           - monitorings/status
           verbs:
@@ -1547,6 +1556,7 @@ spec:
   - ogx
   - mlflow
   - sparkoperator
+  - databaseservice
   links:
   - name: Red Hat OpenShift AI
     url: https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/3.0
