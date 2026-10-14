@@ -246,6 +246,8 @@ ARG ODH_EVAL_HUB_LIGHTEVAL_GIT_URL=
 ARG ODH_EVAL_HUB_LIGHTEVAL_GIT_COMMIT=
 ARG ODH_DB_OPERATOR_GIT_URL=
 ARG ODH_DB_OPERATOR_GIT_COMMIT=
+ARG ODH_OPENSHELL_DASHBOARD_GIT_URL=
+ARG ODH_OPENSHELL_DASHBOARD_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -504,7 +506,9 @@ LABEL \
       odh-eval-hub-lighteval.git.url="${ODH_EVAL_HUB_LIGHTEVAL_GIT_URL}" \
       odh-eval-hub-lighteval.git.commit="${ODH_EVAL_HUB_LIGHTEVAL_GIT_COMMIT}" \
       odh-db-operator.git.url="${ODH_DB_OPERATOR_GIT_URL}" \
-      odh-db-operator.git.commit="${ODH_DB_OPERATOR_GIT_COMMIT}"
+      odh-db-operator.git.commit="${ODH_DB_OPERATOR_GIT_COMMIT}" \
+      odh-openshell-dashboard.git.url="${ODH_OPENSHELL_DASHBOARD_GIT_URL}" \
+      odh-openshell-dashboard.git.commit="${ODH_OPENSHELL_DASHBOARD_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
