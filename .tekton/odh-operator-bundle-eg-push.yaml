@@ -1,0 +1,140 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    # No build.appstudio.openshift.io/build-nudge-files here, on purpose.  The
+    # release bundle pipeline nudges catalog/catalog-patch.yaml so that FBC
+    # picks up the digest it just built.  An early-gate bundle is a throwaway
+    # validation of an ephemeral branch: it must never open a nudge PR, because
+    # the image it names is deleted with the branch.  Block 3 gets the bundle
+    # digest from the gate's BUNDLE_IMAGE_REF_BY_DIGEST result instead.
+    #
+    # One trigger only: an eg-bundle-* branch carrying an "early-gate:" commit
+    # subject.  This file exists solely to build what the gate pushed, and the
+    # release branch is already covered by odh-operator-bundle-v3-6-push.yaml -
+    # a second arm matching rhoai-3.6 would build every release push twice.
+    #
+    # The subject check is load-bearing, not belt-and-braces.  Creating the
+    # branch is itself a push event, and a freshly forked eg-bundle-<uid>
+    # inherits the release branch's tip commit, whose subject is an ordinary
+    # merge message.  Without this check PaC starts a build of unprocessed
+    # release content, and monitor-bundle-build latches onto it and reports it
+    # as the gate's answer.  push-bundle-to-ephemeral-branch commits with
+    # --allow-empty and refuses any message that does not start with
+    # "early-gate:", so the guarantee holds from both ends.
+    #
+    # pathChanged() cannot do this job: on branch creation there is no
+    # meaningful diff base, and the processed push may legitimately change
+    # nothing - the empty-commit case the push task exists to handle.
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch.startsWith("eg-bundle-")
+      && event_title.startsWith("early-gate:")
+  labels:
+    appstudio.openshift.io/application: rhoai-early-gate
+    appstudio.openshift.io/component: rhods-operator-bundle-eg
+    pipelines.appstudio.openshift.io/type: build
+  name: rhods-operator-bundle-eg-on-push
+  namespace: rhoai-tenant
+spec:
+  params:
+  - name: git-url
+    value: '{{source_url}}'
+  - name: revision
+    value: '{{revision}}'
+  # The repository must be PUBLIC.  monitor-bundle-build resolves the digest it
+  # hands to Block 3 through quay.io's anonymous registry v2 token - the one
+  # lookup in the chain that takes no credential.  Against a private repository
+  # the build would still succeed and the monitor would still pass, because it
+  # warns rather than fails when a digest will not resolve, but
+  # BUNDLE_IMAGE_DIGEST and BUNDLE_IMAGE_REF_BY_DIGEST would come back empty.
+  #
+  # That rules out quay.io/rhoai/odh-operator-bundle: the release repository
+  # answers an anonymous token with 401.  pull-request-pipelines is public, is
+  # already where RHOAI puts non-release artifacts, and being a different
+  # repository it cannot collide with a release digest whatever the tag says.
+  #
+  # The repository is shared between components, hence the component-name lead
+  # on the tag.  The value below is a fallback: the gate rewrites this line on
+  # the ephemeral branch before the commit that triggers the build, pinning the
+  # tag to odh-operator-bundle-eg-<leader-pr>.  The templated form is kept as
+  # the default on purpose - if that substitution ever fails, the build
+  # publishes a unique tag the monitor then fails to find, rather than a fixed
+  # tag that silently collides between runs.
+  #
+  # Changing this string means changing image-tag on monitor-bundle-build in
+  # konflux-central's early-gate/early-gate-component-pipeline.yaml in the same
+  # breath.  The monitor does not read the tag off the build; it reconstructs
+  # it and polls.  Out of step, the build succeeds, the poll 404s, the monitor
+  # warns and writes an empty digest, and the gate fails downstream on
+  # "No ... image supplied" - pointing at the consumer rather than at the tag.
+  - name: output-image
+    value: quay.io/rhoai/pull-request-pipelines:odh-operator-bundle-{{target_branch}}-{{revision}}
+  # Matches odh-operator-bundle-v3-6-push.yaml.  container-build.yaml on
+  # konflux-central's rhoai-3.6 branch declares rhoai-version and forwards it
+  # to rhoai-init, so it has to be supplied here too.
+  - name: rhoai-version
+    value: "3.6.0"
+  - name: dockerfile
+    value: bundle/Dockerfile
+  - name: path-context
+    value: .
+  - name: hermetic
+    value: true
+  # No prefetch-input: bundle/Dockerfile is FROM scratch with COPY only, so
+  # cachi2 has nothing to prefetch and hermetic costs nothing.
+  # odh-operator-bundle-v3-6-push.yaml omits it for the same reason.
+  #
+  # No skip-checks either, matching that file, which leaves clair-scan,
+  # sast-snyk-check, clamav-scan, sast-shell-check, sast-unicode-check,
+  # deprecated-base-image-check, ecosystem-cert-preflight-checks and
+  # rpms-signature-scan running.  A gate that scans nothing cannot stand in for
+  # a release build, which is the whole point of resolving the same pipeline.
+  - name: build-source-image
+    value: true
+  # false, matching odh-operator-bundle-v3-6-push.yaml.  The bundle resolves
+  # through container-build.yaml - a single-platform buildah that pushes the
+  # plain tag directly - so there is no index to create and the digest resolves
+  # without one.
+  - name: build-image-index
+    value: false
+  # No build-platforms: container-build.yaml declares no such parameter, and
+  # the release file passes none either.  The bundle is single-architecture in
+  # release too, so there is nothing to restore here.
+  - name: build-args-file
+    value: bundle/bundle_build_args.map
+  # No enable-slack-failure-notification, enable-slack-success-notification,
+  # enable-downstream-triggers or skip-fips-check.  The POC passes all four,
+  # but its fork's container-build.yaml declares them; the one on
+  # konflux-central's rhoai-3.6 branch does not, and passing an undeclared
+  # parameter fails the PipelineRun at validation before anything runs.
+  # odh-operator-bundle-v3-6-push.yaml passes none of them either.
+  pipelineRef:
+    resolver: git
+    params:
+    - name: url
+      value: https://github.com/red-hat-data-services/konflux-central.git
+    # A literal release branch, not '{{ target_branch }}'.  The release file
+    # can use target_branch because rhoai-3.6 exists in both repositories; the
+    # ephemeral eg-bundle-* branches are created by the gate in THIS repository
+    # and will never exist in konflux-central, so target_branch would fail to
+    # resolve and no build would start at all.
+    #
+    # Pinned to rhoai-3.6 rather than main so the gate builds with exactly the
+    # pipeline definition the release uses.  Bump this with the branch.
+    - name: revision
+      value: 'rhoai-3.6'
+    - name: pathInRepo
+      value: pipelines/container-build.yaml
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-rhods-operator-bundle-eg
+  workspaces:
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
