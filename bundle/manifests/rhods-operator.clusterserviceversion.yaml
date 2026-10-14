@@ -112,8 +112,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e55f41cb1b7b65674e923b5060b0efadc297f27cae089ffa20dbf11620bec412"
-    createdAt: "2026-10-14T16:42:25Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6bb6ef3464709818a85bee2efbb0889ecae944445f5c8213499d50ffecd6a069"
+    createdAt: "2026-10-14T16:55:51Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1450,7 +1450,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_DASHBOARD_IMAGE
                   value: "registry.redhat.io/rhoai/odh-dashboard-rhel9@sha256:92cb0123b00f32c7275ef0907a0c6ba4838342204b0ce9bdf187942a8cc2bc59"
                 - name: RELATED_IMAGE_ODH_DASHBOARD_OPERATOR_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-dashboard-operator-rhel9@sha256:ac83d5b98d7d8cccfa55e8c47dd6672a3a0eefd87500ccd148e47dbdf798eabc"
+                  value: "registry.redhat.io/rhoai/odh-dashboard-operator-rhel9@sha256:26583de461e03db9fa8afbd5b06db1b841186194cd0d5d8bec529873982db15e"
                 - name: RELATED_IMAGE_ODH_DATA_CONNECT_HUB_FLIGHT_IMAGE
                   value: "registry.redhat.io/rhoai/odh-data-connect-hub-flight-rhel9@sha256:1686058a2b2a13a793268c945e2a47e8590558935614fc6ec997e1987ac89ff3"
                 - name: RELATED_IMAGE_ODH_DATA_CONNECT_HUB_REST_IMAGE
@@ -1809,7 +1809,7 @@ spec:
                   value: "0.26.0+rhaiv.5"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.26.0+rhaiv.5"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e55f41cb1b7b65674e923b5060b0efadc297f27cae089ffa20dbf11620bec412"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6bb6ef3464709818a85bee2efbb0889ecae944445f5c8213499d50ffecd6a069"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1861,7 +1861,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e55f41cb1b7b65674e923b5060b0efadc297f27cae089ffa20dbf11620bec412"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6bb6ef3464709818a85bee2efbb0889ecae944445f5c8213499d50ffecd6a069"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -1957,6 +1957,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2198,8 +2199,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-e55f41cb1b7b65674e923b5060b0efadc297f27cae089ffa20dbf11620bec412-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e55f41cb1b7b65674e923b5060b0efadc297f27cae089ffa20dbf11620bec412"
+  - name: odh-rhel9-operator-6bb6ef3464709818a85bee2efbb0889ecae944445f5c8213499d50ffecd6a069-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:6bb6ef3464709818a85bee2efbb0889ecae944445f5c8213499d50ffecd6a069"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:d4a05cae0e7fefb954b8c00e9372a577bf59449380bc40f16b3718836631dc13"
   - name: odh_ai_gateway_operator_image
@@ -2221,7 +2222,7 @@ spec:
   - name: odh_dashboard_image
     image: "registry.redhat.io/rhoai/odh-dashboard-rhel9@sha256:92cb0123b00f32c7275ef0907a0c6ba4838342204b0ce9bdf187942a8cc2bc59"
   - name: odh_dashboard_operator_image
-    image: "registry.redhat.io/rhoai/odh-dashboard-operator-rhel9@sha256:ac83d5b98d7d8cccfa55e8c47dd6672a3a0eefd87500ccd148e47dbdf798eabc"
+    image: "registry.redhat.io/rhoai/odh-dashboard-operator-rhel9@sha256:26583de461e03db9fa8afbd5b06db1b841186194cd0d5d8bec529873982db15e"
   - name: odh_data_connect_hub_flight_image
     image: "registry.redhat.io/rhoai/odh-data-connect-hub-flight-rhel9@sha256:1686058a2b2a13a793268c945e2a47e8590558935614fc6ec997e1987ac89ff3"
   - name: odh_data_connect_hub_rest_image
