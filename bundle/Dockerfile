@@ -252,6 +252,8 @@ ARG ODH_PRAXIS_AI_GRID_ENROLLMENT_GIT_URL=
 ARG ODH_PRAXIS_AI_GRID_ENROLLMENT_GIT_COMMIT=
 ARG ODH_PRAXIS_AI_GRID_OPERATOR_GIT_URL=
 ARG ODH_PRAXIS_AI_GRID_OPERATOR_GIT_COMMIT=
+ARG ODH_PRAXIS_AI_GRID_GATEWAY_GIT_URL=
+ARG ODH_PRAXIS_AI_GRID_GATEWAY_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -516,7 +518,9 @@ LABEL \
       odh-praxis-ai-grid-enrollment.git.url="${ODH_PRAXIS_AI_GRID_ENROLLMENT_GIT_URL}" \
       odh-praxis-ai-grid-enrollment.git.commit="${ODH_PRAXIS_AI_GRID_ENROLLMENT_GIT_COMMIT}" \
       odh-praxis-ai-grid-operator.git.url="${ODH_PRAXIS_AI_GRID_OPERATOR_GIT_URL}" \
-      odh-praxis-ai-grid-operator.git.commit="${ODH_PRAXIS_AI_GRID_OPERATOR_GIT_COMMIT}"
+      odh-praxis-ai-grid-operator.git.commit="${ODH_PRAXIS_AI_GRID_OPERATOR_GIT_COMMIT}" \
+      odh-praxis-ai-grid-gateway.git.url="${ODH_PRAXIS_AI_GRID_GATEWAY_GIT_URL}" \
+      odh-praxis-ai-grid-gateway.git.commit="${ODH_PRAXIS_AI_GRID_GATEWAY_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
