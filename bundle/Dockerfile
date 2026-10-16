@@ -258,6 +258,8 @@ ARG ODH_MODELEXPRESS_OPERATOR_GIT_URL=
 ARG ODH_MODELEXPRESS_OPERATOR_GIT_COMMIT=
 ARG ODH_MODELEXPRESS_GIT_URL=
 ARG ODH_MODELEXPRESS_GIT_COMMIT=
+ARG ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_URL=
+ARG ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -528,7 +530,9 @@ LABEL \
       odh-modelexpress-operator.git.url="${ODH_MODELEXPRESS_OPERATOR_GIT_URL}" \
       odh-modelexpress-operator.git.commit="${ODH_MODELEXPRESS_OPERATOR_GIT_COMMIT}" \
       odh-modelexpress.git.url="${ODH_MODELEXPRESS_GIT_URL}" \
-      odh-modelexpress.git.commit="${ODH_MODELEXPRESS_GIT_COMMIT}"
+      odh-modelexpress.git.commit="${ODH_MODELEXPRESS_GIT_COMMIT}" \
+      odh-workbench-codeserver-minimal-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_URL}" \
+      odh-workbench-codeserver-minimal-cpu-py312.git.commit="${ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
