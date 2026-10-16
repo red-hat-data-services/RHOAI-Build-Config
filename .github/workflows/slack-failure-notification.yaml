@@ -1,0 +1,38 @@
+name: Slack Failure Notification
+
+on:
+  workflow_call:
+    inputs:
+      workflow_name:
+        description: 'Name of the workflow that failed'
+        required: true
+        type: string
+      branch:
+        description: 'Branch where the failure occurred'
+        required: true
+        type: string
+      run_url:
+        description: 'URL to the failed workflow run'
+        required: true
+        type: string
+    secrets:
+      SLACK_NOTIFICATIONS_WEBHOOK:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Failure Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
+          SLACK_COLOR: failure
+          SLACK_TITLE: ":red_circle: ${{ inputs.workflow_name }} Failed"
+          SLACK_MESSAGE: |
+            *Workflow:* ${{ inputs.workflow_name }}
+            *Branch:* `${{ inputs.branch }}`
+            *Run:* <${{ inputs.run_url }}|View Details>
+
+            <!subteam^S0ABFF86BNE> Please investigate
+          MSG_MINIMAL: true

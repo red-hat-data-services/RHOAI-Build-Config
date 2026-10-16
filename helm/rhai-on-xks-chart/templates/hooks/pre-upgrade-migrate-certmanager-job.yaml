@@ -1,0 +1,161 @@
+{{- if and .Values.enabled (index .Values "cert-manager-operator" "enabled") }}
+{{- if (include "rhai-on-xks-chart.imagePullSecretEnabled" .) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rhai-migrate-pull-secret
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: "-1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: {{ .Values.imagePullSecret.dockerConfigJson | b64enc }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rhai-pre-upgrade-migrate-certmanager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rhai-pre-upgrade-migrate-certmanager
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - get
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    resourceNames:
+      - cert-manager-operator-lock
+    verbs:
+      - get
+      - patch
+  - apiGroups:
+      - infrastructure.opendatahub.io
+    resources:
+      - {{ (include "rhai-on-xks-chart.activeProvider" . | fromYaml).keResource }}
+    verbs:
+      - get
+      - list
+      - patch
+  - apiGroups:
+      - operator.openshift.io
+    resources:
+      - certmanagers
+    verbs:
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rhai-pre-upgrade-migrate-certmanager
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rhai-pre-upgrade-migrate-certmanager
+subjects:
+  - kind: ServiceAccount
+    name: rhai-pre-upgrade-migrate-certmanager
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rhai-pre-upgrade-migrate-certmanager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "rhai-on-xks-chart.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-upgrade
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "rhai-on-xks-chart.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: rhai-pre-upgrade-migrate-certmanager
+      {{- if (include "rhai-on-xks-chart.imagePullSecretEnabled" .) }}
+      imagePullSecrets:
+        - name: rhai-migrate-pull-secret
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate-certmanager
+          image: {{ required "hooks.cliImage is required" .Values.hooks.cliImage | quote }}
+          resources:
+            {{- toYaml .Values.hooks.resources | nindent 12 }}
+          securityContext:
+            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: RELEASE_NAME
+              value: {{ .Release.Name | quote }}
+            - name: RELEASE_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: KE_RESOURCE
+              value: {{ (include "rhai-on-xks-chart.activeProvider" . | fromYaml).keResource | quote }}
+            - name: KE_NAME
+              value: {{ (include "rhai-on-xks-chart.activeProvider" . | fromYaml).keName | quote }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              {{- tpl (.Files.Get "files/pre-upgrade-migrate-certmanager.sh") . | nindent 14 }}
+{{- end }}

@@ -1,0 +1,31 @@
+{{- $dep := .Values.dependencies.loki -}}
+{{- $shouldInstall := include "rhoai-dependencies.shouldInstall" (dict
+  "dependencyName" "loki"
+  "dependency" $dep
+  "root" $
+) -}}
+{{- if eq $shouldInstall "true" }}
+{{- if eq (include "rhoai-dependencies.isOlmMode" $) "true" }}
+{{- $createNamespace := true -}}
+{{- if hasKey $dep.olm "createNamespace" -}}
+{{- $createNamespace = $dep.olm.createNamespace -}}
+{{- end -}}
+{{- $createOperatorGroup := true -}}
+{{- if hasKey $dep.olm "createOperatorGroup" -}}
+{{- $createOperatorGroup = $dep.olm.createOperatorGroup -}}
+{{- end -}}
+{{ include "rhoai-dependencies.operator.olm" (dict
+  "name" $dep.olm.name
+  "operatorGroupName" ($dep.olm.operatorGroupName | default $dep.olm.namespace)
+  "namespace" $dep.olm.namespace
+  "channel" $dep.olm.channel
+  "createNamespace" $createNamespace
+  "createOperatorGroup" $createOperatorGroup
+  "namespaceLabels" (dict "openshift.io/cluster-monitoring" "true")
+  "namespaceAnnotations" (dict "openshift.io/node-selector" "")
+  "version" $dep.olm.version
+  "config" $dep.olm.config
+  "root" $
+) }}
+{{- end }}
+{{- end }}

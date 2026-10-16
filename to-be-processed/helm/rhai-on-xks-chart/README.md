@@ -21,6 +21,8 @@ This chart installs the RHAI operator and its cloud manager components. Exactly 
   - [Managed Dependencies](#managed-dependencies)
   - [Configuration Reference](#configuration-reference)
   - [Testing with kind](#testing-with-kind)
+  - [Upgrading](#upgrading)
+    - [Upgrading from 3.5 to 3.6](#upgrading-from-35-to-36)
   - [Uninstall](#uninstall)
     - [Clean up CRDs](#clean-up-crds)
     - [Clean up namespaces](#clean-up-namespaces)
@@ -47,13 +49,17 @@ podman login registry.redhat.io --authfile /path/to/auth.json
 
 The `imagePullSecret.dockerConfigJson` parameter:
 
-1. Creates a `kubernetes.io/dockerconfigjson` Secret named `rhai-pull-secret` in all chart-managed namespaces (operator, applications, release, cloud manager and all dependency namespaces)
+1. Creates a `kubernetes.io/dockerconfigjson` Secret named `rhai-pull-secret` in the operator, applications, release, cloud manager and managed dependency namespaces
 2. Adds `imagePullSecrets` to all chart-managed ServiceAccounts (RHAI operator, cloud manager, llmisvc-controller-manager, and the post-install hook)
+
+When MaaS is managed and pull credentials are provided, a pre-install/pre-upgrade Job creates `redhat-ai-gateway-infra` before the chart creates its pull Secret and ServiceAccounts. An earlier hook creates a separate `rhai-maas-ns-pull-secret` in the release namespace for the Job using the same credentials. Hook cleanup removes only this bootstrap Secret, leaving the release-managed `rhai-pull-secret` untouched. The bootstrap Secret also runs as a pre-delete hook to clean up leftovers on uninstall.
 
 The secret name defaults to `rhai-pull-secret` and **should not** be changed.
 
 > [!NOTE]
-> Pull secrets for dependency namespaces (`cert-manager-operator`, `cert-manager`, `istio-system`, `openshift-lws-operator`) are managed by this chart by default. To customize which dependency namespaces receive pull secrets, set `imagePullSecret.dependencyNamespaces`.
+> Pull secrets for managed dependency namespaces are created automatically when set as `Managed`. The chart uses the configured namespaces. Use `imagePullSecret.dependencyNamespaces` for additional namespaces.
+
+The chart renders Namespace resources for managed dependency namespaces. If a dependency namespace already exists and should be managed by this Helm release, rerun the installation or upgrade with Helm's `--take-ownership` flag. The chart keeps dependency namespaces on uninstall.
 
 ## Installation
 
@@ -173,7 +179,6 @@ The KubernetesEngine CRs (AWS, Azure, or CoreWeave) manage the following depende
 
 | Dependency | Description |
 | --- | --- |
-| `certManager` | Certificate management (cert-manager) |
 | `gatewayAPI` | Gateway API CRDs and controller |
 | `lws` | LeaderWorkerSet (LWS) operator |
 | `sailOperator` | Sail Operator (Istio service mesh) |
@@ -186,9 +191,19 @@ azure:
   kubernetesEngine:
     spec:
       dependencies:
-        certManager:
+        gatewayAPI:
           managementPolicy: Unmanaged
 ```
+
+cert-manager is managed by the chart, not by the KubernetesEngine CR. To use an
+existing cluster cert-manager installation, disable the cert-manager-operator
+subchart before `helm upgrade`:
+
+```yaml
+cert-manager-operator:
+  enabled: false
+```
+
 
 ## Configuration Reference
 
@@ -197,6 +212,27 @@ For the configuration reference, please refer to the [API reference](api-docs.md
 ## Testing with kind
 
 You can test the chart locally using [kind](https://kind.sigs.k8s.io/).
+
+On a disposable test cluster, verify MaaS namespace creation and hook credentials without deploying MaaS operands:
+
+**Warning:** Test 6 first uninstalls the configured Helm release and deletes `redhat-ai-gateway-infra`, including its contents.
+It waits for cleanup and stops on failure. Do not run it against a shared or production cluster.
+
+```bash
+RELEASE_NAME=rhaii NAMESPACE=rhai-gitops PULL_SECRET=/path/to/auth.json \
+  bash ./charts/rhai-on-xks-chart/scripts/verify.sh 6
+```
+
+This test covers installation, hook cleanup, preservation of the release pull Secret through successful upgrades, failed hooks, and retries, and removal of leftover bootstrap Secrets on uninstall. It runs after the operator lifecycle tests in xKS E2E CI.
+
+Cleanup ensures that the Helm release, MaaS infrastructure namespace, and both release-namespace pull Secrets are absent before installation.
+Other retained namespaces and CRDs may remain, so this is not an installation test on an empty cluster.
+
+The e2e suite uses `test/values-e2e.yaml`, including ODH image digests for KServe and
+AIGateway controllers and services. `scripts/update-bundle.sh` refreshes these pins
+from `manifests-config.yaml` in the same rhods-operator checkout used for the chart
+templates. To refresh only the e2e images, run
+`bash charts/rhai-on-xks-chart/scripts/sync-e2e-images.sh /path/to/operator/manifests-config.yaml`.
 
 ```bash
 # Create a local cluster
@@ -210,6 +246,28 @@ helm upgrade rhaii ./charts/rhai-on-xks-chart/ \
   --set-json 'components.kserve.gateway.allowedRoutes.namespaces={"from":"Selector","selector":{"matchLabels":{"inference-gateway-access":"true"}}}' \
   --set-file imagePullSecret.dockerConfigJson=/path/to/auth.json
 ```
+
+## Upgrading
+
+### Upgrading from 3.5 to 3.6
+
+Version 3.6 moves cert-manager installation from a kubectl-based Job hook to a Helm subchart.
+Because the cert-manager resources in 3.5 were created outside of Helm, they have no Helm
+ownership metadata. Helm will refuse to adopt them during a standard upgrade.
+
+For this one-time upgrade, pass `--take-ownership --force-conflicts` to let Helm claim those existing resources and resolve field manager conflicts:
+
+```bash
+helm upgrade rhaii ./charts/rhai-on-xks-chart/ \
+  --namespace rhai-gitops \
+  --take-ownership --force-conflicts \
+  --set azure.enabled=true \
+  --set-file imagePullSecret.dockerConfigJson=/path/to/auth.json
+```
+
+> [!NOTE]
+> `--take-ownership` and `--force-conflicts` require Helm 4.x. These flags are only needed for
+> the 3.5→3.6 upgrade; subsequent upgrades do not require them.
 
 ## Uninstall
 
@@ -249,3 +307,25 @@ kubectl delete crd coreweavekubernetesengines.infrastructure.opendatahub.io
 ### Clean up namespaces
 
 The namespaces created by the chart are not automatically removed. Clean up the namespaces as needed based on your configuration.
+
+### Clean up cert-manager-operator
+
+If `cert-manager-operator.enabled` was `true` at any point, RHAI's cert-manager resources
+(the `cert-manager-operator`/`cert-manager` namespaces, the `CertManager` CR, and its
+cluster-scoped RBAC) are **not** automatically removed on `helm uninstall`, nor when later
+setting `cert-manager-operator.enabled: false`. The chart never deletes them automatically —
+on uninstall or otherwise. If you point `cert-manager-operator.enabled: false` at a cluster
+where cert-manager was installed some other way (e.g. via OLM): treat it as unmanaged by this
+chart and remove it yourself. As with chart-managed CRDs above, remove them manually if you no
+longer need them:
+
+```bash
+# Remove the finalizer first so the CR is not stuck in Terminating after the operator is gone
+kubectl patch certmanager cluster --type=merge -p '{"metadata":{"finalizers":[]}}' 2>/dev/null || true
+# Delete the operator namespace to stop the operator before deleting the CR (otherwise it recreates it)
+kubectl delete namespace cert-manager-operator
+kubectl delete certmanager cluster --ignore-not-found
+kubectl delete namespace cert-manager
+kubectl delete clusterrole cert-manager-operator-controller-manager-clusterrole cert-manager-operator-metrics-reader
+kubectl delete clusterrolebinding cert-manager-operator-controller-manager-clusterrolebinding
+```

@@ -48,7 +48,7 @@ rhaiOperator:
   #     value: quay.io/opendatahub/kserve-controller:latest
 
 hooks:
-  cliImage: registry.redhat.io/openshift4/ose-cli-rhel9:v4.20@sha256:d876c1d98b39d65c00c4261431bb84b90284699f3aef84d8701a25c786fb79a1
+  cliImage: registry.redhat.io/openshift4/ose-cli-rhel9:v4.20@sha256:11d63d113e970c5e219e721cee81ad6bd271971e04a024c45f38f699d5354573
   # Default resources for all hook job containers
   resources:
     limits:
@@ -155,9 +155,6 @@ azure:
     enabled: true
     spec:
       dependencies:
-        certManager:
-          managementPolicy: Unmanaged
-          configuration: {}
         gatewayAPI:
           managementPolicy: Managed
           configuration: {}
@@ -169,6 +166,11 @@ azure:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
+          configuration:
+            operatorNamespace: kuadrant-operators
+            operandNamespace: kuadrant-system
 
 # CoreWeave cloud configuration
 coreweave:
@@ -195,9 +197,6 @@ coreweave:
     enabled: true
     spec:
       dependencies:
-        certManager:
-          managementPolicy: Unmanaged
-          configuration: {}
         gatewayAPI:
           managementPolicy: Managed
           configuration: {}
@@ -209,6 +208,11 @@ coreweave:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
+          configuration:
+            operatorNamespace: kuadrant-operators
+            operandNamespace: kuadrant-system
 
 # AWS cloud configuration
 aws:
@@ -235,9 +239,6 @@ aws:
     enabled: true
     spec:
       dependencies:
-        certManager:
-          managementPolicy: Unmanaged
-          configuration: {}
         gatewayAPI:
           managementPolicy: Managed
           configuration: {}
@@ -249,9 +250,16 @@ aws:
           managementPolicy: Managed
           configuration:
             namespace: istio-system
+        rhcl:
+          managementPolicy: Unmanaged   # Opt-in: set to Managed to have CCM install RHCL (Kuadrant)
+          configuration:
+            operatorNamespace: kuadrant-operators
+            operandNamespace: kuadrant-system
 
 # cert-manager operator subchart
 cert-manager-operator:
+  # When true (default), RHAI installs cert-manager via this subchart.
+  # Set enabled=false if the cluster has an external cert-manager you don't want RHAI to manage.
   enabled: true
   operatorNamespace: cert-manager-operator
   operandNamespace: cert-manager
