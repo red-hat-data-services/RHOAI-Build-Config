@@ -1621,7 +1621,11 @@ spec:
                       properties:
                         instancesNamespace:
                           default: rhoai-model-registries
-                          description: Namespace for AI Hub registries, configurable only once when AI Hub is enabled.
+                          description: |-
+                            Namespace for AI Hub registries and the model catalog service.
+                            Defaults to "rhoai-model-registries" when omitted, or when empty and Managed.
+                            It may equal the platform applications namespace. A non-empty namespace
+                            cannot change while AI Hub remains Managed; set Removed before changing it.
                           maxLength: 63
                           pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$
                           type: string
@@ -2267,6 +2271,7 @@ spec:
                       description: AIHub component status.
                       properties:
                         instancesNamespace:
+                          description: Effective namespace projected into the AI Hub module CR; empty when Removed.
                           type: string
                         managementState:
                           description: |-
