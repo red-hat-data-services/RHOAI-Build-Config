@@ -280,19 +280,21 @@ spec:
                 - LoadBalancer
                 type: string
               networkPolicy:
-                description: NetworkPolicy configuration for kube-auth-proxy
+                description: |-
+                  NetworkPolicy configures NetworkPolicy behavior for kube-auth-proxy.
+                  It is retained for backward compatibility and has no effect; the operator
+                  always manages the kube-auth-proxy NetworkPolicy.
+                  Deprecated: This setting is ignored and will be removed in a future API version.
                 properties:
                   ingress:
                     description: |-
-                      Ingress defines ingress NetworkPolicy rules.
-                      When nil, ingress rules are applied by default (allows traffic from Gateway pods and monitoring namespaces).
-                      When specified, Enabled must be set to true to apply rules or false to skip NetworkPolicy creation.
-                      Set Enabled=false only in development environments or when using alternative network security controls.
+                      Ingress is retained for backward compatibility and has no effect.
+                      Deprecated: This setting is ignored.
                     properties:
                       enabled:
                         description: |-
-                          Enabled determines whether ingress rules are applied.
-                          When true, creates NetworkPolicy allowing traffic only from Gateway pods and monitoring namespaces.
+                          Enabled is retained for backward compatibility and has no effect.
+                          Deprecated: This setting is ignored.
                         type: boolean
                     required:
                     - enabled
