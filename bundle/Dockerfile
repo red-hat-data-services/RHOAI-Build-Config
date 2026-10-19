@@ -260,6 +260,8 @@ ARG ODH_MODELEXPRESS_GIT_URL=
 ARG ODH_MODELEXPRESS_GIT_COMMIT=
 ARG ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_URL=
 ARG ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_COMMIT=
+ARG ODH_LLM_D_KV_PVC_EVICTOR_GIT_URL=
+ARG ODH_LLM_D_KV_PVC_EVICTOR_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -532,7 +534,9 @@ LABEL \
       odh-modelexpress.git.url="${ODH_MODELEXPRESS_GIT_URL}" \
       odh-modelexpress.git.commit="${ODH_MODELEXPRESS_GIT_COMMIT}" \
       odh-workbench-codeserver-minimal-cpu-py312.git.url="${ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_URL}" \
-      odh-workbench-codeserver-minimal-cpu-py312.git.commit="${ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_COMMIT}"
+      odh-workbench-codeserver-minimal-cpu-py312.git.commit="${ODH_WORKBENCH_CODESERVER_MINIMAL_CPU_PY312_GIT_COMMIT}" \
+      odh-llm-d-kv-pvc-evictor.git.url="${ODH_LLM_D_KV_PVC_EVICTOR_GIT_URL}" \
+      odh-llm-d-kv-pvc-evictor.git.commit="${ODH_LLM_D_KV_PVC_EVICTOR_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
