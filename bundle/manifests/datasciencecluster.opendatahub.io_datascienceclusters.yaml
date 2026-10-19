@@ -1978,6 +1978,20 @@ spec:
                               rule: self.managementState != 'Managed' || (has(self.nodeNames) && size(self.nodeNames) > 0) || (has(self.nodeSelector) && ((has(self.nodeSelector.matchLabels) && size(self.nodeSelector.matchLabels) > 0) || (has(self.nodeSelector.matchExpressions) && size(self.nodeSelector.matchExpressions) > 0)))
                             - message: nodeNames and nodeSelector are mutually exclusive
                               rule: '!(has(self.nodeNames) && has(self.nodeSelector))'
+                        modelExpress:
+                          default: {}
+                          description: |-
+                            Configures and enables the ModelExpress operator, a model cache and
+                            GPU-to-GPU weight transfer service for distributed model serving
+                          properties:
+                            managementState:
+                              default: Removed
+                              enum:
+                                - Managed
+                                - Removed
+                              pattern: ^(Managed|Unmanaged|Force|Removed)$
+                              type: string
+                          type: object
                         nim:
                           default: {}
                           description: Configures and enables NVIDIA NIM integration
