@@ -28,9 +28,18 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: get_branch
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
+          private-key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
+          owner: red-hat-data-services
+          repositories: RHOAI-Build-Config
       - name: Git checkout RBC release
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
       - name: Git checkout utils
@@ -141,10 +150,20 @@ jobs:
       - name: Commit and push the changes to release branch
         uses: actions-js/push@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ steps.app-token.outputs.token }}
           branch: ${{ steps.get_branch.outputs.branch }}
           message: "Updating the bundle-csv and helm chart values with latest images"
           repository: ${{ env.GITHUB_ORG }}/RHOAI-Build-Config
           directory: ${{ steps.get_branch.outputs.branch }}
           author_name: Openshift-AI DevOps
           author_email: openshift-ai-devops@redhat.com
+  notify-failure:
+    needs: process-bundle
+    if: ${{ failure() }}
+    uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/slack-failure-notification.yaml@main
+    with:
+      workflow_name: "Nightly Bundle Build"
+      branch: ${{ github.head_ref || github.ref_name }}
+      run_url: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+    secrets:
+      SLACK_NOTIFICATIONS_WEBHOOK: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK }}
