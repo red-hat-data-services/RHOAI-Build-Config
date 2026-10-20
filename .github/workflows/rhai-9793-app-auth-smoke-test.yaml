@@ -1,0 +1,46 @@
+name: RHAI-9793 GitHub App Auth Smoke Test
+
+on:
+  push:
+    branches:
+      - rhai-9793-github-app-workflow-auth
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app-auth-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
+          private-key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
+          owner: red-hat-data-services
+          repositories: RHOAI-Build-Config
+
+      - name: Checkout with GitHub App token
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          path: smoke-test
+
+      - name: Verify authenticated App access
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          app_login=$(gh api user --jq '.login')
+          permissions=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions | to_entries | map(select(.value == true) | .key) | join(",")')
+          echo "Authenticated GitHub App account: ${app_login}"
+          echo "Granted repository permissions: ${permissions}"
+
+      - name: Verify checkout credentials without pushing
+        working-directory: smoke-test
+        run: |
+          set -euo pipefail
+          git ls-remote origin HEAD >/dev/null
+          echo "Authenticated git read succeeded; no write operation was attempted."
