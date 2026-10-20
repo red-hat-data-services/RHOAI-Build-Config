@@ -33,9 +33,9 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
-          permissions=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.permissions | to_entries | map(select(.value == true) | .key) | join(",")')
-          echo "Granted repository permissions: ${permissions}"
-          [[ -n "${permissions}" ]]
+          repository=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name')
+          echo "Authenticated repository API access: ${repository}"
+          [[ "${repository}" == "${GITHUB_REPOSITORY}" ]]
 
       - name: Verify checkout credentials without pushing
         working-directory: smoke-test
