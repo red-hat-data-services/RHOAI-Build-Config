@@ -103,10 +103,13 @@ components:
   aigateway:
     # Enable operator-managed AIGateway module (includes Models as a Service)
     enabled: false
-    # AIGateway component CR spec — sets modelsAsAService.managementState: Managed on the AIGateway CR
+    # AIGateway component CR spec — MaaS and Batch Gateway default to Removed.
     spec:
       modelsAsAService:
-        managementState: Managed
+        managementState: Removed
+      # Batch Gateway lifecycle. Keep Removed until its RHAII release default is confirmed.
+      batchGateway:
+        managementState: Removed
     # Models as a Service (MaaS) configuration
     modelsAsAService:
       # MaaS gateway configuration
