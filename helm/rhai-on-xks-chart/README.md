@@ -155,12 +155,15 @@ components:
 
 ### MaaS Gateway
 
-When AI Gateway is enabled (`components.aigateway.enabled: true`), the chart creates a MaaS Gateway CR via a post-install hook. The same `allowedRoutes` configuration is **required**:
+MaaS is opt-in on xKS. Set `components.aigateway.spec.modelsAsAService.managementState` to `Managed` to deploy it; the chart creates a MaaS Gateway CR via a post-install hook. The same `allowedRoutes` configuration is **required**:
 
 ```yaml
 components:
   aigateway:
     enabled: true
+    spec:
+      modelsAsAService:
+        managementState: Managed
     modelsAsAService:
       gateway:
         allowedRoutes:
@@ -172,6 +175,24 @@ components:
 ```
 
 When using `Selector`, the specified labels must be applied to each target namespace (e.g. `kubectl label ns <model-namespace> maas-gateway-access=true`).
+
+### Batch Gateway
+
+AI Gateway can independently manage its subcomponents. Batch Gateway defaults to `Removed`. To install the Batch Gateway operator without enabling other subcomponents, set its `managementState` to `Managed`:
+
+```yaml
+components:
+  aigateway:
+    enabled: true
+    modelsAsAService:
+      gateway:
+        create: false
+    spec:
+      batchGateway:
+        managementState: Managed
+```
+
+The chart creates the `Platform` and `AIGateway` resources. The AI Gateway operator deploys Batch Gateway using the release's digest-pinned related images. Backing services and workload resources must be configured separately.
 
 ## Managed Dependencies
 
