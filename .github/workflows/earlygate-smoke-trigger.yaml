@@ -1,0 +1,184 @@
+name: Trigger Early Gate Tests
+
+# Queues the RHOAI early-gate smoke test on Jenkins and prints the queue URL
+# so the Konflux task that dispatched this workflow can find the job again.
+#
+# Adapted from red-hat-data-services/rhods-devops-infra's workflow of the same
+# name. Two differences, both following from the RHOAI early gate resolving
+# its images to digests before it gets here:
+#
+#   1. Upstream takes one `fbc_tag` input and forwards it to Jenkins as
+#      RHOAI_VERSION, so the tag doubles as both the release identifier and
+#      the thing that locates the catalog. That conflates two facts and makes
+#      the catalog a mutable reference. Here the release line and the three
+#      images are separate inputs, and the images are digests.
+#
+#   2. The FBC image is sent to Jenkins as ODS_BUILD_URL (the parameter name
+#      the promotion-gate-tests job expects). When ODS_BUILD_URL contains a
+#      full image reference (like a digest), the job uses it directly without
+#      tracer resolution. FBC_IMAGE, OPERATOR_IMAGE and BUNDLE_IMAGE are also
+#      sent for future compatibility and reporting.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repositories:
+        description: "Comma-separated component repository names under test"
+        required: true
+        type: string
+      pr_number:
+        description: "Leader PR number"
+        required: true
+        type: string
+      correlation_id:
+        description: "Correlation ID, eg-<pr>-<epoch>"
+        required: true
+        type: string
+      rhoai_version:
+        description: "Release line under test, e.g. 3.6.0"
+        required: false
+        type: string
+        default: ""
+      fbc_image:
+        description: "FBC fragment by digest. The catalog the test installs from."
+        required: false
+        type: string
+        default: ""
+      bundle_image:
+        description: "Bundle image by digest. Reported, not installed."
+        required: false
+        type: string
+        default: ""
+      operator_image:
+        description: "Operator image by digest. Reported, not installed."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+run-name: 'Early Gate smoke test for PR #${{ inputs.pr_number }} (${{ inputs.correlation_id }})'
+
+jobs:
+  trigger-jenkins:
+    # The Jenkins host is on Red Hat's internal network, which a
+    # GitHub-hosted runner cannot route to. The self-hosted konflux
+    # runner has that network reach.
+    #
+    # Pinned to redhat-internal, matching upstream, which is where the Jenkins
+    # credentials are scoped.
+    environment: redhat-internal
+    # A real YAML list, not a variable.  EG_RUNNER_LABELS held the string
+    # '["self-hosted", "devops"]', and Actions variables are strings - the
+    # expression was substituted verbatim, so runs-on received ONE label whose
+    # literal text was ["self-hosted", "devops"].  No runner carries that
+    # name, so every job queued indefinitely instead of failing.  A wrong
+    # runner label never errors, it just waits - there is no log to read.
+    runs-on: [self-hosted, konflux]
+    env:
+      JENKINS_BASE_URL: ${{ vars.JENKINS_BASE_URL }}
+      JENKINS_JOB_PATH: ${{ vars.JENKINS_JOB_PATH || 'job/devops/job/promotion-gate-tests' }}
+      REPOSITORIES: ${{ inputs.repositories }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+      CORRELATION_ID: ${{ inputs.correlation_id }}
+      RHOAI_VERSION: ${{ inputs.rhoai_version }}
+      FBC_IMAGE: ${{ inputs.fbc_image }}
+      BUNDLE_IMAGE: ${{ inputs.bundle_image }}
+      OPERATOR_IMAGE: ${{ inputs.operator_image }}
+    steps:
+      - name: Print inputs
+        run: |
+          echo "Repositories:   ${REPOSITORIES}"
+          echo "PR number:      ${PR_NUMBER}"
+          echo "Correlation ID: ${CORRELATION_ID}"
+          echo "RHOAI version:  ${RHOAI_VERSION:-<unset>}"
+          echo "FBC image:      ${FBC_IMAGE:-<unset>}"
+          echo "Bundle image:   ${BUNDLE_IMAGE:-<unset>}"
+          echo "Operator image: ${OPERATOR_IMAGE:-<unset>}"
+
+      - name: Check configuration
+        run: |
+          MISSING=""
+          [ -z "${JENKINS_BASE_URL}" ] && MISSING="${MISSING} vars.JENKINS_BASE_URL"
+          [ -z "${{ secrets.JENKINS_USERNAME }}" ] && MISSING="${MISSING} secrets.JENKINS_USERNAME"
+          [ -z "${{ secrets.JENKINS_TOKEN }}" ] && MISSING="${MISSING} secrets.JENKINS_TOKEN"
+          if [ -n "${MISSING}" ]; then
+            echo "::error::Not configured for Jenkins. Missing:${MISSING}"
+            echo "Set these on this repository (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+
+      - name: Get Jenkins crumb
+        run: |
+          # The credentials go in a --netrc-file rather than on the command
+          # line: anything in argv is visible in the runner's process list,
+          # and -u would also put it in a `set -x` trace.
+          umask 077
+          printf 'machine %s login %s password %s\n' \
+            "$(echo "${JENKINS_BASE_URL}" | sed -E 's#^https?://##; s#/.*##')" \
+            '${{ secrets.JENKINS_USERNAME }}' \
+            '${{ secrets.JENKINS_TOKEN }}' > "${RUNNER_TEMP}/netrc"
+
+          CRUMB=$(curl -sS -k --netrc-file "${RUNNER_TEMP}/netrc" \
+            "${JENKINS_BASE_URL%/}/crumbIssuer/api/json" | jq -r '.crumb // empty')
+          if [ -z "${CRUMB}" ]; then
+            echo "::error::Could not get a Jenkins crumb. Check JENKINS_USERNAME / JENKINS_TOKEN."
+            exit 1
+          fi
+          echo "::add-mask::${CRUMB}"
+          echo "CRUMB=${CRUMB}" >> "${GITHUB_ENV}"
+
+      - name: Trigger the Jenkins job
+        id: trigger-jenkins
+        run: |
+          # The promotion-gate-tests job accepts ODS_BUILD_URL as the FBC image.
+          # When ODS_BUILD_URL is a full image reference (e.g., a digest like
+          # quay.io/rhoai/rhoai-fbc-fragment@sha256:...), the job uses it
+          # directly for deployment without tracer resolution. This eliminates
+          # the mutable reference: the exact image built by this gate is what
+          # gets tested.
+          #
+          # OPERATOR_IMAGE, BUNDLE_IMAGE and FBC_IMAGE are sent for reporting
+          # and future Jenkins support. Jenkins silently discards parameters
+          # it does not define, so these have no effect until the job is
+          # updated to accept them.
+          HTTP_CODE=$(curl -sS -k -o "${RUNNER_TEMP}/body.txt" -w '%{http_code}' \
+            -D "${RUNNER_TEMP}/headers.txt" \
+            --netrc-file "${RUNNER_TEMP}/netrc" \
+            -X POST "${JENKINS_BASE_URL%/}/${JENKINS_JOB_PATH#/}/buildWithParameters" \
+            -H "Jenkins-Crumb: ${CRUMB}" \
+            --data-urlencode "RHOAI_VERSION=${RHOAI_VERSION}" \
+            --data-urlencode "ODS_BUILD_URL=${FBC_IMAGE}" \
+            --data-urlencode "GITHUB_REPO=${REPOSITORIES}" \
+            --data-urlencode "CORRELATION_ID=${CORRELATION_ID}" \
+            --data-urlencode "PR_NUMBER=${PR_NUMBER}" \
+            --data-urlencode "OPERATOR_IMAGE=${OPERATOR_IMAGE}" \
+            --data-urlencode "BUNDLE_IMAGE=${BUNDLE_IMAGE}" \
+            --data-urlencode "FBC_IMAGE=${FBC_IMAGE}")
+
+          echo "Jenkins responded ${HTTP_CODE}"
+          if [ "${HTTP_CODE}" -lt 200 ] || [ "${HTTP_CODE}" -ge 400 ]; then
+            echo "::error::Jenkins returned HTTP ${HTTP_CODE}"
+            cat "${RUNNER_TEMP}/headers.txt"
+            cat "${RUNNER_TEMP}/body.txt"
+            exit 1
+          fi
+
+          QUEUE_URL=$(grep -i '^location:' "${RUNNER_TEMP}/headers.txt" \
+            | sed 's/[Ll]ocation: *//; s/\r//; s|/$||' || true)
+          if [ -z "${QUEUE_URL}" ]; then
+            echo "::error::Jenkins accepted the build but returned no Location header, so there is no queue item to track."
+            cat "${RUNNER_TEMP}/headers.txt"
+            exit 1
+          fi
+
+          # Printed, not just set as an output. workflow_dispatch runs do not
+          # expose job outputs over the REST API, so the Konflux task that
+          # dispatched this run reads the queue URL back out of these logs.
+          echo "Queue URL: ${QUEUE_URL}"
+          echo "queue-url=${QUEUE_URL}" >> "${GITHUB_OUTPUT}"
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/netrc"

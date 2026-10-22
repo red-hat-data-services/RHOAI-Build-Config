@@ -1,0 +1,151 @@
+name: Monitor Jenkins Job
+
+# Reports the state of one Jenkins job, once, and exits. The Konflux
+# monitor-jenkins-job task dispatches this repeatedly to poll; the loop lives
+# there rather than here so a long-running smoke test does not hold a GitHub
+# Actions runner open for hours.
+#
+# Adapted from red-hat-data-services/rhods-devops-infra's workflow of the same
+# name. Behaviour is unchanged. What differs is configuration: the Jenkins
+# host comes from a repository variable instead of being hardcoded, and the
+# credentials go via a netrc file rather than -u, so they never appear in the
+# runner's process list.
+#
+# Two outputs, both printed as `name=value` lines rather than only set as job
+# outputs: workflow_dispatch runs do not expose job outputs over the REST API,
+# so the Konflux task scrapes them from these logs.
+#
+#   jenkins-job-url     resolved from a queue item, when one is still live
+#   jenkins-job-status  the job's result, or IN_PROGRESS while it runs
+
+on:
+  workflow_dispatch:
+    inputs:
+      queue-url:
+        type: string
+        description: "Jenkins queue URL to resolve a job URL from"
+        required: false
+        default: ""
+      job-url:
+        type: string
+        description: "Jenkins job URL to report the status of"
+        required: false
+        default: ""
+
+  workflow_call:
+    inputs:
+      queue-url:
+        type: string
+        required: false
+        default: ""
+      job-url:
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+run-name: 'Monitor Jenkins job'
+
+jobs:
+  monitor-jenkins:
+    # Pinned to redhat-internal, for the reason given in
+    # earlygate-smoke-trigger.yaml.
+    environment: redhat-internal
+    # A real YAML list, not a variable.  EG_RUNNER_LABELS held the string
+    # '["self-hosted", "devops"]', and Actions variables are strings - the
+    # expression was substituted verbatim, so runs-on received ONE label whose
+    # literal text was ["self-hosted", "devops"].  No runner carries that
+    # name, so every job queued indefinitely instead of failing.  A wrong
+    # runner label never errors, it just waits - there is no log to read.
+    runs-on: [self-hosted, konflux]
+    outputs:
+      jenkins-job-url: ${{ steps.get-jenkins-job.outputs.jenkins-job-url }}
+      jenkins-job-status: ${{ steps.get-job-status.outputs.jenkins-job-status }}
+    env:
+      JENKINS_BASE_URL: ${{ vars.JENKINS_BASE_URL }}
+      QUEUE_URL: ${{ inputs.queue-url }}
+      JOB_URL: ${{ inputs.job-url }}
+    steps:
+      - name: Check configuration
+        run: |
+          if [ -z "${JENKINS_BASE_URL}" ]; then
+            echo "::error::vars.JENKINS_BASE_URL is not set on this repository."
+            exit 1
+          fi
+          if [ -z "${QUEUE_URL}" ] && [ -z "${JOB_URL}" ]; then
+            echo "::error::Neither queue-url nor job-url was provided."
+            exit 1
+          fi
+
+      - name: Get Jenkins crumb
+        run: |
+          umask 077
+          printf 'machine %s login %s password %s\n' \
+            "$(echo "${JENKINS_BASE_URL}" | sed -E 's#^https?://##; s#/.*##')" \
+            '${{ secrets.JENKINS_USERNAME }}' \
+            '${{ secrets.JENKINS_TOKEN }}' > "${RUNNER_TEMP}/netrc"
+
+          CRUMB=$(curl -sS -k --netrc-file "${RUNNER_TEMP}/netrc" \
+            "${JENKINS_BASE_URL%/}/crumbIssuer/api/json" | jq -r '.crumb // empty')
+          if [ -z "${CRUMB}" ]; then
+            echo "::error::Could not get a Jenkins crumb. Check JENKINS_USERNAME / JENKINS_TOKEN."
+            exit 1
+          fi
+          echo "::add-mask::${CRUMB}"
+          echo "CRUMB=${CRUMB}" >> "${GITHUB_ENV}"
+
+      - name: Resolve the job URL from the queue item
+        id: get-jenkins-job
+        if: ${{ inputs.job-url == '' && inputs.queue-url != '' }}
+        run: |
+          QUEUE_URL="${QUEUE_URL%/}/"
+          echo "Resolving ${QUEUE_URL}"
+          HTTP_CODE=$(curl -sS -k -o "${RUNNER_TEMP}/queue.json" -w '%{http_code}' \
+            --netrc-file "${RUNNER_TEMP}/netrc" \
+            -H "Jenkins-Crumb: ${CRUMB}" \
+            "${QUEUE_URL}api/json")
+
+          # A queue item is garbage-collected shortly after the job it refers
+          # to starts. The caller distinguishes this 404 from a real failure
+          # by matching on the message below, so the wording is load-bearing.
+          if [ "${HTTP_CODE}" -ge 400 ]; then
+            echo "Queue item no longer available (HTTP ${HTTP_CODE}). It may have expired after the job started."
+            exit 1
+          fi
+
+          if ! jq empty < "${RUNNER_TEMP}/queue.json" 2>/dev/null; then
+            echo "::error::Queue API returned non-JSON (HTTP ${HTTP_CODE})"
+            head -5 "${RUNNER_TEMP}/queue.json"
+            exit 1
+          fi
+
+          JENKINS_JOB_URL=$(jq -r '.executable.url // empty' < "${RUNNER_TEMP}/queue.json")
+          if [ -z "${JENKINS_JOB_URL}" ]; then
+            echo "Job has not started yet; the queue item has no executable."
+            exit 1
+          fi
+
+          echo "jenkins-job-url=${JENKINS_JOB_URL}"
+          echo "jenkins-job-url=${JENKINS_JOB_URL}" >> "${GITHUB_OUTPUT}"
+
+      - name: Get the job status
+        id: get-job-status
+        if: ${{ inputs.job-url != '' }}
+        run: |
+          JOB_URL="${JOB_URL%/}/"
+          echo "Checking ${JOB_URL}"
+          # No .result means the build is still going. Jenkins only populates
+          # it once the build finishes, so the default is IN_PROGRESS rather
+          # than an error.
+          JENKINS_JOB_STATUS=$(curl -sS -k \
+            --netrc-file "${RUNNER_TEMP}/netrc" \
+            -H "Jenkins-Crumb: ${CRUMB}" \
+            "${JOB_URL}api/json" | jq -r '.result // "IN_PROGRESS"')
+          echo "jenkins-job-status=${JENKINS_JOB_STATUS}"
+          echo "jenkins-job-status=${JENKINS_JOB_STATUS}" >> "${GITHUB_OUTPUT}"
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/netrc"
