@@ -194,6 +194,26 @@ components:
 
 The chart creates the `Platform` and `AIGateway` resources. The AI Gateway operator deploys Batch Gateway using the release's digest-pinned related images. Backing services and workload resources must be configured separately.
 
+### AI Grid
+
+AI Grid is opt-in on xKS. Set `components.aigateway.spec.aiGrid.managementState` to `Managed` to install the Grid CRDs and `grid-operator`:
+
+```yaml
+components:
+  aigateway:
+    enabled: true
+    spec:
+      aiGrid:
+        managementState: Managed
+```
+
+The chart creates the Grid namespace (`redhat-ai-grid` by default) and, when an image pull secret is enabled, precreates the `grid-operator`
+ServiceAccount with that secret. These namespace and ServiceAccount names are part of the AI Gateway operator contract and must stay aligned
+with the operator deployment. The AI Gateway operator then installs the Grid CRDs and operator. Override the Grid operator image with
+`rhaiOperator.relatedImages` using `RELATED_IMAGE_ODH_PRAXIS_AI_GRID_OPERATOR_IMAGE`.
+When using a custom applications namespace, keep it to 55 characters or fewer so the chart can create the derived
+`<applications-namespace>-ai-grid` namespace.
+
 ## Managed Dependencies
 
 The KubernetesEngine CRs (AWS, Azure, or CoreWeave) manage the following dependencies. Each can be set to `Managed` (operator handles installation and lifecycle) or `Unmanaged` (you manage it yourself):
