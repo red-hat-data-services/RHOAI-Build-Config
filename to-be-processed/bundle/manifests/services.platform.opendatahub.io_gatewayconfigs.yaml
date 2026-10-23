@@ -120,6 +120,8 @@ spec:
                             secretNamespace:
                               description: SecretNamespace is the source Secret's
                                 namespace; defaults to the gateway namespace.
+                              maxLength: 63
+                              pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
                               type: string
                           required:
                           - clientID
@@ -130,6 +132,7 @@ spec:
                       description: Hostname is the externally visible hostname for
                         this ingress.
                       maxLength: 253
+                      pattern: ^([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?)(\.([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?))*$
                       type: string
                     ingressControllerName:
                       description: IngressControllerName is the IngressController
