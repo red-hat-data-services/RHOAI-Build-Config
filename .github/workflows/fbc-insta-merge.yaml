@@ -109,3 +109,38 @@ jobs:
             resolve_conflicts_for: "${RESOLVE_CONFLICTS_FOR}"
             merge_args: "--no-edit"
             pr_url: "${{ github.event.pull_request.html_url }}"
+
+      - name: Retry and verify PR merge
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if state="$(gh pr view "$PR_URL" --json state --jq .state)"; then
+              if [[ "$state" == "MERGED" ]]; then
+                echo "Verified PR is merged."
+                exit 0
+              fi
+              if [[ "$state" != "OPEN" ]]; then
+                echo "::error::Cannot merge PR in state '$state'."
+                exit 1
+              fi
+            else
+              echo "::warning::GitHub API query failed on attempt $attempt."
+            fi
+
+            if ! gh pr merge "$PR_URL" --merge --admin; then
+              echo "::warning::PR merge attempt $attempt failed; will retry."
+            fi
+            sleep $((attempt * 3))
+          done
+
+          state="$(gh pr view "$PR_URL" --json state --jq .state)" || {
+            echo "::error::Could not verify PR state after merge retries."
+            exit 1
+          }
+          if [[ "$state" != "MERGED" ]]; then
+            echo "::error::PR is still '$state' after merge retries."
+            exit 1
+          fi
+          echo "Verified PR is merged."
