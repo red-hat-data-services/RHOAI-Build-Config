@@ -37,12 +37,11 @@ spec:
     value: '{{source_url}}'
   - name: revision
     value: '{{revision}}'
-  # Public repo, as the bundle: the monitors use quay's anonymous token, which
-  # the release repos answer with 401. A fallback value - the gate rewrites it on
-  # the ephemeral branch - and it must stay in step with image-tag on
-  # monitor-fbc-build in konflux-central's early-gate pipeline.
+  # Publish to the downstream repository under an early-gate tag.
+  # The gate pins this fallback on its ephemeral branch; keep its destination
+  # aligned with the EG Component and the matching monitor's output-image.
   - name: output-image
-    value: quay.io/rhoai/pull-request-pipelines:rhoai-fbc-fragment-{{target_branch}}-{{revision}}
+    value: quay.io/rhoai/rhoai-fbc-fragment:rhoai-fbc-fragment-{{target_branch}}-{{revision}}
   - name: rhoai-version
     value: "3.6.0"
   - name: build-type
