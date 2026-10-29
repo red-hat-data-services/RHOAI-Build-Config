@@ -294,10 +294,66 @@ spec:
                     usageLogs:
                       description: UsageLogs configures usage log collection and forwarding to Loki.
                       properties:
+                        attributes:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            Attributes are resource attributes stamped onto records sent to Exporters only,
+                            so a cluster identity added here cannot disturb the spoke-local pipeline. Set
+                            cluster_name and cluster_id here to attribute records to the cluster that
+                            produced them.
+                          maxProperties: 20
+                          type: object
+                        credentialSecret:
+                          description: |-
+                            CredentialSecret names a Secret in the monitoring namespace holding a bearer
+                            token under the key 'token', for authenticating to the Exporters' endpoint. It is
+                            mounted as a file and read through a 'bearertokenauth/remote' extension, which an
+                            exporter selects with auth: {authenticator: bearertokenauth/remote}. The token is
+                            never written into the collector object, and because the extension re-reads the
+                            file, rotating the Secret reaches a running collector.
+                          maxLength: 253
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                        exporters:
+                          additionalProperties:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          description: |-
+                            Exporters defines additional usage-log exporters, for forwarding a copy of every
+                            usage record to an observability backend outside this cluster — typically a
+                            LokiStack on an ACM hub that aggregates a fleet. The configuration follows the
+                            OpenTelemetry Collector exporter format. The local write is left untouched,
+                            making it a dual-write rather than a redirect; with storage omitted they are the
+                            only destination and nothing is written locally.
+                            Reserved name 'otlphttp/loki' cannot be used.
+                            Maximum 10 exporters allowed.
+                          type: object
+                          x-kubernetes-validations:
+                            - message: exporter name 'otlphttp/loki' is reserved and cannot be used
+                              rule: '!(''otlphttp/loki'' in self)'
+                            - message: maximum 10 exporters allowed
+                              rule: size(self) <= 10
+                        size:
+                          default: 1x.extra-small
+                          description: |-
+                            Size selects the LokiStack t-shirt size for the usage-log store. The default
+                            reserves 2 CPU and 8Gi per ingester, which does not schedule on smaller
+                            clusters; the LokiStack then never reports Ready and the usage-logs collector
+                            is never deployed. Ignored when storage is omitted, since no LokiStack is
+                            deployed.
+                          enum:
+                            - 1x.demo
+                            - 1x.pico
+                            - 1x.extra-small
+                            - 1x.small
+                            - 1x.medium
+                          type: string
                         storage:
                           description: |-
                             Storage configures the LokiStack storage backend (S3).
                             When configured, the operator deploys a LokiStack instance and auto-configures the collector endpoint.
+                            Omit when forwarding only: no LokiStack is deployed and no object storage is needed.
                           properties:
                             credentialMode:
                               default: static
@@ -330,9 +386,10 @@ spec:
                             - secretName
                             - type
                           type: object
-                      required:
-                        - storage
                       type: object
+                      x-kubernetes-validations:
+                        - message: usageLogs requires storage and/or at least one exporter
+                          rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
@@ -341,8 +398,6 @@ spec:
                       rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
                     - message: Log forwarding requires logs.storage to be configured for the LokiStack instance
                       rule: 'has(self.logs) ? has(self.logs.storage) : true'
-                    - message: Usage logs require usageLogs.storage to be configured for the LokiStack instance
-                      rule: 'has(self.usageLogs) ? has(self.usageLogs.storage) : true'
                 serviceMesh:
                   description: |-
                     Configures Service Mesh as networking layer for Data Science Clusters components.
@@ -827,10 +882,66 @@ spec:
                     usageLogs:
                       description: UsageLogs configures usage log collection and forwarding to Loki.
                       properties:
+                        attributes:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            Attributes are resource attributes stamped onto records sent to Exporters only,
+                            so a cluster identity added here cannot disturb the spoke-local pipeline. Set
+                            cluster_name and cluster_id here to attribute records to the cluster that
+                            produced them.
+                          maxProperties: 20
+                          type: object
+                        credentialSecret:
+                          description: |-
+                            CredentialSecret names a Secret in the monitoring namespace holding a bearer
+                            token under the key 'token', for authenticating to the Exporters' endpoint. It is
+                            mounted as a file and read through a 'bearertokenauth/remote' extension, which an
+                            exporter selects with auth: {authenticator: bearertokenauth/remote}. The token is
+                            never written into the collector object, and because the extension re-reads the
+                            file, rotating the Secret reaches a running collector.
+                          maxLength: 253
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                        exporters:
+                          additionalProperties:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          description: |-
+                            Exporters defines additional usage-log exporters, for forwarding a copy of every
+                            usage record to an observability backend outside this cluster — typically a
+                            LokiStack on an ACM hub that aggregates a fleet. The configuration follows the
+                            OpenTelemetry Collector exporter format. The local write is left untouched,
+                            making it a dual-write rather than a redirect; with storage omitted they are the
+                            only destination and nothing is written locally.
+                            Reserved name 'otlphttp/loki' cannot be used.
+                            Maximum 10 exporters allowed.
+                          type: object
+                          x-kubernetes-validations:
+                            - message: exporter name 'otlphttp/loki' is reserved and cannot be used
+                              rule: '!(''otlphttp/loki'' in self)'
+                            - message: maximum 10 exporters allowed
+                              rule: size(self) <= 10
+                        size:
+                          default: 1x.extra-small
+                          description: |-
+                            Size selects the LokiStack t-shirt size for the usage-log store. The default
+                            reserves 2 CPU and 8Gi per ingester, which does not schedule on smaller
+                            clusters; the LokiStack then never reports Ready and the usage-logs collector
+                            is never deployed. Ignored when storage is omitted, since no LokiStack is
+                            deployed.
+                          enum:
+                            - 1x.demo
+                            - 1x.pico
+                            - 1x.extra-small
+                            - 1x.small
+                            - 1x.medium
+                          type: string
                         storage:
                           description: |-
                             Storage configures the LokiStack storage backend (S3).
                             When configured, the operator deploys a LokiStack instance and auto-configures the collector endpoint.
+                            Omit when forwarding only: no LokiStack is deployed and no object storage is needed.
                           properties:
                             credentialMode:
                               default: static
@@ -863,9 +974,10 @@ spec:
                             - secretName
                             - type
                           type: object
-                      required:
-                        - storage
                       type: object
+                      x-kubernetes-validations:
+                        - message: usageLogs requires storage and/or at least one exporter
+                          rule: has(self.storage) || (has(self.exporters) && size(self.exporters) > 0)
                   type: object
                   x-kubernetes-validations:
                     - message: Alerting configuration requires metrics.storage to be configured
@@ -874,8 +986,6 @@ spec:
                       rule: '!has(self.collectorReplicas) || (self.collectorReplicas > 0 && ((has(self.metrics) && (has(self.metrics.storage) || (has(self.metrics.exporters) && size(self.metrics.exporters) > 0))) || has(self.traces)))'
                     - message: Log forwarding requires logs.storage to be configured for the LokiStack instance
                       rule: 'has(self.logs) ? has(self.logs.storage) : true'
-                    - message: Usage logs require usageLogs.storage to be configured for the LokiStack instance
-                      rule: 'has(self.usageLogs) ? has(self.usageLogs.storage) : true'
                 trustedCABundle:
                   description: |-
                     When set to `Managed`, adds odh-trusted-ca-bundle Configmap to all namespaces that includes
