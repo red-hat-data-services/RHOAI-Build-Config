@@ -116,7 +116,7 @@ metadata:
     categories: AI/Machine Learning, Big Data
     certified: "False"
     containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:7ad1404491e430965ba04907c78297f7063160b003a628c420a0f41d7ed7166e"
-    createdAt: "2026-10-30T20:21:37Z"
+    createdAt: "2026-10-30T20:36:46Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -464,6 +464,30 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - apiextensions.k8s.io
+          resourceNames:
+          - datascienceclusters.datasciencecluster.opendatahub.io
+          resources:
+          - customresourcedefinitions/status
+          verbs:
+          - patch
+        - apiGroups:
+          - apiextensions.k8s.io
+          resourceNames:
+          - dscinitializations.dscinitialization.opendatahub.io
+          resources:
+          - customresourcedefinitions/status
+          verbs:
+          - patch
+        - apiGroups:
+          - apiextensions.k8s.io
+          resourceNames:
+          - platforms.config.opendatahub.io
+          resources:
+          - customresourcedefinitions/status
+          verbs:
+          - patch
         - apiGroups:
           - apiregistration.k8s.io
           resources:
@@ -962,6 +986,15 @@ spec:
           - get
           - list
           - watch
+        - apiGroups:
+          - migration.k8s.io
+          - storagemigration.k8s.io
+          resources:
+          - storageversionmigrations
+          verbs:
+          - create
+          - delete
+          - get
         - apiGroups:
           - monitoring.coreos.com
           resources:
