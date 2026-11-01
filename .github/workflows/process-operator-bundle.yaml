@@ -1,3 +1,27 @@
+# =============================================================================
+# EARLY-GATE OVERLAY of red-hat-data-services/RHOAI-Build-Config
+#   .github/workflows/process-operator-bundle.yaml
+#
+# The early-gate build pipeline copies this file onto the ephemeral bundle branch
+# (.github/workflows/process-operator-bundle.yaml) before dispatching, when the
+# pipeline param `eg-overlay-bundle-processor` is "true". Because the gate
+# dispatches with ref=<eg-bundle-branch>, GitHub runs THIS version - so the
+# early-gate behaviour is exercised without changing RHOAI-Build-Config release
+# branches or main.
+#
+# Differences from the upstream workflow (keep in sync otherwise):
+#   1. adds the early-gate workflow_dispatch inputs (eg-mode / eg-branch /
+#      leader-pr-number), mirroring operator-processor.yaml;
+#   2. in EG mode: processes only the bundle (no helm), passes
+#      --use-existing-digests so the operator digest comes from bundle-patch.yaml
+#      (operands still cascade from operands-map.yaml at the operator commit),
+#      targets the eg push pipeline, and commits `early-gate:` to the eg branch.
+#
+# Non-EG (release) behaviour is unchanged; every EG branch is gated on
+# `inputs.eg-mode == 'true'`. Once this merges to rhoai-3.7-ea.1 of
+# RHOAI-Build-Config, set `eg-overlay-bundle-processor` to "false" and delete
+# this file.
+# =============================================================================
 name: Process Operator Bundle
 run-name: Process Operator Bundle
 on:
@@ -6,6 +30,21 @@ on:
       rhoai_version:
         description: 'RHOAI version to process (e.g. rhoai-3.5, rhoai-3.5-ea.2). Branch name used if omitted.'
         required: false
+        type: string
+      eg-mode:
+        description: 'Run in early-gate mode'
+        required: false
+        default: 'false'
+        type: string
+      eg-branch:
+        description: 'Ephemeral branch name for EG'
+        required: false
+        default: ''
+        type: string
+      leader-pr-number:
+        description: 'Leader PR number for EG correlation'
+        required: false
+        default: ''
         type: string
       dry_run:
         description: 'Push results to BRANCH-dry-run instead of the actual branch.'
@@ -46,6 +85,14 @@ jobs:
         shell: bash
         run: |
           BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          # early-gate: the ephemeral bundle branch is the branch being processed.
+          if [[ "${{ inputs.eg-mode }}" == "true" ]]; then
+            if [[ -z "${{ inputs.eg-branch }}" ]]; then
+              echo "::error::eg-mode is true but eg-branch is empty."
+              exit 1
+            fi
+            BRANCH="${{ inputs.eg-branch }}"
+          fi
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
           VERSION_SOURCE="${{ inputs.rhoai_version || github.head_ref || github.ref_name }}"
@@ -96,6 +143,7 @@ jobs:
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
           RHOAI_VERSION: ${{ steps.get_branch.outputs.rhoai_version }}
+          EG_MODE: ${{ inputs.eg-mode }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
           RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
@@ -118,10 +166,12 @@ jobs:
           mkdir -p $RAW_INPUTS_DIR
           cp -r ${BRANCH}/to-be-processed/bundle/* $RAW_INPUTS_DIR
 
-          #copy helm raw content to tmp location
+          #copy helm raw content to tmp location (release path only; EG processes the bundle alone)
           HELM_RAW_INPUTS_DIR=utils/tmp/helm
-          mkdir -p $HELM_RAW_INPUTS_DIR
-          cp -r ${BRANCH}/to-be-processed/helm/* $HELM_RAW_INPUTS_DIR
+          if [[ "${EG_MODE}" != "true" ]]; then
+            mkdir -p $HELM_RAW_INPUTS_DIR
+            cp -r ${BRANCH}/to-be-processed/helm/* $HELM_RAW_INPUTS_DIR
+          fi
 
           #Declare Bundle processing variables
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
@@ -148,6 +198,19 @@ jobs:
             METADATA_CONFIG_FLAG="-mc ${METADATA_CONFIG_PATH}"
           fi
 
+          # early-gate: target the eg push pipeline, process the bundle alone (no
+          # helm), and use --use-existing-digests so the operator digest comes from
+          # bundle-patch.yaml (the gate pins it there); operands still cascade from
+          # operands-map.yaml fetched at the operator image's git.commit.
+          HELM_FLAGS=(-xhp "${XKS_HELM_PATCH_YAML_PATH}" -xhv "${XKS_HELM_VALUES_YAML_PATH}" -xhpp "${XKS_HELM_PUSH_PIPELINE_PATH}" \
+                      -ohp "${OPENSHIFT_HELM_PATCH_YAML_PATH}" -ohv "${OPENSHIFT_HELM_VALUES_YAML_PATH}" -ohpp "${OPENSHIFT_HELM_PUSH_PIPELINE_PATH}")
+          DIGEST_FLAG=()
+          if [[ "${EG_MODE}" == "true" ]]; then
+            BUNDLE_PUSH_PIPELINE_PATH=${BRANCH}/.tekton/odh-operator-bundle-eg-push.yaml
+            HELM_FLAGS=()
+            DIGEST_FLAG=(--use-existing-digests)
+          fi
+
           #Invoke Bundle processor to patch the catalog
           python3 utils/utils/processors/bundle-processor.py \
             -op bundle-patch \
@@ -157,14 +220,10 @@ jobs:
             -o ${OUTPUT_FILE_PATH} \
             -v rhoai-${RHOAI_VERSION} \
             -a ${ANNOTATION_YAML_PATH} \
-            -xhp ${XKS_HELM_PATCH_YAML_PATH} \
-            -xhv ${XKS_HELM_VALUES_YAML_PATH} \
-            -xhpp ${XKS_HELM_PUSH_PIPELINE_PATH} \
-            -ohp ${OPENSHIFT_HELM_PATCH_YAML_PATH} \
-            -ohv ${OPENSHIFT_HELM_VALUES_YAML_PATH} \
-            -ohpp ${OPENSHIFT_HELM_PUSH_PIPELINE_PATH} \
+            "${HELM_FLAGS[@]}" \
             -y ${BUNDLE_PUSH_PIPELINE_PATH} \
             -x enable \
+            "${DIGEST_FLAG[@]}" \
             ${METADATA_CONFIG_FLAG}
 
           # Sync processed content back to bundle and helm directories
@@ -175,8 +234,11 @@ jobs:
           find ${BRANCH}/bundle/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
           cp -r ${RAW_INPUTS_DIR}/* ${BRANCH}/bundle/
 
-          find ${BRANCH}/helm/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
-          cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
+          # helm sync-back: release path only (EG leaves helm untouched)
+          if [[ "${EG_MODE}" != "true" ]]; then
+            find ${BRANCH}/helm/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} \;
+            cp -r ${HELM_RAW_INPUTS_DIR}/* ${BRANCH}/helm/
+          fi
 
       - name: Print debug logs
         if: always()
@@ -190,15 +252,25 @@ jobs:
 
       - name: Commit and push the changes to release branch
         working-directory: ${{ steps.get_branch.outputs.branch }}
+        env:
+          EG_MODE: ${{ inputs.eg-mode }}
+          EG_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
-          PUSH_BRANCH="${{ inputs.dry_run == true && format('{0}-dry-run-bundle', steps.get_branch.outputs.branch) || steps.get_branch.outputs.branch }}"
-          FORCE_FLAG="${{ inputs.dry_run == true && '--force' || '' }}"
-          git diff --staged --quiet || (git commit -m "Updating the bundle-csv and helm chart values with latest images
+          if [[ "${EG_MODE}" == "true" ]]; then
+            # The `early-gate:` subject is load-bearing: the eg push pipeline's CEL
+            # matches on it. --allow-empty guarantees a commit for the gate to observe.
+            git commit --allow-empty -m "early-gate: pin bundle to gated digests for ${EG_BRANCH}"
+            git push origin "HEAD:${EG_BRANCH}"
+          else
+            PUSH_BRANCH="${{ inputs.dry_run == true && format('{0}-dry-run-bundle', steps.get_branch.outputs.branch) || steps.get_branch.outputs.branch }}"
+            FORCE_FLAG="${{ inputs.dry_run == true && '--force' || '' }}"
+            git diff --staged --quiet || (git commit -m "Updating the bundle-csv and helm chart values with latest images
 
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push ${FORCE_FLAG} origin HEAD:${PUSH_BRANCH})
+          fi
 
   notify-failure:
     needs: process-bundle
