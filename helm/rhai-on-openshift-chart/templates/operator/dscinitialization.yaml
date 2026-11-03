@@ -4,13 +4,17 @@ DSCInitialization configuration
 {{- if include "rhoai-dependencies.crdExists" (dict "crdName" "dscinitializations.dscinitialization.opendatahub.io" "root" $) }}
 {{- $operatorType := .Values.operator.type -}}
 {{- $operatorConfig := index .Values.operator $operatorType -}}
-{{- /* When the ai-grid-o11y-spoke subchart is enabled, ensure the DSCInitialization
-     monitoring spec exposes a prometheus/rhacm exporter on the spoke's collector
-     port. Preserve other user-supplied exporter options; the parent/spoke
-     connection is validated independently of CRD availability. */ -}}
+{{- /* When the ai-grid-o11y-spoke subchart renders its metrics half, ensure the
+     DSCInitialization monitoring spec exposes a prometheus/rhacm exporter on the spoke's
+     collector port. Preserve other user-supplied exporter options; the parent/spoke
+     connection is validated independently of CRD availability.
+
+     Gated on metrics.enabled as well as enabled: a spoke that takes this subchart only for
+     the usage-log credential has no ACM observability to scrape it, and an exporter bound
+     for a collector nothing scrapes is configuration it did not ask for. */ -}}
 {{- $dsci := deepCopy (.Values.services.monitoring.dsci | default dict) -}}
 {{- $spoke := index .Values "ai-grid-o11y-spoke" -}}
-{{- if $spoke.enabled }}
+{{- if and $spoke.enabled ($spoke.metrics | default dict).enabled }}
 {{-   $metrics := deepCopy (index $dsci "metrics" | default dict) -}}
 {{-   $exporters := deepCopy (index $metrics "exporters" | default dict) -}}
 {{-   $rhacm := deepCopy (index $exporters "prometheus/rhacm" | default dict) -}}

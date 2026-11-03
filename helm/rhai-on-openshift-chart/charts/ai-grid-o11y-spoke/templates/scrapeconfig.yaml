@@ -1,3 +1,4 @@
+{{- if .Values.metrics.enabled }}
 apiVersion: monitoring.rhobs/v1alpha1
 kind: ScrapeConfig
 metadata:
@@ -19,3 +20,4 @@ spec:
   staticConfigs:
     - targets:
         - data-science-collector-collector.{{ .Values.collector.namespace }}.svc:{{ .Values.collector.port }}
+{{- end }}
