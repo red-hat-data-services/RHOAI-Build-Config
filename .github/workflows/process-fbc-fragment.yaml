@@ -1,7 +1,50 @@
+# =============================================================================
+# EARLY-GATE OVERLAY of red-hat-data-services/RHOAI-Build-Config
+#   .github/workflows/process-fbc-fragment.yaml
+#
+# The early-gate build pipeline copies this file onto the ephemeral FBC branch
+# before dispatching, when `eg-overlay-fbc-processor` is "true". The gate
+# dispatches with ref=<eg-fbc-branch>, so GitHub runs THIS version.
+#
+# Differences from the upstream workflow (keep in sync otherwise):
+#   1. adds the early-gate workflow_dispatch inputs (eg-mode / eg-branch /
+#      leader-pr-number / rhoai_version);
+#   2. in EG mode: skips refresh-pcc (a release-only, main-affecting job),
+#      derives the release version from rhoai_version (BRANCH is the eg branch,
+#      not rhoai-X.Y), passes --use-existing-digests on the CURRENT-release
+#      snapshot extract so the bundle comes from catalog-patch.yaml (the gate
+#      pins Block-2's bundle digest there), targets the eg push pipeline, and
+#      commits `early-gate:` to the eg branch.
+#
+# Non-EG (release) behaviour is unchanged (gated on inputs.eg-mode == 'true').
+# Once merged to rhoai-3.7-ea.1 of RHOAI-Build-Config, set
+# `eg-overlay-fbc-processor` to "false" and delete this file.
+# =============================================================================
 name: Process FBC Fragment
 run-name: Process FBC Fragment
 on:
   workflow_dispatch:
+    inputs:
+      rhoai_version:
+        description: 'RHOAI version for EG (e.g. rhoai-3.7-ea.1). Branch name used if omitted.'
+        required: false
+        default: ''
+        type: string
+      eg-mode:
+        description: 'Run in early-gate mode'
+        required: false
+        default: 'false'
+        type: string
+      eg-branch:
+        description: 'Ephemeral branch name for EG'
+        required: false
+        default: ''
+        type: string
+      leader-pr-number:
+        description: 'Leader PR number for EG correlation'
+        required: false
+        default: ''
+        type: string
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -19,7 +62,9 @@ env:
   PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   refresh-pcc:
-    if: ${{ github.ref_name != 'main' }}
+    # Release-only: refresh-pcc updates PCC base catalogs on main. Early-gate runs
+    # must not trigger it; the eg catalog is built from the existing PCC base.
+    if: ${{ github.ref_name != 'main' && inputs.eg-mode != 'true' }}
     uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
     secrets:
       REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
@@ -28,7 +73,9 @@ jobs:
       RHOAI_DEVOPS_APP_PRIVATE_KEY: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
   process-fbc:
-    if: ${{ github.ref_name != 'main' }}
+    # Tolerate refresh-pcc being skipped in EG mode (GHA skips dependents of a
+    # skipped need unless the if handles it explicitly).
+    if: ${{ !cancelled() && github.ref_name != 'main' && (needs.refresh-pcc.result == 'success' || needs.refresh-pcc.result == 'skipped') }}
     needs: refresh-pcc
     runs-on: ubuntu-latest
     container:
@@ -37,7 +84,25 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          # early-gate: BRANCH is the ephemeral FBC branch (holds the release
+          # content); the release version comes from rhoai_version, not the branch.
+          if [[ "${{ inputs.eg-mode }}" == "true" ]]; then
+            if [[ -z "${{ inputs.eg-branch }}" ]]; then
+              echo "::error::eg-mode is true but eg-branch is empty."; exit 1
+            fi
+            BRANCH="${{ inputs.eg-branch }}"
+            VERSION_SOURCE="${{ inputs.rhoai_version }}"
+            VERSION_SOURCE="${VERSION_SOURCE#rhoai-}"
+            if [[ ! "$VERSION_SOURCE" =~ ^([0-9]+\.[0-9]+(-ea\.[0-9]+)?)$ ]]; then
+              echo "::error::Invalid EG rhoai_version '${{ inputs.rhoai_version }}'; expected X.Y[-ea.N]."; exit 1
+            fi
+            echo "release_branch=rhoai-${VERSION_SOURCE}" >> $GITHUB_OUTPUT
+          else
+            echo "release_branch=${BRANCH}" >> $GITHUB_OUTPUT
+          fi
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Generate GitHub App token
         id: app-token
@@ -105,6 +170,8 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RELEASE_BRANCH: ${{ steps.get_branch.outputs.release_branch }}
+          EG_MODE: ${{ inputs.eg-mode }}
           PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
@@ -116,9 +183,10 @@ jobs:
           BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
           PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
           
-          RHOAI_VERSION=v${BRANCH/rhoai-/}
+          # EG: RELEASE_BRANCH is rhoai-X.Y (BRANCH is the eg branch); non-EG they are equal.
+          RHOAI_VERSION=v${RELEASE_BRANCH/rhoai-/}
           COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
-          
+
           PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
           PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION//./-}
           
@@ -141,7 +209,11 @@ jobs:
 
           #Invoke the FBC processor to extract the snapshot images
           CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+          # EG: take the bundle image from catalog-patch.yaml (the gate pins Block-2's
+          # bundle digest there) instead of querying Quay for the latest signed bundle.
+          EG_EXTRACT_FLAGS=()
+          if [[ "${EG_MODE}" == "true" ]]; then EG_EXTRACT_FLAGS=(--use-existing-digests -p "${PATCH_YAML_PATH}"); fi
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${RELEASE_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH} "${EG_EXTRACT_FLAGS[@]}"
           LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
           echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
@@ -182,6 +254,7 @@ jobs:
           PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
 
           PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
+          if [[ "${EG_MODE}" == "true" ]]; then PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-eg-push.yaml; fi
           PREVIOUS_PUSH_PIPELINE_PATH=${PREVIOUS_BRANCH}/.tekton/rhoai-fbc-fragment-${PREVIOUS_COMPONENT_SUFFIX}-push.yaml
           
           while IFS= read -r value;
@@ -207,6 +280,8 @@ jobs:
 
       - name: Validate Catalogs
         id: validate-catalogs
+        # Release-only: validates against shipped RHOAI versions; the EG bundle/version is not shipped.
+        if: ${{ inputs.eg-mode != 'true' }}
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
@@ -224,11 +299,21 @@ jobs:
 
       - name: Commit and push the changes to release branch
         working-directory: ${{ steps.get_branch.outputs.branch }}
+        env:
+          EG_MODE: ${{ inputs.eg-mode }}
+          EG_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
-          git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          if [[ "${EG_MODE}" == "true" ]]; then
+            # The `early-gate:` subject is load-bearing: the eg push pipeline's CEL
+            # matches on it. --allow-empty guarantees a commit for the gate to observe.
+            git commit --allow-empty -m "early-gate: pin FBC catalog to gated bundle for ${EG_BRANCH}"
+            git push origin "HEAD:${EG_BRANCH}"
+          else
+            git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          fi
 
   notify-failure:
     needs: [refresh-pcc, process-fbc]
