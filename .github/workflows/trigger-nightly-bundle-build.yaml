@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           # For nightly: append -nightly to the branch name (e.g. rhoai-3.6-nightly)
           IMAGE_TAG="${GITHUB_REF_NAME}-nightly"
-          INSPECT_OUTPUT=$(skopeo inspect "docker://quay.io/rhoai/odh-rhel9-operator:${IMAGE_TAG}")
+          INSPECT_OUTPUT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-rhel9-operator:${IMAGE_TAG}")
 
           DIGEST=$(echo "${INSPECT_OUTPUT}" | jq -r '.Digest // empty')
           GIT_URL=$(echo "${INSPECT_OUTPUT}" | jq -r '.Labels["git.url"] // .Labels["github.url"] // empty')
