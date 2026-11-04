@@ -115,8 +115,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7d6b451cfbdb33600085fcf88ef9c911258832a66458348e4c2d1f87b0dadf8"
-    createdAt: "2026-11-04T07:27:05Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c29205ffb012aa2fbeaffa23caf74e9f49ed1e1bc6a2d710e33cd7e70f8f27fc"
+    createdAt: "2026-11-04T07:44:44Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1515,7 +1515,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_FEAST_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-feast-operator-rhel9@sha256:ac7bd6952edb52e8b210def9eec43482e62fa11ff136686a8da2c15f23f491b5"
                 - name: RELATED_IMAGE_ODH_FEATURE_SERVER_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:2129fe1589e3072516e706abd53ebd25efc3ee9fae90c00b4fca17a7e6211341"
+                  value: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:f6aaebec0ab9389a76a40f0c84ab3e9597e3ff2d738082cc654ad62b06657f62"
                 - name: RELATED_IMAGE_ODH_FMS_GUARDRAILS_ORCHESTRATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-fms-guardrails-orchestrator-rhel9@sha256:144bb6133aac147a084ac6068bee261b7dabcf61b238a5f8048f922adcf3bbe6"
                 - name: RELATED_IMAGE_ODH_GUARDRAILS_DETECTOR_HUGGINGFACE_RUNTIME_IMAGE
@@ -1749,7 +1749,7 @@ spec:
                 - name: RELATED_IMAGE_OSE_KUBE_RBAC_PROXY_IMAGE
                   value: "registry.redhat.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:eea4530adf4ce18564a8bfdd058683b3ba5074fb9b2006ef74318bf80542d943"
                 - name: RELATED_IMAGE_DSP_TOOLBOX_IMAGE
-                  value: registry.redhat.io/ubi9/toolbox@sha256:93027f114cfb4a1658cb97ebc7944edbf7f89ac16956f8838c7c174ed96fbc3c
+                  value: registry.redhat.io/ubi9/toolbox@sha256:59c0312767a6e6e7368898aea8a150eb48a87e63c80a2d9d947f5664a6598b73
                 - name: RELATED_IMAGE_DSP_INSTRUCTLAB_NVIDIA_IMAGE
                   value: registry.redhat.io/rhelai1/instructlab-nvidia-rhel9@sha256:e6e68c4cbab408b87ae76dda7590b1855e499c83f48306c0390c843b9acc1e1a
                 - name: RELATED_IMAGE_DSP_PROXYV2_IMAGE
@@ -1868,7 +1868,7 @@ spec:
                   value: "0.30.0+rhaiv.0"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.30.0+rhaiv.0"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7d6b451cfbdb33600085fcf88ef9c911258832a66458348e4c2d1f87b0dadf8"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c29205ffb012aa2fbeaffa23caf74e9f49ed1e1bc6a2d710e33cd7e70f8f27fc"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1920,7 +1920,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7d6b451cfbdb33600085fcf88ef9c911258832a66458348e4c2d1f87b0dadf8"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c29205ffb012aa2fbeaffa23caf74e9f49ed1e1bc6a2d710e33cd7e70f8f27fc"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2016,6 +2016,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2257,8 +2258,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-d7d6b451cfbdb33600085fcf88ef9c911258832a66458348e4c2d1f87b0dadf8-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7d6b451cfbdb33600085fcf88ef9c911258832a66458348e4c2d1f87b0dadf8"
+  - name: odh-rhel9-operator-c29205ffb012aa2fbeaffa23caf74e9f49ed1e1bc6a2d710e33cd7e70f8f27fc-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:c29205ffb012aa2fbeaffa23caf74e9f49ed1e1bc6a2d710e33cd7e70f8f27fc"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:ea363410f517efa3211040cbd8c7f75cd98efbc542f5921470247c9cb8766920"
   - name: odh_ai_gateway_operator_image
@@ -2306,7 +2307,7 @@ spec:
   - name: odh_feast_operator_image
     image: "registry.redhat.io/rhoai/odh-feast-operator-rhel9@sha256:ac7bd6952edb52e8b210def9eec43482e62fa11ff136686a8da2c15f23f491b5"
   - name: odh_feature_server_image
-    image: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:2129fe1589e3072516e706abd53ebd25efc3ee9fae90c00b4fca17a7e6211341"
+    image: "registry.redhat.io/rhoai/odh-feature-server-rhel9@sha256:f6aaebec0ab9389a76a40f0c84ab3e9597e3ff2d738082cc654ad62b06657f62"
   - name: odh_fms_guardrails_orchestrator_image
     image: "registry.redhat.io/rhoai/odh-fms-guardrails-orchestrator-rhel9@sha256:144bb6133aac147a084ac6068bee261b7dabcf61b238a5f8048f922adcf3bbe6"
   - name: odh_guardrails_detector_huggingface_runtime_image
@@ -2540,7 +2541,7 @@ spec:
   - name: ose_kube_rbac_proxy_image
     image: "registry.redhat.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:eea4530adf4ce18564a8bfdd058683b3ba5074fb9b2006ef74318bf80542d943"
   - name: dsp_toolbox_image
-    image: registry.redhat.io/ubi9/toolbox@sha256:93027f114cfb4a1658cb97ebc7944edbf7f89ac16956f8838c7c174ed96fbc3c
+    image: registry.redhat.io/ubi9/toolbox@sha256:59c0312767a6e6e7368898aea8a150eb48a87e63c80a2d9d947f5664a6598b73
   - name: dsp_instructlab_nvidia_image
     image: registry.redhat.io/rhelai1/instructlab-nvidia-rhel9@sha256:e6e68c4cbab408b87ae76dda7590b1855e499c83f48306c0390c843b9acc1e1a
   - name: dsp_proxyv2_image
