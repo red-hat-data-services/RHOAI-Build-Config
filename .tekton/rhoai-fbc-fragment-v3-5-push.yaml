@@ -1,5 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
+# konflux build manual retrigger - 2026-08-11 10:00:58
 metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
@@ -7,8 +8,13 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: |-
-      "non-existent-file.non-existent-ext".pathChanged() && false
+    # Trigger on catalog/ changes (or this tekton file)
+    # No trigger if catalog/catalog-patch.yaml is the only change
+    pipelinesascode.tekton.dev/on-cel-expression: |
+      event == "push"
+      && target_branch == "rhoai-3.5"
+      && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-5-push.yaml".pathChanged() )
+      && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
   labels:
     appstudio.openshift.io/application: rhoai-v3-5
     appstudio.openshift.io/component: rhoai-fbc-fragment-v3-5
@@ -30,7 +36,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:{{target_branch}}
   - name: rhoai-version
-    value: "3.5.2"
+    value: "3.5.3"
   - name: dockerfile
     value: Dockerfile
   - name: path-context
@@ -69,3 +75,4 @@ spec:
     secret:
       secretName: '{{ git_auth_secret }}'
 status: {}
+#restart

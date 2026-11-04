@@ -49,9 +49,18 @@ jobs:
           fi
           echo "rhoai_version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
         id: get_branch
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.RHOAI_DEVOPS_APP_ID }}
+          private-key: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
+          owner: red-hat-data-services
+          repositories: RHOAI-Build-Config
       - name: Git checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
       - name: Git checkout utils
