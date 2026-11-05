@@ -115,8 +115,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3a31847d0810dc2579b7392e95def47501ba78364b083258f5adfbd09d3d4598"
-    createdAt: "2026-11-05T01:07:25Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:fcd3e428065c4e7769c9f533190e4e7d0b8d7a93e7d7455c5fb4b4fdb8aa8458"
+    createdAt: "2026-11-05T02:30:57Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1469,7 +1469,7 @@ spec:
                 - name: DEFAULT_CHARTS_PATH
                   value: /opt/charts
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_CONTROLLER_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:ea363410f517efa3211040cbd8c7f75cd98efbc542f5921470247c9cb8766920"
+                  value: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:e71223ba7f12f40962551fa1c39aae102166e4f36a66f03d9a58901f63dd13be"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:53bc1dce7b130a2f3d8cd00cf4d578b7b49e686ed162ed8a885ea09131b5b841"
                 - name: RELATED_IMAGE_ODH_AI_GATEWAY_PAYLOAD_PROCESSING_IMAGE
@@ -1868,7 +1868,7 @@ spec:
                   value: "0.30.0+rhaiv.0"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.30.0+rhaiv.0"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3a31847d0810dc2579b7392e95def47501ba78364b083258f5adfbd09d3d4598"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:fcd3e428065c4e7769c9f533190e4e7d0b8d7a93e7d7455c5fb4b4fdb8aa8458"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1920,7 +1920,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3a31847d0810dc2579b7392e95def47501ba78364b083258f5adfbd09d3d4598"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:fcd3e428065c4e7769c9f533190e4e7d0b8d7a93e7d7455c5fb4b4fdb8aa8458"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2016,6 +2016,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2257,10 +2258,10 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-3a31847d0810dc2579b7392e95def47501ba78364b083258f5adfbd09d3d4598-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:3a31847d0810dc2579b7392e95def47501ba78364b083258f5adfbd09d3d4598"
+  - name: odh-rhel9-operator-fcd3e428065c4e7769c9f533190e4e7d0b8d7a93e7d7455c5fb4b4fdb8aa8458-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:fcd3e428065c4e7769c9f533190e4e7d0b8d7a93e7d7455c5fb4b4fdb8aa8458"
   - name: odh_ai_gateway_controller_image
-    image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:ea363410f517efa3211040cbd8c7f75cd98efbc542f5921470247c9cb8766920"
+    image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:e71223ba7f12f40962551fa1c39aae102166e4f36a66f03d9a58901f63dd13be"
   - name: odh_ai_gateway_operator_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:53bc1dce7b130a2f3d8cd00cf4d578b7b49e686ed162ed8a885ea09131b5b841"
   - name: odh_ai_gateway_payload_processing_image
