@@ -1,7 +1,50 @@
+# =============================================================================
+# EARLY-GATE OVERLAY of red-hat-data-services/RHOAI-Build-Config
+#   .github/workflows/process-fbc-fragment.yaml
+#
+# The early-gate build pipeline copies this file onto the ephemeral FBC branch
+# before dispatching, when `eg-overlay-fbc-processor` is "true". The gate
+# dispatches with ref=<eg-fbc-branch>, so GitHub runs THIS version.
+#
+# Differences from the upstream workflow (keep in sync otherwise):
+#   1. adds the early-gate workflow_dispatch inputs (eg-mode / eg-branch /
+#      leader-pr-number / rhoai_version);
+#   2. in EG mode: skips refresh-pcc (a release-only, main-affecting job),
+#      derives the release version from rhoai_version (BRANCH is the eg branch,
+#      not rhoai-X.Y), passes --use-existing-digests on the CURRENT-release
+#      snapshot extract so the bundle comes from catalog-patch.yaml (the gate
+#      pins Block-2's bundle digest there), targets the eg push pipeline, and
+#      commits `early-gate:` to the eg branch.
+#
+# Non-EG (release) behaviour is unchanged (gated on inputs.eg-mode == 'true').
+# Once merged to rhoai-3.7-ea.1 of RHOAI-Build-Config, set
+# `eg-overlay-fbc-processor` to "false" and delete this file.
+# =============================================================================
 name: Process FBC Fragment
 run-name: Process FBC Fragment
 on:
   workflow_dispatch:
+    inputs:
+      rhoai_version:
+        description: 'RHOAI version for EG (e.g. rhoai-3.7-ea.1). Branch name used if omitted.'
+        required: false
+        default: ''
+        type: string
+      eg-mode:
+        description: 'Run in early-gate mode'
+        required: false
+        default: 'false'
+        type: string
+      eg-branch:
+        description: 'Ephemeral branch name for EG'
+        required: false
+        default: ''
+        type: string
+      leader-pr-number:
+        description: 'Leader PR number for EG correlation'
+        required: false
+        default: ''
+        type: string
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -15,22 +58,13 @@ permissions:
 
 env:
   GITHUB_ORG: red-hat-data-services
-  # INCLUDE_RELEASES provides the flexibility to include no additional bundles
-  # or any number of additional bundles through a comma-separated list of
-  # release branch names. The current branch's bundle is always included.
-  # For example:
-  # - INCLUDE_RELEASES: "": include only the bundle from the current branch.
-  # - INCLUDE_RELEASES: "rhoai-2.25": include the bundles from the current
-  #   branch and rhoai-2.25.
-  # - INCLUDE_RELEASES: "rhoai-3.4, rhoai-3.5-ea.1, rhoai-3.5-ea.2": include
-  #   the bundle from the current branch and the latest bundles from all three
-  #   listed release branches.
-  # Each bundle is processed only for OCP versions listed in its branch's
-  # build-config.yaml.
-  INCLUDE_RELEASES: ""
+  GITHUB_RKA_ORG: red-hat-data-services
+  PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   refresh-pcc:
-    if: ${{ github.ref_name != 'main' }}
+    # Release-only: refresh-pcc updates PCC base catalogs on main. Early-gate runs
+    # must not trigger it; the eg catalog is built from the existing PCC base.
+    if: ${{ github.ref_name != 'main' && inputs.eg-mode != 'true' }}
     uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
     secrets:
       REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
@@ -39,19 +73,36 @@ jobs:
       RHOAI_DEVOPS_APP_PRIVATE_KEY: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
   process-fbc:
-    if: ${{ github.ref_name != 'main' }}
+    # Tolerate refresh-pcc being skipped in EG mode (GHA skips dependents of a
+    # skipped need unless the if handles it explicitly).
+    if: ${{ !cancelled() && github.ref_name != 'main' && (needs.refresh-pcc.result == 'success' || needs.refresh-pcc.result == 'skipped') }}
     needs: refresh-pcc
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     container:
-      image: quay.io/rhoai-devops/olm-runner:latest
+      image: quay.io/rhoai/rhoai-task-toolset:latest
       options: --privileged
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          # early-gate: BRANCH is the ephemeral FBC branch (holds the release
+          # content); the release version comes from rhoai_version, not the branch.
+          if [[ "${{ inputs.eg-mode }}" == "true" ]]; then
+            if [[ -z "${{ inputs.eg-branch }}" ]]; then
+              echo "::error::eg-mode is true but eg-branch is empty."; exit 1
+            fi
+            BRANCH="${{ inputs.eg-branch }}"
+            VERSION_SOURCE="${{ inputs.rhoai_version }}"
+            VERSION_SOURCE="${VERSION_SOURCE#rhoai-}"
+            if [[ ! "$VERSION_SOURCE" =~ ^([0-9]+\.[0-9]+(-ea\.[0-9]+)?)$ ]]; then
+              echo "::error::Invalid EG rhoai_version '${{ inputs.rhoai_version }}'; expected X.Y[-ea.N]."; exit 1
+            fi
+            echo "release_branch=rhoai-${VERSION_SOURCE}" >> $GITHUB_OUTPUT
+          else
+            echo "release_branch=${BRANCH}" >> $GITHUB_OUTPUT
+          fi
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Generate GitHub App token
         id: app-token
@@ -77,179 +128,160 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ steps.get_branch.outputs.branch }}
           path: ${{ steps.get_branch.outputs.branch }}
+      - name: Git checkout RBC previous release
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ env.PREVIOUS_RELEASE }}
+          path: ${{ env.PREVIOUS_RELEASE }}
       - name: Git checkout utils
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          repository: ${{ env.GITHUB_ORG }}/RHOAI-Konflux-Automation
+          repository: ${{ env.GITHUB_RKA_ORG }}/RHOAI-Konflux-Automation
           ref: main
           path: utils
-      # Included releases supply catalog inputs; only the current release checkout is pushed.
-      - name: Git clone included releases
-        env:
-          BRANCH: ${{ steps.get_branch.outputs.branch }}
-        run: |
-          IFS=',' read -r -a EXTRA_RELEASES <<< "${INCLUDE_RELEASES}"
-          for RAW in "${EXTRA_RELEASES[@]}"; do
-            REL="${RAW//[[:space:]]/}"
-            [[ -z "${REL}" || "${REL}" == "${BRANCH}" ]] && continue
-            [[ -d "${REL}" ]] && continue
-            git clone --branch "${REL}" --single-branch --depth 1 \
-              "https://github.com/${GITHUB_REPOSITORY}.git" "${REL}"
-          done
-      - name: Install Python dependencies
-        run: pip install --default-timeout=100 -r utils/utils/processors/requirements.txt
-      - name: Login to Quay
+      - name: Install dependencies
         env:
           RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
           RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
         run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/')"
+          yq_version="v4.44.3"
+          yq_filename="yq-$yq_version"
+          echo "-> Downloading yq" >&2
+          curl -sSfLo "$yq_filename" "https://github.com/mikefarah/yq/releases/download/$yq_version/yq_${os}_${arch}"
+          chmod +x $yq_filename
+          ln -s $yq_filename yq
+          cp $yq_filename /usr/local/bin/yq
+  
+          opm_version="v1.47.0"
+          opm_filename="opm-$opm_version"
+          echo "-> Downloading opm" >&2
+          curl -sSfLo "$opm_filename" "https://github.com/operator-framework/operator-registry/releases/download/$opm_version/$os-$arch-opm"
+          chmod +x "$opm_filename"
+          ln -fs "$opm_filename" opm
+          cp "$opm_filename" /usr/local/bin/opm
+          pip install --default-timeout=100 -r utils/utils/fbc-processor/requirements.txt
+
+          microdnf install -y skopeo && \
+              microdnf clean all && rm -rf /var/cache/dnf/*
           skopeo login -u "${RHOAI_QUAY_RO_USERNAME}" -p "${RHOAI_QUAY_RO_TOKEN}" quay.io/rhoai
 
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
-          PYTHONPATH: utils/utils/processors
+          RELEASE_BRANCH: ${{ steps.get_branch.outputs.release_branch }}
+          EG_MODE: ${{ inputs.eg-mode }}
+          PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
+          OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
+          CLUSTER: p02
+          RHOAI_QUAY_RO_USERNAME: ${{ secrets.RHOAI_QUAY_RO_USERNAME }}
+          RHOAI_QUAY_RO_TOKEN: ${{ secrets.RHOAI_QUAY_RO_TOKEN }}
+          RHOAI_QUAY_API_TOKEN: ${{ secrets.RHOAI_QUAY_API_TOKEN }}
         run: |
-          set -euo pipefail
+          #Declare basic variables
+          BUILD_CONFIG_PATH=${BRANCH}/config/build-config.yaml
+          PREVIOUS_BUILD_CONFIG_PATH=${PREVIOUS_BRANCH}/config/build-config.yaml
+          
+          # EG: RELEASE_BRANCH is rhoai-X.Y (BRANCH is the eg branch); non-EG they are equal.
+          RHOAI_VERSION=v${RELEASE_BRANCH/rhoai-/}
+          COMPONENT_SUFFIX=${RHOAI_VERSION//./-}
 
-          WORK_DIR=utils/fbc-work
-          TEMPLATE_SRC=utils/utils/processors/templates/fbc-semver-template.yaml
-          PROCESSOR=utils/utils/processors/fbc-processor.py
-          mkdir -p "$WORK_DIR"
+          PREVIOUS_RHOAI_VERSION=v${PREVIOUS_BRANCH/rhoai-/}
+          PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION//./-}
+          
+          OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+          
+          PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
+          PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
+          
+          OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
+          OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
+          echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
 
-          # Step 1: Resolve bundle image digests and Git metadata for each release via skopeo.
-          # Store results in BUNDLE_IMAGES, GIT_URLS, and GIT_COMMITS, aligned with RELEASES.
-          # The current branch is always first; branches from INCLUDE_RELEASES are appended in order.
-          RELEASES=("$BRANCH")
-          IFS=',' read -r -a EXTRA_RELEASES <<< "$INCLUDE_RELEASES"
-          for RAW in "${EXTRA_RELEASES[@]}"; do
-            REL="${RAW//[[:space:]]/}"
-            [[ -z "$REL" ]] && continue
-            ALREADY_INCLUDED=false
-            for INCLUDED in "${RELEASES[@]}"; do
-              if [[ "$REL" == "$INCLUDED" ]]; then
-                ALREADY_INCLUDED=true
-                break
-              fi
-            done
-            [[ "$ALREADY_INCLUDED" == true ]] || RELEASES+=("$REL")
-          done
+          #Generate the catalog for the latest bundle
+          #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
+          BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
+          mkdir ${HOME}/.docker
+          echo '{"auths":{"quay.io/rhoai/odh-operator-bundle":{"username":"'"${RHOAI_QUAY_RO_USERNAME}"'","password":"'"${RHOAI_QUAY_RO_TOKEN}"'","email":"","auth":"'"${BASE64_AUTH}"'"}}}' > ${HOME}/.docker/config.json
+          APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
+          echo "APPLICATION_NAME = $APPLICATION_NAME"
 
-          # Resolve each bundle once so all OCP catalogs use the same digest.
-          BUNDLE_IMAGES=()
-          GIT_URLS=()
-          GIT_COMMITS=()
-          for REL in "${RELEASES[@]}"; do
-            # CI catalogs use the release tag.
-            INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${REL}")
-            DIGEST=$(jq -er '.Digest | select(type == "string" and startswith("sha256:"))' <<< "$INSPECT")
-            GIT_URL=$(jq -er '.Labels["git.url"] | select(type == "string" and length > 0)' <<< "$INSPECT")
-            GIT_COMMIT=$(jq -er '.Labels["git.commit"] | select(type == "string" and length > 0)' <<< "$INSPECT")
-            IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
-            echo "Resolved ${REL}: ${IMAGE}"
-            BUNDLE_IMAGES+=("$IMAGE")
-            GIT_URLS+=("$GIT_URL")
-            GIT_COMMITS+=("$GIT_COMMIT")
-          done
+          #Invoke the FBC processor to extract the snapshot images
+          CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
+          # EG: take the bundle image from catalog-patch.yaml (the gate pins Block-2's
+          # bundle digest there) instead of querying Quay for the latest signed bundle.
+          EG_EXTRACT_FLAGS=()
+          if [[ "${EG_MODE}" == "true" ]]; then EG_EXTRACT_FLAGS=(--use-existing-digests -p "${PATCH_YAML_PATH}"); fi
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${RELEASE_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH} "${EG_EXTRACT_FLAGS[@]}"
+          LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
+          echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
+          LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
 
-          # Step 2: Generate Single Bundle Catalog(SBC) for each release in both bundle-object and CSV-metadata formats.
-          for INDEX in "${!RELEASES[@]}"; do
-            REL="${RELEASES[$INDEX]}"
-            TEMPLATE="$WORK_DIR/${REL}-sbc-template.yaml"
-            cp "$TEMPLATE_SRC" "$TEMPLATE"
-            IMAGE="${BUNDLE_IMAGES[$INDEX]}" yq e -i '.stable.bundles[0].image = env(IMAGE)' "$TEMPLATE"
-            opm alpha render-template semver -o yaml "$TEMPLATE" \
-              > "$WORK_DIR/${REL}-bundle-object-sbc.yaml"
-            opm alpha render-template semver \
-              --migrate-level=bundle-object-to-csv-metadata -o yaml "$TEMPLATE" \
-              > "$WORK_DIR/${REL}-csv-metadata-sbc.yaml"
-          done
+          #Previous Release - Invoke the FBC processor to extract the snapshot images
+          cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH}
+          PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
+          echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
+          yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
+          PREVIOUS_LATEST_BUNDLE_IMAGE="$PREVIOUS_LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(PREVIOUS_LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
 
-          # Step 3: For each OCP version, chain up to N passes (one per supported release).
-          # Pass 1 reads PCC base catalog, each subsequent pass reads the previous pass's output.
-          # Read each release's supported OCP versions in the same order as RELEASES.
-          SUPPORTED_OCP_VERSIONS=()
-          for REL in "${RELEASES[@]}"; do
-            if ! SUPPORTED=$(yq e -e '.config.supported-ocp-versions.build[].name' "$REL/config/build-config.yaml"); then
-              echo "::error::Could not read supported OCP versions for $REL" >&2
-              exit 1
-            fi
-            SUPPORTED_OCP_VERSIONS+=("$SUPPORTED")
-          done
-          OCP_VERSIONS="${SUPPORTED_OCP_VERSIONS[0]}"
-          while IFS= read -r OCP_VERSION; do
-            if [[ "$OCP_VERSION" =~ ^v([0-9]+)\.([0-9]+)$ ]]; then
-              OCP_MAJOR="${BASH_REMATCH[1]}"
-              OCP_MINOR="${BASH_REMATCH[2]}"
-            else
-              echo "::error::Unsupported OCP version: $OCP_VERSION" >&2
-              exit 1
-            fi
-            OUTPUT_CATALOG="$BRANCH/catalog/$OCP_VERSION/rhods-operator/catalog.yaml"
-            mkdir -p "$(dirname "$OUTPUT_CATALOG")"
-            INPUT_CATALOG="main/pcc/catalog-$OCP_VERSION.yaml"
+          
+          
+          #Generate the single bundle catalog === sbc
+          CSV_META_MIN_OCP_VERSION=417
+          WORK_DIR=utils/utils/fbc
+          mkdir -p ${WORK_DIR}
+          BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/bundle_object_sbc_semver.yaml
+          CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/csv_meta_sbc_semver.yaml
+          CSV_META_OPM_FLAG="--migrate-level=bundle-object-to-csv-metadata"
 
-            for INDEX in "${!RELEASES[@]}"; do
-              REL="${RELEASES[$INDEX]}"
-              if ! grep -Fxq -- "$OCP_VERSION" <<< "${SUPPORTED_OCP_VERSIONS[$INDEX]}"; then
-                echo "Skipping $REL for $OCP_VERSION: not listed in its supported build OCP versions"
-                continue
-              fi
-              COMPONENT_SUFFIX="v${REL#rhoai-}"
-              COMPONENT_SUFFIX="${COMPONENT_SUFFIX//./-}"
-              SBC="$WORK_DIR/${REL}-bundle-object-sbc.yaml"
-              # OCP 4.17 and later, including 5.x, require CSV metadata.
-              if (( OCP_MAJOR > 4 || (OCP_MAJOR == 4 && OCP_MINOR >= 17) )); then
-                SBC="$WORK_DIR/${REL}-csv-metadata-sbc.yaml"
-              fi
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/fbc-semver-template.yaml > ${CSV_META_SINGLE_BUNDLE_PATH}
 
-              printf '%s\n' \
-                '######################################################################' \
-                "### Processing OCP ${OCP_VERSION} catalog with ${REL} bundle" \
-                '######################################################################'
-              # Keep each processor call's DEBUG log; the logger overwrites its file on startup.
-              LOG_FILE_DIR="$WORK_DIR" LOG_FILE_NAME="fbc-processor-${REL}-${OCP_VERSION}.log" \
-                python3 "$PROCESSOR" \
-                --rhoai-version "$REL" \
-                --build-type ci \
-                --build-config-path "$REL/config/build-config.yaml" \
-                --patch-yaml-path "$REL/catalog/catalog-patch.yaml" \
-                --single-bundle-catalog-path "$SBC" \
-                --input-catalog-path "$INPUT_CATALOG" \
-                --output-catalog-path "$OUTPUT_CATALOG" \
-                --bundle-git-url "${GIT_URLS[$INDEX]}" \
-                --bundle-git-commit "${GIT_COMMITS[$INDEX]}" \
-                --catalog-build-args-file-path "$REL/catalog/catalog_build_args.map" \
-                --push-pipeline-yaml-path "$REL/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml" \
-                --push-pipeline-operation enable
-              # Chain: next pass reads this pass's output as input.
-              INPUT_CATALOG="$OUTPUT_CATALOG"
-            done
-          done <<< "$OCP_VERSIONS"
+          #Previous Release - Generate the single bundle catalog === sbc
+          PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_bundle_object_sbc_semver.yaml
+          PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH=${WORK_DIR}/previous_csv_meta_sbc_semver.yaml
 
-      - name: Print debug logs
-        if: always()
-        run: |
-          LOG_FILES=(utils/fbc-work/fbc-processor-*.log)
-          if [[ ! -f "${LOG_FILES[0]}" ]]; then
-            echo "No FBC processor debug logs found"
-            exit 0
-          fi
-          for LOG_FILE in "${LOG_FILES[@]}"; do
-            echo "=== ${LOG_FILE} ==="
-            cat "$LOG_FILE"
-          done
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+          DOCKER_CONFIG=${HOME}/.docker/ opm alpha render-template semver ${CSV_META_OPM_FLAG} -o yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml > ${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}
 
-      - name: Upload FBC processor debug logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: fbc-processor-debug-logs
-          path: utils/fbc-work/fbc-processor-*.log
-          if-no-files-found: ignore
+
+
+          PCC_BUNDLE_OBJECT_CATALOG_YAML_PATH=main/pcc/bundle_object_catalog.yaml
+          PCC_CSV_META_CATALOG_YAML_PATH=main/pcc/csv_meta_catalog.yaml
+
+          PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml
+          if [[ "${EG_MODE}" == "true" ]]; then PUSH_PIPELINE_PATH=${BRANCH}/.tekton/rhoai-fbc-fragment-eg-push.yaml; fi
+          PREVIOUS_PUSH_PIPELINE_PATH=${PREVIOUS_BRANCH}/.tekton/rhoai-fbc-fragment-${PREVIOUS_COMPONENT_SUFFIX}-push.yaml
+          
+          while IFS= read -r value;
+          do
+              #Declare FBC processing variables
+              OPENSHIFT_VERSION=$value
+              NUMERIC_OCP_VERSION=${OPENSHIFT_VERSION/v4./4}
+              echo "OPENSHIFT_VERSION=$OPENSHIFT_VERSION"
+              OUTPUT_CATALOG_PATH=${BRANCH}/catalog/${OPENSHIFT_VERSION}/rhods-operator/catalog.yaml
+              
+              PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
+              SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
+              if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              
+              
+              #cat ${OUTPUT_CATALOG_PATH}
+          done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
 
       - name: Validate Catalogs
         id: validate-catalogs
+        # Release-only: validates against shipped RHOAI versions; the EG bundle/version is not shipped.
+        if: ${{ inputs.eg-mode != 'true' }}
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
@@ -267,11 +299,21 @@ jobs:
 
       - name: Commit and push the changes to release branch
         working-directory: ${{ steps.get_branch.outputs.branch }}
+        env:
+          EG_MODE: ${{ inputs.eg-mode }}
+          EG_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
-          git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          if [[ "${EG_MODE}" == "true" ]]; then
+            # The `early-gate:` subject is load-bearing: the eg push pipeline's CEL
+            # matches on it. --allow-empty guarantees a commit for the gate to observe.
+            git commit --allow-empty -m "early-gate: pin FBC catalog to gated bundle for ${EG_BRANCH}"
+            git push origin "HEAD:${EG_BRANCH}"
+          else
+            git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          fi
 
   notify-failure:
     needs: [refresh-pcc, process-fbc]
