@@ -1,3 +1,4 @@
+{{- if .Values.metrics.enabled }}
 # Allows the ACM observability metrics-collector agents (running in
 # open-cluster-management-agent-addon on managed clusters, including
 # local-cluster) to reach the RHOAI data-science-collector OpenTelemetry
@@ -30,3 +31,4 @@ spec:
       ports:
         - port: {{ .Values.collector.port }}
           protocol: TCP
+{{- end }}

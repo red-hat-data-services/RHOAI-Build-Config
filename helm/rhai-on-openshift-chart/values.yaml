@@ -10,15 +10,23 @@ tags:
 # -- Skip CRD existence check - render all CRs regardless. Set to true for ArgoCD.
 skipCrdCheck: false
 
-# -- Deploy profile: sets default managementState for components and services.
-# Options: default (all Removed), rhaii (inference), maas, ai-grid (Grid operator and CRDs)
-# Explicit managementState values override the profile.
+# -- Enable Argo CD-specific resources, including partial server-side-apply patches
+argocd:
+  enabled: false
+
+# -- Deploy profile: provides defaults for any chart or vendored-subchart value.
+# Options: default (all Removed), rhaii (inference), maas, ai-grid-ingress (Grid ingress),
+# ai-grid-inference (AI Grid inference site: KServe and the Grid operator, no MaaS or Grid runtimes)
+# Explicit non-null user values override the profile.
 profile: default
 
 # -- Values shared by the optional AI Grid subcharts.
 global:
   # -- Full image references using the XKS name/value convention. See README.md for supported names.
   relatedImages: []
+  # -- Mirror of `skipCrdCheck` for subcharts, which cannot read the parent's root values. Set
+  # both when rendering without a cluster, as the snapshot scenarios do.
+  skipCrdCheck: false
 
 # =============================================================================
 # OLM - Settings for OLM operator subscriptions
@@ -68,7 +76,7 @@ operator:
     applicationsNamespace: redhat-ods-applications
 
     olm:
-      channel: stable-3.6
+      channel: beta
       createNamespace: true
       name: rhods-operator
       namespace: redhat-ods-operator
@@ -288,6 +296,17 @@ components:
             #     kind: Secret
             #     name: <SECRET_NAME>
             #   mode: Terminate
+
+      # -- Grid identity used by the KServe model controller to call Grid providers.
+      gridModelClient:
+        # -- Create the Grid model-client identity: auto (when KServe and AI Grid are Managed), true (always), false (never).
+        create: auto
+        # -- Namespace that owns the Grid model-client identity.
+        namespace: redhat-ai-grid
+        # -- ServiceAccount used by the KServe model controller.
+        serviceAccountName: grid-model-client
+        # -- Secret that stores the ServiceAccount token.
+        tokenSecretName: grid-model-client-token
 
   # -- Kueue job queuing component
   kueue:
@@ -528,6 +547,10 @@ dependencies:
     config:
       # -- Enable Authorino TLS configuration
       tlsEnabled: false
+      # -- Trust the OpenShift Service CA in Authorino while retaining platform CA trust
+      authorinoServiceCaTrust: false
+      # -- Mount additional CA ConfigMaps into Authorino, such as the cluster trust bundle
+      authorinoTrustedCA: {}
       # -- Kuadrant CR spec (user can add any fields)
       spec: {}
       # -- Authorino CR spec (only created if tlsEnabled: true)
@@ -707,22 +730,33 @@ dependencies:
 # =============================================================================
 # -- AI Grid enrollment service
 grid-enrollment:
-  # -- Include enrollment when AIGateway and aiGrid are Managed. False uses an externally managed service.
-  enabled: true
+  # Include enrollment when AIGateway and aiGrid are Managed. False uses an externally managed service.
+  # Unset uses the profile default, then true (the ai-grid-inference profile sets false).
+  # Not set here, so that the profile can decide; an explicit true or false wins.
+  # enabled: true
   # -- Stable resource names, independent of the release name
   fullnameOverride: grid-enrollment
+  image:
+    # -- Grid v0.3.0-rc.4. The platform's related image replaces it downstream.
+    digest: sha256:398fe1685fef68735a44c33ceb33be7a33a55351ed30a2ba40ab15ed593ea82d
 
 # -- AI Grid gateway (Praxis)
 praxis-gateway:
-  # -- Include the gateway when AIGateway and aiGrid are Managed. False uses an externally managed gateway.
-  enabled: true
+  # Include the gateway when AIGateway and aiGrid are Managed. False uses an externally managed gateway.
+  # Unset uses the profile default, then true (the ai-grid-inference profile sets false).
+  # Not set here, so that the profile can decide; an explicit true or false wins.
+  # enabled: true
   # -- Stable resource names, independent of the release name
   fullnameOverride: grid-gateway
   image:
     # -- Use the Grid gateway build, which includes Grid routing filters.
     repository: ghcr.io/praxis-proxy/grid-gateway
-    tag: v0.2.2
+    tag: v0.3.0-rc.4
+    digest: sha256:af591eb9d62f07b6341d4db749786b59abedc9269c4b56b3d33ae5b050c7654c
     flavor: grid-gateway
+
+# -- AI Grid provider gateway for inference sites; a profile alias of praxis-gateway
+praxis-provider-gateway: {}
 
 # =============================================================================
 # Subcharts
@@ -733,9 +767,12 @@ ai-grid-o11y-hub:
   enabled: false
 
 # -- AI Grid observability spoke subchart
-# Requires active monitoring and ACM observability. Adds a prometheus/rhacm exporter
-# at `0.0.0.0:<collector.port>`; existing endpoint overrides must match.
-# Other user-supplied exporter options are preserved.
+# Two independent halves, both about the collector in `collector.namespace`.
+# Metrics federation requires active monitoring and ACM observability. It adds a
+# prometheus/rhacm exporter at `0.0.0.0:<collector.port>`; existing endpoint overrides must
+# match. Other user-supplied exporter options are preserved.
+# Usage-log credential delivery is off until `credential.enabled`, and pairs with
+# `services.monitoring.dsci.usageLogs` below.
 ai-grid-o11y-spoke:
   enabled: false
   collector:
@@ -743,3 +780,11 @@ ai-grid-o11y-spoke:
     namespace: redhat-ods-monitoring
     # -- Port used by the exporter, scrape target and NetworkPolicy.
     port: 8890
+  credential:
+    # -- Deliver the hub usage-log credential. Requires `credential.token`, passed with
+    # `--set-file` and never committed — note Helm stores supplied values in the release's own
+    # Secret, so that keeps the token out of git, not out of the cluster.
+    # It does **not** create `collector.namespace` on its own: the namespace template needs
+    # `collector.createNamespace` as well, and that defaults to false because most spokes
+    # already have the namespace and Helm cannot adopt one it does not own.
+    enabled: false

@@ -209,15 +209,10 @@ the user provides; with neither, the pod would mount a Secret that does not exis
 Enrollment image: repository@digest when image.digest is set, else repository:tag.
 */}}
 {{- define "grid-enrollment.image" -}}
-{{- $image := include "grid-enrollment.relatedImage" (dict "root" . "name" "RELATED_IMAGE_ODH_PRAXIS_AI_GRID_ENROLLMENT_IMAGE") -}}
-{{- if $image -}}
-{{- $image -}}
-{{- else -}}
 {{- if .Values.image.digest }}
 {{- printf "%s@%s" .Values.image.repository .Values.image.digest }}
 {{- else }}
 {{- printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
-{{- end }}
 {{- end }}
 {{- end }}
 
@@ -225,15 +220,10 @@ Enrollment image: repository@digest when image.digest is set, else repository:ta
 Builtin Postgres image, pinned by imageDigest when set.
 */}}
 {{- define "grid-enrollment.dbImage" -}}
-{{- $image := include "grid-enrollment.relatedImage" (dict "root" . "name" "RELATED_IMAGE_ODH_PRAXIS_AI_GRID_POSTGRES_IMAGE") -}}
-{{- if $image -}}
-{{- $image -}}
-{{- else -}}
 {{- if .Values.db.builtin.imageDigest }}
 {{- printf "%s@%s" .Values.db.builtin.image .Values.db.builtin.imageDigest }}
 {{- else }}
 {{- .Values.db.builtin.image }}
-{{- end }}
 {{- end }}
 {{- end }}
 
@@ -254,10 +244,10 @@ true
 {{- end }}
 
 {{/*
-The bootstrap Job runs to generate the CA or a credentials Secret. Emits "true" or nothing.
+The bootstrap Job persists grid identity and optionally generates service credentials.
 */}}
 {{- define "grid-enrollment.bootstrapRuns" -}}
-{{- if or (ne (include "grid-enrollment.caProvided" .) "true") (include "grid-enrollment.generatesAdminTokens" .) -}}
+{{- if or .Values.gridIdentity.enabled (and (eq .Values.mode "service") (or (ne (include "grid-enrollment.caProvided" .) "true") (include "grid-enrollment.generatesAdminTokens" .))) -}}
 true
 {{- end -}}
 {{- end }}
@@ -273,6 +263,8 @@ Job reads, keys in sorted order.
 */}}
 {{- define "grid-enrollment.normalize" -}}
 {{- $v := .Values }}
+{{- /* Without SWIM there is no SWIM key to create or deliver. */}}
+{{- if eq (dig "membership" "source" "Swim" ($v.grid | default dict)) "Local" }}{{- $_ := set $v.hubSite "swimKeySecretName" "" }}{{- end }}
 {{- if not $v.enrollment.service.type }}
 {{- $lb := and $v.host (not (include "grid-enrollment.routeEnabled" .)) }}
 {{- $_ := set $v.enrollment.service "type" (ternary "LoadBalancer" "ClusterIP" (not (not $lb))) }}
@@ -392,11 +384,13 @@ RUST_LOG for the chart's Rust binaries: log.filter when set, else log.level.
 {{- $log.filter | default $log.level | default "info" -}}
 {{- end }}
 
-{{/* Full image references injected by downstream payloads; shared with sibling charts. */}}
-{{- define "grid-enrollment.relatedImage" -}}
-{{- range (.root.Values.global | default dict).relatedImages -}}
-{{- if eq .name $.name -}}
-{{- required (printf "%s requires a nonempty value" $.name) .value -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
+{{/*
+Pod security context for the helm tests. The chart's own context plus a non-root UID,
+because the test image is busybox and runAsNonRoot alone would refuse to start it. An
+explicit runAsUser wins, so an override still decides.
+*/}}
+{{- define "grid-enrollment.testPodSecurityContext" -}}
+{{- $ctx := deepCopy (.Values.enrollment.podSecurityContext | default dict) -}}
+{{- if not (hasKey $ctx "runAsUser") }}{{- $_ := set $ctx "runAsUser" 65534 -}}{{- end }}
+{{- toYaml $ctx -}}
+{{- end }}
