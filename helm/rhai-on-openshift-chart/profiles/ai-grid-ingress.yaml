@@ -113,10 +113,7 @@ components:
                           - models-as-a-service
                           - redhat-ai-gateway-infra
 
-# Enrollment comes from grid-bootstrap on the hub, through ACM. The vendored
-# chart enables its own enrollment service unless this says otherwise.
-grid-enrollment:
-  enabled: false
+# Enrollment comes from grid-bootstrap on the hub, through ACM.
 
 praxis-gateway:
   enabled: true
@@ -152,9 +149,8 @@ praxis-gateway:
     mountPath: /etc/praxis/tls
   listenerTls:
     secretName: grid-gateway-listener-tls
-  # The model-client token a local dial sends to the serving gateway.
-  providerCredentials:
-    - secretName: grid-model-client-token
+  # No model-client token: an ingress site serves no local models, and the
+  # chart creates that token only where KServe runs.
   # The service CA verifies the serving gateway's cert on a local dial;
   # remote hops carry the grid CA.
   upstreamCA:
