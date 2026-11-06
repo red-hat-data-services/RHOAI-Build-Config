@@ -208,8 +208,6 @@ ARG ODH_TH_TORCH_CUDA_PY312_GIT_URL=
 ARG ODH_TH_TORCH_CUDA_PY312_GIT_COMMIT=
 ARG ODH_TH_TORCH_ROCM_PY312_GIT_URL=
 ARG ODH_TH_TORCH_ROCM_PY312_GIT_COMMIT=
-ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_URL=
-ARG ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT=
 ARG ODH_WORKBENCHES_CONTROLLER_GIT_URL=
 ARG ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT=
 ARG ODH_AI_GATEWAY_CONTROLLER_GIT_URL=
@@ -483,8 +481,6 @@ LABEL \
       odh-th-torch-cuda-py312.git.commit="${ODH_TH_TORCH_CUDA_PY312_GIT_COMMIT}" \
       odh-th-torch-rocm-py312.git.url="${ODH_TH_TORCH_ROCM_PY312_GIT_URL}" \
       odh-th-torch-rocm-py312.git.commit="${ODH_TH_TORCH_ROCM_PY312_GIT_COMMIT}" \
-      odh-data-connect-hub-flight.git.url="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_URL}" \
-      odh-data-connect-hub-flight.git.commit="${ODH_DATA_CONNECT_HUB_FLIGHT_GIT_COMMIT}" \
       odh-workbenches-controller.git.url="${ODH_WORKBENCHES_CONTROLLER_GIT_URL}" \
       odh-workbenches-controller.git.commit="${ODH_WORKBENCHES_CONTROLLER_GIT_COMMIT}" \
       odh-ai-gateway-controller.git.url="${ODH_AI_GATEWAY_CONTROLLER_GIT_URL}" \
