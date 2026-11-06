@@ -4,6 +4,7 @@ The data of the chart-rendered gateway ConfigMap, also hashed into checksum/conf
 {{- define "praxis-gateway.gatewayConfigData" }}
 {{- $cfg := .Values.praxisConfig.render }}
 {{- $provider := eq ($cfg.role | default "consumer") "provider" }}
+{{- $providerFile := and $provider ($cfg.gridServing).enabled }}
 {{- $apiKey := and (not $provider) (eq ($cfg.auth.mode | default "none") "api-key") }}
 {{- $telemetry := $cfg.telemetry | default dict }}
 {{- $hasSamplingRate := and (hasKey $telemetry "samplingRate") (ne $telemetry.samplingRate nil) }}
@@ -86,7 +87,24 @@ The data of the chart-rendered gateway ConfigMap, also hashed into checksum/conf
           {{- if $telemetry.enabled }}
           - filter: trace_context
           {{- end }}
-          {{- if $provider }}
+          {{- if $providerFile }}
+          {{- /* First, and the only filter that picks an upstream: the gateway refuses to start otherwise. */}}
+          - filter: grid_provider
+            allowed_paths:
+              {{- range (($cfg.provider).allowedPaths | default (list "/v1/chat/completions" "/v1/completions" "/v1/models" "/v1/embeddings" "/v1/messages" "/v1/responses")) }}
+              - {{ . | quote }}
+              {{- end }}
+          {{- with ($cfg.peerTrust).rateLimit }}
+          - filter: rate_limit
+            mode: global
+            rate: {{ .rate }}
+            burst: {{ .burst }}
+          {{- end }}
+          - filter: headers
+            response_set:
+              - name: X-Grid-Provider-Site
+                value: {{ $.Values.grid.siteName | quote }}
+          {{- else if $provider }}
           {{- if ne (($cfg.peerTrust).mode | default "pin") "spiffe" }}
           - filter: peer_identity_trust
             trusted_peers:
@@ -117,7 +135,7 @@ The data of the chart-rendered gateway ConfigMap, also hashed into checksum/conf
           # Exact paths: a traversal or a longer path never matches, so it gets a 404.
           - filter: router
             routes:
-              {{- range (($cfg.provider).allowedPaths | default (list "/v1/chat/completions" "/v1/completions" "/v1/models" "/v1/embeddings")) }}
+              {{- range (($cfg.provider).allowedPaths | default (list "/v1/chat/completions" "/v1/completions" "/v1/models" "/v1/embeddings" "/v1/messages" "/v1/responses")) }}
               - path: {{ . | quote }}
                 cluster: {{ (first $cfg.backends).cluster | quote }}
               {{- end }}
@@ -144,13 +162,21 @@ The data of the chart-rendered gateway ConfigMap, also hashed into checksum/conf
           {{- if ($.Values.praxisConfig.render.gridServing).enabled }}
           - filter: grid_site_route
             model_header: X-Gateway-Model-Name
-            {{- with $cfg.backends }}
             clusters:
-              {{- range . }}
+              {{- if $cfg.backends }}
+              {{- range $cfg.backends }}
               - {{ .cluster | quote }}
               {{- end }}
-            {{- end }}
+              {{- else }} []
+              {{- end }}
             {{- with ($.Values.praxisConfig.render.gridServing).siteRoute }}
+            {{- with .sovereignty }}
+            {{- if .header }}
+            sovereignty:
+              header: {{ .header | quote }}
+              mode: {{ .mode | default "enforce" }}
+            {{- end }}
+            {{- end }}
             {{- with .availability }}
             availability:
               {{- toYaml . | nindent 14 }}
@@ -170,11 +196,13 @@ The data of the chart-rendered gateway ConfigMap, also hashed into checksum/conf
               {{- end }}
           {{- end }}
           {{- end }}
+          {{- if $cfg.backends }}
           - filter: load_balancer
             clusters:
               {{- range $i, $backend := $cfg.backends }}
               {{- include "praxis-gateway.backendCluster" (dict "root" $ "i" $i "b" $backend) | trim | nindent 14 }}
               {{- end }}
+          {{- end }}
   {{- if $apiKey }}
   policy.yaml: |
     engine_settings:

@@ -5,82 +5,47 @@
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.certs/ca-bootstrap-policy.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
 {{- $resource := include "grid-enrollment.rhoai.certs/ca-bootstrap-rbac.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.db/db-builtin.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.certs/cert-manager-ca.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/auth-rbac.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.certs/cert-manager-issuer.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/csr-record-policy.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.certs/site-certificates.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/csr-record-rbac.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.enrollment/identity-policy.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/deployment.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.enrollment/managed-cluster-enrollment.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/grid-admin-rbac.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.enrollment/managed-clusters.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/invite-admission.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.external-only.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
 {{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/invite-job.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/invite-namespace.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/invite-policy.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/route.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/service.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.enrollment/site-invite-rbac.yaml" . | trim -}}
-{{- if $resource }}
----
-{{ $resource }}
-{{ end }}
-{{- $resource := include "grid-enrollment.rhoai.networkpolicy.yaml" . | trim -}}
+{{- $resource := include "grid-enrollment.rhoai.external-validation.yaml" . | trim -}}
 {{- if $resource }}
 ---
 {{ $resource }}
