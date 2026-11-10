@@ -186,8 +186,6 @@ ARG ODH_MLSERVER_CUDA_GIT_URL=
 ARG ODH_MLSERVER_CUDA_GIT_COMMIT=
 ARG ODH_OGX_MODULE_OPERATOR_GIT_URL=
 ARG ODH_OGX_MODULE_OPERATOR_GIT_COMMIT=
-ARG ODH_TRAINER_OPERATOR_GIT_URL=
-ARG ODH_TRAINER_OPERATOR_GIT_COMMIT=
 ARG ODH_OBSERVABILITY_GIT_URL=
 ARG ODH_OBSERVABILITY_GIT_COMMIT=
 ARG ODH_TRUSTYAI_SERVICE_PY_GIT_URL=
@@ -459,8 +457,6 @@ LABEL \
       odh-mlserver-cuda.git.commit="${ODH_MLSERVER_CUDA_GIT_COMMIT}" \
       odh-ogx-module-operator.git.url="${ODH_OGX_MODULE_OPERATOR_GIT_URL}" \
       odh-ogx-module-operator.git.commit="${ODH_OGX_MODULE_OPERATOR_GIT_COMMIT}" \
-      odh-trainer-operator.git.url="${ODH_TRAINER_OPERATOR_GIT_URL}" \
-      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}" \
       odh-observability.git.url="${ODH_OBSERVABILITY_GIT_URL}" \
       odh-observability.git.commit="${ODH_OBSERVABILITY_GIT_COMMIT}" \
       odh-trustyai-service-py.git.url="${ODH_TRUSTYAI_SERVICE_PY_GIT_URL}" \
