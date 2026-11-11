@@ -54,6 +54,14 @@ spec:
       value: pipelines/container-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-odh-operator-bundle-v3-5
+  taskRunSpecs:
+    - pipelineTaskName: fbc-fips-check-matrix-based-oci-ta
+      timeout: 4h
+      computeResources:
+        requests:
+          memory: 12Gi
+        limits:
+          memory: 12Gi
   workspaces:
   - name: git-auth
     secret:
