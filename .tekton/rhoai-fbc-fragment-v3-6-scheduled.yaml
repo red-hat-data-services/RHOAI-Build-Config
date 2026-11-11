@@ -72,16 +72,14 @@ spec:
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-v3-6
   taskRunSpecs:
-  - pipelineTaskName: fbc-fips-prepare-oci-ta
+  - pipelineTaskName: fbc-fips-check-matrix-based-oci-ta
     stepSpecs:
-    - name: fbc-fips-prepare-oci-ta
+    - name: fips-operator-check-step-action
       computeResources:
         requests:
-          cpu: "500m"
-          memory: "1Gi"
+          memory: 8Gi
         limits:
-          cpu: "500m"
-          memory: "1Gi"
+          memory: 8Gi
   workspaces:
   - name: git-auth
     secret:
