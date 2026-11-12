@@ -64,6 +64,14 @@ spec:
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-rhoai-fbc-fragment-ocp-422
+  taskRunSpecs:
+    - pipelineTaskName: fbc-fips-check-matrix-based-oci-ta
+      timeout: 4h
+      computeResources:
+        requests:
+          memory: 12Gi
+        limits:
+          memory: 12Gi
   workspaces:
   - name: git-auth
     secret:
