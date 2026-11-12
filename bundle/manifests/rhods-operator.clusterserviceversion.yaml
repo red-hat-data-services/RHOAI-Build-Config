@@ -115,8 +115,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2beed970d9460db29c3f7aee294d29c4e97d5aa2813ceaa5d477019b5ccde277"
-    createdAt: "2026-11-12T20:36:34Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7575f1dc588d11bcc041237cf975486ecb01a01430a371d94d99909a13625aa"
+    createdAt: "2026-11-12T22:08:46Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1558,15 +1558,15 @@ spec:
                 - name: RELATED_IMAGE_ODH_LLM_D_ASYNC_IMAGE
                   value: "registry.redhat.io/rhoai/odh-llm-d-async-rhel9@sha256:8559fdce3ca6ff43d0c06dff053da726422d5be5326b74c18c97eb9d2e450641"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_APISERVER_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:76527b136fc710b757d3c229a7b5867bc5c62be1836a35eddd8c3a75e89c9e2a"
+                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:394bc9de0bacaedce9c0500c413e1d99c590445f55a9b45fba4221048be55040"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_GC_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:b8d7711ce70550003bdeff9dd64cd7a1fe26930c0b7a90071d984d71b1fa5bb3"
+                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:6f63a9c69bcac9587d421cb00ed20f3a4efda2d8d04688380c06ca4dbdf80f41"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_OPERATOR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-operator-rhel9@sha256:f0175cae91808bece216a2f1d738964382a333af9b58728392358c0e2cb336a5"
                 - name: RELATED_IMAGE_ODH_LLM_D_BATCH_GATEWAY_PROCESSOR_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-processor-rhel9@sha256:a247af0e1b37117fa951a0063951be08c6478d6d8bc9356f8a2394833e602b2c"
+                  value: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-processor-rhel9@sha256:5e6051286b4ecb846a809b7e18c3047924ac9423498fa22ef3f60a46bb99a317"
                 - name: RELATED_IMAGE_ODH_LLM_D_KV_PVC_EVICTOR_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-llm-d-kv-pvc-evictor-rhel9@sha256:1cf615c85a6ea881c083b695b99d1c6cf7efa842bb8ee72065ed6629034db563"
+                  value: "registry.redhat.io/rhoai/odh-llm-d-kv-pvc-evictor-rhel9@sha256:1a020a16d91f8cb37f8cc5817eeffab3361ba74970c923adf5b033da75c8c895"
                 - name: RELATED_IMAGE_ODH_LLM_D_ROUTER_DISAGG_SIDECAR_IMAGE
                   value: "registry.redhat.io/rhoai/odh-llm-d-router-disagg-sidecar-rhel9@sha256:5f15a71461f9d376484853679f3f25879437dafc7f6323d77151909c2f2a0197"
                 - name: RELATED_IMAGE_ODH_LLM_D_ROUTER_ENDPOINT_PICKER_IMAGE
@@ -1867,7 +1867,7 @@ spec:
                   value: "0.26.0+rhaiv.5"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.26.0+rhaiv.5"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2beed970d9460db29c3f7aee294d29c4e97d5aa2813ceaa5d477019b5ccde277"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7575f1dc588d11bcc041237cf975486ecb01a01430a371d94d99909a13625aa"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1919,7 +1919,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2beed970d9460db29c3f7aee294d29c4e97d5aa2813ceaa5d477019b5ccde277"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7575f1dc588d11bcc041237cf975486ecb01a01430a371d94d99909a13625aa"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2015,6 +2015,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2256,8 +2257,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-2beed970d9460db29c3f7aee294d29c4e97d5aa2813ceaa5d477019b5ccde277-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:2beed970d9460db29c3f7aee294d29c4e97d5aa2813ceaa5d477019b5ccde277"
+  - name: odh-rhel9-operator-d7575f1dc588d11bcc041237cf975486ecb01a01430a371d94d99909a13625aa-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:d7575f1dc588d11bcc041237cf975486ecb01a01430a371d94d99909a13625aa"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:60af1a672b1674790d65079ad7d1014cab9569a4be1ab9df4b75a748e4a0e7bf"
   - name: odh_ai_gateway_operator_image
@@ -2335,15 +2336,15 @@ spec:
   - name: odh_llm_d_async_image
     image: "registry.redhat.io/rhoai/odh-llm-d-async-rhel9@sha256:8559fdce3ca6ff43d0c06dff053da726422d5be5326b74c18c97eb9d2e450641"
   - name: odh_llm_d_batch_gateway_apiserver_image
-    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:76527b136fc710b757d3c229a7b5867bc5c62be1836a35eddd8c3a75e89c9e2a"
+    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:394bc9de0bacaedce9c0500c413e1d99c590445f55a9b45fba4221048be55040"
   - name: odh_llm_d_batch_gateway_gc_image
-    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:b8d7711ce70550003bdeff9dd64cd7a1fe26930c0b7a90071d984d71b1fa5bb3"
+    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:6f63a9c69bcac9587d421cb00ed20f3a4efda2d8d04688380c06ca4dbdf80f41"
   - name: odh_llm_d_batch_gateway_operator_image
     image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-operator-rhel9@sha256:f0175cae91808bece216a2f1d738964382a333af9b58728392358c0e2cb336a5"
   - name: odh_llm_d_batch_gateway_processor_image
-    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-processor-rhel9@sha256:a247af0e1b37117fa951a0063951be08c6478d6d8bc9356f8a2394833e602b2c"
+    image: "registry.redhat.io/rhoai/odh-llm-d-batch-gateway-processor-rhel9@sha256:5e6051286b4ecb846a809b7e18c3047924ac9423498fa22ef3f60a46bb99a317"
   - name: odh_llm_d_kv_pvc_evictor_image
-    image: "registry.redhat.io/rhoai/odh-llm-d-kv-pvc-evictor-rhel9@sha256:1cf615c85a6ea881c083b695b99d1c6cf7efa842bb8ee72065ed6629034db563"
+    image: "registry.redhat.io/rhoai/odh-llm-d-kv-pvc-evictor-rhel9@sha256:1a020a16d91f8cb37f8cc5817eeffab3361ba74970c923adf5b033da75c8c895"
   - name: odh_llm_d_router_disagg_sidecar_image
     image: "registry.redhat.io/rhoai/odh-llm-d-router-disagg-sidecar-rhel9@sha256:5f15a71461f9d376484853679f3f25879437dafc7f6323d77151909c2f2a0197"
   - name: odh_llm_d_router_endpoint_picker_image
