@@ -10,6 +10,7 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: |
       event == "push"
       && target_branch == "rhoai-3.6"
+      && !("schedule/helm-chart-tekton-trigger.txt".pathChanged())
       && ( "helm/rhai-on-xks-chart/**".pathChanged() || ".tekton/rhai-on-xks-chart-v3-6-push.yaml".pathChanged() )
   labels:
     appstudio.openshift.io/application: rhoai-v3-6
