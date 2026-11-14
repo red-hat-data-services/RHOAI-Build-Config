@@ -12,7 +12,8 @@ metadata:
     # Trigger on bundle/ changes (or this tekton file)
     # No trigger if bundle/bundle-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push"
+      konflux_cluster == "stone-prod-p02"
+      && event == "push"
       && target_branch == "rhoai-3.5"
       && ( "bundle/**".pathChanged() || ".tekton/odh-operator-bundle-v3-5-push.yaml".pathChanged() )
       && files.all.exists(p, !p.matches('^bundle/bundle-patch\\.yaml$'))
