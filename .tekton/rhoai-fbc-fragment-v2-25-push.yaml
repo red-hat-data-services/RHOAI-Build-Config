@@ -10,7 +10,8 @@ metadata:
     # Trigger on catalog/ changes (or this tekton file)
     # No trigger if catalog/catalog-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
-      event == "push"
+      konflux_cluster == "stone-prod-p02"
+      && event == "push"
       && target_branch == "rhoai-2.25"
       && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v2-25-push.yaml".pathChanged() )
       && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
