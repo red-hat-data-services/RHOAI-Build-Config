@@ -17,6 +17,10 @@ on:
         required: false
         type: boolean
         default: false
+      target_branch:
+        description: 'Release branch to process when testing this workflow from another ref.'
+        required: false
+        type: string
   push:
     paths:
       - bundle/additional-images-patch.yaml
@@ -49,11 +53,17 @@ jobs:
     steps:
       - name: Resolve branch and RHOAI version
         shell: bash
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
-          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          BRANCH="${TARGET_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}}"
+          if [[ -n "$TARGET_BRANCH" && ! "$TARGET_BRANCH" =~ ^rhoai-[0-9]+\.[0-9]+(-ea\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid target_branch '${TARGET_BRANCH}'; expected rhoai-X.Y or rhoai-X.Y-ea.N."
+            exit 1
+          fi
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-          VERSION_SOURCE="${{ inputs.rhoai_version || github.head_ref || github.ref_name }}"
+          VERSION_SOURCE="${{ inputs.rhoai_version || inputs.target_branch || github.head_ref || github.ref_name }}"
           VERSION_SOURCE="${VERSION_SOURCE#rhoai-}"
           if ! [[ "$VERSION_SOURCE" =~ ^([0-9]+\.[0-9]+(-ea\.[0-9]+)?)$ ]]; then
             echo "::error::Cannot resolve RHOAI version from '$VERSION_SOURCE'. Provide rhoai_version input (e.g. rhoai-3.5)."
@@ -181,8 +191,31 @@ jobs:
             ${METADATA_CONFIG_FLAG}
 
           if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
+            python3 - "${BUNDLE_PUSH_PIPELINE_PATH}" "${XKS_HELM_PUSH_PIPELINE_PATH}" "${OPENSHIFT_HELM_PUSH_PIPELINE_PATH}" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          guards = {
+              Path(sys.argv[1]): '&& !("schedule/bundle-tekton-trigger.txt".pathChanged())',
+              Path(sys.argv[2]): '&& !("schedule/helm-chart-tekton-trigger.txt".pathChanged())',
+              Path(sys.argv[3]): '&& !("schedule/helm-chart-tekton-trigger.txt".pathChanged())',
+          }
+          pattern = re.compile(r'^(?P<indent>\s*&& target_branch == "[^"]+")$', re.MULTILINE)
+          for pipeline_path, guard in guards.items():
+              pipeline = pipeline_path.read_text()
+              if guard not in pipeline:
+                  pipeline, count = pattern.subn(lambda match: f'{match.group(0)}\n{match.group("indent").split("&&")[0]}{guard}', pipeline, count=1)
+                  if count != 1:
+                      raise SystemExit(f"Could not add the nightly path guard to {pipeline_path}")
+                  pipeline_path.write_text(pipeline)
+          PY
+          fi
+
+          if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
             mkdir -p ${BRANCH}/schedule
             echo "$(date +'%d-%m-%Y %H:%M:%S:%3N')" > ${BRANCH}/schedule/bundle-tekton-trigger.txt
+            echo "$(date +'%d-%m-%Y %H:%M:%S:%3N')" > ${BRANCH}/schedule/helm-chart-tekton-trigger.txt
           fi
 
           # Sync processed content back to bundle and helm directories

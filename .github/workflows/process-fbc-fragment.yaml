@@ -8,6 +8,10 @@ on:
         required: false
         type: boolean
         default: false
+      target_branch:
+        description: 'Release branch to process when testing this workflow from another ref.'
+        required: false
+        type: string
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -25,7 +29,7 @@ env:
   PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   refresh-pcc:
-    if: ${{ github.ref_name != 'main' }}
+    if: ${{ github.ref_name != 'main' && inputs.target_branch == '' }}
     uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
     secrets:
       REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
@@ -34,7 +38,7 @@ jobs:
       RHOAI_DEVOPS_APP_PRIVATE_KEY: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
   process-fbc:
-    if: ${{ github.ref_name != 'main' }}
+    if: ${{ always() && github.ref_name != 'main' && (needs.refresh-pcc.result == 'success' || needs.refresh-pcc.result == 'skipped') }}
     needs: refresh-pcc
     runs-on: ubuntu-latest
     container:
@@ -43,7 +47,15 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          BRANCH="${TARGET_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}}"
+          if [[ -n "$TARGET_BRANCH" && ! "$TARGET_BRANCH" =~ ^rhoai-[0-9]+\.[0-9]+(-ea\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid target_branch '${TARGET_BRANCH}'; expected rhoai-X.Y or rhoai-X.Y-ea.N."
+            exit 1
+          fi
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Generate GitHub App token
         id: app-token
@@ -217,6 +229,24 @@ jobs:
               
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+
+          if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
+            python3 - "${PUSH_PIPELINE_PATH}" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          pipeline_path = Path(sys.argv[1])
+          pipeline = pipeline_path.read_text()
+          guard = '&& !("schedule/catalog-tekton-trigger.txt".pathChanged())'
+          if guard not in pipeline:
+              pattern = re.compile(r'^(?P<indent>\s*&& target_branch == "[^"]+")$', re.MULTILINE)
+              pipeline, count = pattern.subn(lambda match: f'{match.group(0)}\n{match.group("indent").split("&&")[0]}{guard}', pipeline, count=1)
+              if count != 1:
+                  raise SystemExit(f"Could not add the nightly path guard to {pipeline_path}")
+              pipeline_path.write_text(pipeline)
+          PY
+          fi
 
           if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
             mkdir -p ${BRANCH}/schedule
