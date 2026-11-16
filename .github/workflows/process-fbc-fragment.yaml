@@ -2,6 +2,16 @@ name: Process FBC Fragment
 run-name: Process FBC Fragment
 on:
   workflow_dispatch:
+    inputs:
+      nightly:
+        description: 'Trigger the scheduled FBC fragment build instead of the push build.'
+        required: false
+        type: boolean
+        default: false
+      target_branch:
+        description: 'Release branch to process when testing this workflow from another ref.'
+        required: false
+        type: string
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -19,7 +29,7 @@ env:
   PREVIOUS_RELEASE: rhoai-2.25
 jobs:
   refresh-pcc:
-    if: ${{ github.ref_name != 'main' }}
+    if: ${{ github.ref_name != 'main' && inputs.target_branch == '' }}
     uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
     secrets:
       REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
@@ -28,7 +38,7 @@ jobs:
       RHOAI_DEVOPS_APP_PRIVATE_KEY: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
   process-fbc:
-    if: ${{ github.ref_name != 'main' }}
+    if: ${{ always() && github.ref_name != 'main' && (needs.refresh-pcc.result == 'success' || needs.refresh-pcc.result == 'skipped') }}
     needs: refresh-pcc
     runs-on: ubuntu-latest
     container:
@@ -37,7 +47,15 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          BRANCH="${TARGET_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}}"
+          if [[ -n "$TARGET_BRANCH" && ! "$TARGET_BRANCH" =~ ^rhoai-[0-9]+\.[0-9]+(-ea\.[0-9]+)?$ ]]; then
+            echo "::error::Invalid target_branch '${TARGET_BRANCH}'; expected rhoai-X.Y or rhoai-X.Y-ea.N."
+            exit 1
+          fi
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Generate GitHub App token
         id: app-token
@@ -105,6 +123,7 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          NIGHTLY_BUILD: ${{ inputs.nightly }}
           PREVIOUS_BRANCH: ${{ env.PREVIOUS_RELEASE }}
           OC_TOKEN: ${{ secrets.KONFLUX_INTERNAL_OC_TOKEN }}
           CLUSTER: p02
@@ -123,6 +142,12 @@ jobs:
           PREVIOUS_COMPONENT_SUFFIX=${PREVIOUS_RHOAI_VERSION//./-}
           
           OPERATOR_BUNDLE_COMPONENT_NAME=odh-operator-bundle
+
+          FBC_BUILD_TYPE_ARGS=()
+          PUSH_PIPELINE_OPERATION=enable
+          if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
+            FBC_BUILD_TYPE_ARGS=(--build-type nightly)
+          fi
           
           PATCH_YAML_PATH=${BRANCH}/catalog/catalog-patch.yaml
           PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
@@ -141,7 +166,7 @@ jobs:
 
           #Invoke the FBC processor to extract the snapshot images
           CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH}
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH} "${FBC_BUILD_TYPE_ARGS[@]}"
           LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
           echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
@@ -150,7 +175,7 @@ jobs:
           #Previous Release - Invoke the FBC processor to extract the snapshot images
           cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
           PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
-          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH}
+          python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH} "${FBC_BUILD_TYPE_ARGS[@]}"
           PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
           echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
           yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
@@ -195,15 +220,38 @@ jobs:
               PCC_CATALOG_YAML_PATH=main/pcc/catalog-${OPENSHIFT_VERSION}.yaml
               SINGLE_BUNDLE_PATH=${BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
               if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then SINGLE_BUNDLE_PATH=${CSV_META_SINGLE_BUNDLE_PATH}; fi
-              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${BUILD_CONFIG_PATH} -c ${PCC_CATALOG_YAML_PATH} -p ${PATCH_YAML_PATH} -s ${SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PUSH_PIPELINE_PATH} --push-pipeline-operation ${PUSH_PIPELINE_OPERATION}
               
               PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_BUNDLE_OBJECT_SINGLE_BUNDLE_PATH}
               if [[ $NUMERIC_OCP_VERSION -ge $CSV_META_MIN_OCP_VERSION ]]; then PREVIOUS_SINGLE_BUNDLE_PATH=${PREVIOUS_CSV_META_SINGLE_BUNDLE_PATH}; fi
-              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation enable
+              python3 utils/utils/fbc-processor/fbc-processor.py -op catalog-patch -b ${PREVIOUS_BUILD_CONFIG_PATH} -c ${OUTPUT_CATALOG_PATH} -p ${PREVIOUS_PATCH_YAML_PATH} -s ${PREVIOUS_SINGLE_BUNDLE_PATH} -o ${OUTPUT_CATALOG_PATH} --push-pipeline-yaml-path ${PREVIOUS_PUSH_PIPELINE_PATH} --push-pipeline-operation ${PUSH_PIPELINE_OPERATION}
               
               
               #cat ${OUTPUT_CATALOG_PATH}
           done < <(yq eval '.config.supported-ocp-versions.build[].name' $BUILD_CONFIG_PATH)
+
+          if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
+            python3 - "${PUSH_PIPELINE_PATH}" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+
+          pipeline_path = Path(sys.argv[1])
+          pipeline = pipeline_path.read_text()
+          guard = '&& !("schedule/catalog-tekton-trigger.txt".pathChanged())'
+          if guard not in pipeline:
+              pattern = re.compile(r'^(?P<indent>\s*&& target_branch == "[^"]+")$', re.MULTILINE)
+              pipeline, count = pattern.subn(lambda match: f'{match.group(0)}\n{match.group("indent").split("&&")[0]}{guard}', pipeline, count=1)
+              if count != 1:
+                  raise SystemExit(f"Could not add the nightly path guard to {pipeline_path}")
+              pipeline_path.write_text(pipeline)
+          PY
+          fi
+
+          if [[ "${NIGHTLY_BUILD}" == "true" ]]; then
+            mkdir -p ${BRANCH}/schedule
+            echo "$(date +'%d-%m-%Y %H:%M:%S:%3N')" > ${BRANCH}/schedule/catalog-tekton-trigger.txt
+          fi
 
       - name: Validate Catalogs
         id: validate-catalogs

@@ -14,6 +14,7 @@ metadata:
       konflux_cluster == "stone-prod-p02"
       && event == "push"
       && target_branch == "rhoai-3.6"
+      && !("schedule/catalog-tekton-trigger.txt".pathChanged())
       && ( "catalog/**".pathChanged() || ".tekton/rhoai-fbc-fragment-v3-6-push.yaml".pathChanged() )
       && files.all.exists(p, !p.matches('^catalog/catalog-patch\\.yaml$'))
   labels:
