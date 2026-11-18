@@ -203,7 +203,10 @@ jobs:
               # catalog-patch.yaml on the ephemeral branch. Resolving the release tag
               # here would pick the last RELEASED bundle and silently drop the gated
               # build. Inspect the pinned digest instead, for its git labels.
-              IMAGE=$(yq e -er '.patch.olm.bundle[0]' "${REL}/catalog/catalog-patch.yaml")
+              # The key is literally "olm.bundle" (it contains a dot), so it must be
+              # quoted; an unquoted path silently matches nothing. -e is deliberately
+              # omitted so the guard below reports the problem instead of yq.
+              IMAGE=$(yq e -r '.patch."olm.bundle"[0]' "${REL}/catalog/catalog-patch.yaml")
               if [[ -z "$IMAGE" || "$IMAGE" == "null" || "$IMAGE" != *"@sha256:"* ]]; then
                 echo "::error::EG: no pinned bundle digest in ${REL}/catalog/catalog-patch.yaml" >&2
                 exit 1
