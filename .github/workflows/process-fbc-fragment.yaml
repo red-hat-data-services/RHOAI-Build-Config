@@ -2,6 +2,27 @@ name: Process FBC Fragment
 run-name: Process FBC Fragment
 on:
   workflow_dispatch:
+    inputs:
+      rhoai_version:
+        description: 'RHOAI version for EG (e.g. rhoai-3.7-ea.1). Branch name used if omitted.'
+        required: false
+        default: ''
+        type: string
+      eg-mode:
+        description: 'Run in early-gate mode'
+        required: false
+        default: 'false'
+        type: string
+      eg-branch:
+        description: 'Ephemeral branch name for EG'
+        required: false
+        default: ''
+        type: string
+      leader-pr-number:
+        description: 'Leader PR number for EG correlation'
+        required: false
+        default: ''
+        type: string
   push:
     paths:
       - catalog/catalog-patch.yaml
@@ -30,7 +51,9 @@ env:
   INCLUDE_RELEASES: ""
 jobs:
   refresh-pcc:
-    if: ${{ github.ref_name != 'main' }}
+    # Release-only: refresh-pcc updates PCC base catalogs on main. Early-gate runs
+    # must not trigger it; the eg catalog is built from the existing PCC base.
+    if: ${{ github.ref_name != 'main' && inputs.eg-mode != 'true' }}
     uses: red-hat-data-services/RHOAI-Build-Config/.github/workflows/refresh-pcc.yaml@main
     secrets:
       REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
@@ -39,7 +62,9 @@ jobs:
       RHOAI_DEVOPS_APP_PRIVATE_KEY: ${{ secrets.RHOAI_DEVOPS_APP_PRIVATE_KEY }}
 
   process-fbc:
-    if: ${{ github.ref_name != 'main' }}
+    # Tolerate refresh-pcc being skipped in EG mode (GHA skips dependents of a
+    # skipped need unless the if handles it explicitly).
+    if: ${{ !cancelled() && github.ref_name != 'main' && (needs.refresh-pcc.result == 'success' || needs.refresh-pcc.result == 'skipped') }}
     needs: refresh-pcc
     runs-on: ubuntu-latest
     defaults:
@@ -51,7 +76,25 @@ jobs:
     steps:
       - name: Get Current branch name
         shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          # early-gate: BRANCH is the ephemeral FBC branch (it holds the release
+          # content); the release identity comes from rhoai_version, not the branch.
+          if [[ "${{ inputs.eg-mode }}" == "true" ]]; then
+            if [[ -z "${{ inputs.eg-branch }}" ]]; then
+              echo "::error::eg-mode is true but eg-branch is empty."; exit 1
+            fi
+            BRANCH="${{ inputs.eg-branch }}"
+            VERSION_SOURCE="${{ inputs.rhoai_version }}"
+            VERSION_SOURCE="${VERSION_SOURCE#rhoai-}"
+            if [[ ! "$VERSION_SOURCE" =~ ^([0-9]+\.[0-9]+(-ea\.[0-9]+)?)$ ]]; then
+              echo "::error::Invalid EG rhoai_version '${{ inputs.rhoai_version }}'; expected X.Y[-ea.N]."; exit 1
+            fi
+            echo "release_branch=rhoai-${VERSION_SOURCE}" >> $GITHUB_OUTPUT
+          else
+            echo "release_branch=${BRANCH}" >> $GITHUB_OUTPUT
+          fi
+          echo "branch=${BRANCH}" >> $GITHUB_OUTPUT
         id: get_branch
       - name: Generate GitHub App token
         id: app-token
@@ -68,7 +111,7 @@ jobs:
           path: main
           sparse-checkout: |
             pcc
-            catalog/${{ steps.get_branch.outputs.branch }}
+            catalog/${{ steps.get_branch.outputs.release_branch }}
             config
           sparse-checkout-cone-mode: false
       - name: Git checkout RBC release
@@ -108,6 +151,8 @@ jobs:
       - name: Process FBC Fragment
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
+          RELEASE_BRANCH: ${{ steps.get_branch.outputs.release_branch }}
+          EG_MODE: ${{ inputs.eg-mode }}
           PYTHONPATH: utils/utils/processors
         run: |
           set -euo pipefail
@@ -135,17 +180,46 @@ jobs:
             [[ "$ALREADY_INCLUDED" == true ]] || RELEASES+=("$REL")
           done
 
+          # RELEASES holds directory names. Outside EG a directory IS its release
+          # identity; in EG the current entry is the ephemeral branch directory while
+          # the identity stays rhoai-X.Y. Keep the two aligned by index.
+          RELEASE_IDS=()
+          for INDEX in "${!RELEASES[@]}"; do
+            if [[ "${EG_MODE}" == "true" && "${INDEX}" -eq 0 ]]; then
+              RELEASE_IDS+=("$RELEASE_BRANCH")
+            else
+              RELEASE_IDS+=("${RELEASES[$INDEX]}")
+            fi
+          done
+
           # Resolve each bundle once so all OCP catalogs use the same digest.
           BUNDLE_IMAGES=()
           GIT_URLS=()
           GIT_COMMITS=()
-          for REL in "${RELEASES[@]}"; do
-            # CI catalogs use the release tag.
-            INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${REL}")
-            DIGEST=$(jq -er '.Digest | select(type == "string" and startswith("sha256:"))' <<< "$INSPECT")
+          for INDEX in "${!RELEASES[@]}"; do
+            REL="${RELEASES[$INDEX]}"
+            if [[ "${EG_MODE}" == "true" && "${INDEX}" -eq 0 ]]; then
+              # early-gate: the gate has already pinned Block-2's bundle digest into
+              # catalog-patch.yaml on the ephemeral branch. Resolving the release tag
+              # here would pick the last RELEASED bundle and silently drop the gated
+              # build. Inspect the pinned digest instead, for its git labels.
+              # The key is literally "olm.bundle" (it contains a dot), so it must be
+              # quoted; an unquoted path silently matches nothing. -e is deliberately
+              # omitted so the guard below reports the problem instead of yq.
+              IMAGE=$(yq e -r '.patch."olm.bundle"[0]' "${REL}/catalog/catalog-patch.yaml")
+              if [[ -z "$IMAGE" || "$IMAGE" == "null" || "$IMAGE" != *"@sha256:"* ]]; then
+                echo "::error::EG: no pinned bundle digest in ${REL}/catalog/catalog-patch.yaml" >&2
+                exit 1
+              fi
+              INSPECT=$(skopeo inspect --no-tags "docker://${IMAGE}")
+            else
+              # CI catalogs use the release tag.
+              INSPECT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-operator-bundle:${REL}")
+              DIGEST=$(jq -er '.Digest | select(type == "string" and startswith("sha256:"))' <<< "$INSPECT")
+              IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
+            fi
             GIT_URL=$(jq -er '.Labels["git.url"] | select(type == "string" and length > 0)' <<< "$INSPECT")
             GIT_COMMIT=$(jq -er '.Labels["git.commit"] | select(type == "string" and length > 0)' <<< "$INSPECT")
-            IMAGE="quay.io/rhoai/odh-operator-bundle@${DIGEST}"
             echo "Resolved ${REL}: ${IMAGE}"
             BUNDLE_IMAGES+=("$IMAGE")
             GIT_URLS+=("$GIT_URL")
@@ -195,8 +269,15 @@ jobs:
                 echo "Skipping $REL for $OCP_VERSION: not listed in its supported build OCP versions"
                 continue
               fi
-              COMPONENT_SUFFIX="v${REL#rhoai-}"
+              REL_ID="${RELEASE_IDS[$INDEX]}"
+              COMPONENT_SUFFIX="v${REL_ID#rhoai-}"
               COMPONENT_SUFFIX="${COMPONENT_SUFFIX//./-}"
+              # early-gate: the ephemeral branch carries its own push pipeline; the
+              # release-versioned one does not exist there.
+              PUSH_PIPELINE_YAML="$REL/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml"
+              if [[ "${EG_MODE}" == "true" && "${INDEX}" -eq 0 ]]; then
+                PUSH_PIPELINE_YAML="$REL/.tekton/rhoai-fbc-fragment-eg-push.yaml"
+              fi
               SBC="$WORK_DIR/${REL}-bundle-object-sbc.yaml"
               # OCP 4.17 and later, including 5.x, require CSV metadata.
               if (( OCP_MAJOR > 4 || (OCP_MAJOR == 4 && OCP_MINOR >= 17) )); then
@@ -210,7 +291,7 @@ jobs:
               # Keep each processor call's DEBUG log; the logger overwrites its file on startup.
               LOG_FILE_DIR="$WORK_DIR" LOG_FILE_NAME="fbc-processor-${REL}-${OCP_VERSION}.log" \
                 python3 "$PROCESSOR" \
-                --rhoai-version "$REL" \
+                --rhoai-version "$REL_ID" \
                 --build-type ci \
                 --build-config-path "$REL/config/build-config.yaml" \
                 --patch-yaml-path "$REL/catalog/catalog-patch.yaml" \
@@ -220,7 +301,7 @@ jobs:
                 --bundle-git-url "${GIT_URLS[$INDEX]}" \
                 --bundle-git-commit "${GIT_COMMITS[$INDEX]}" \
                 --catalog-build-args-file-path "$REL/catalog/catalog_build_args.map" \
-                --push-pipeline-yaml-path "$REL/.tekton/rhoai-fbc-fragment-${COMPONENT_SUFFIX}-push.yaml" \
+                --push-pipeline-yaml-path "$PUSH_PIPELINE_YAML" \
                 --push-pipeline-operation enable
               # Chain: next pass reads this pass's output as input.
               INPUT_CATALOG="$OUTPUT_CATALOG"
@@ -249,6 +330,8 @@ jobs:
           if-no-files-found: ignore
 
       - name: Validate Catalogs
+        # Release-only: validates against shipped RHOAI versions; the EG bundle/version is not shipped.
+        if: ${{ inputs.eg-mode != 'true' }}
         id: validate-catalogs
         env:
           BRANCH: ${{ steps.get_branch.outputs.branch }}
@@ -267,11 +350,21 @@ jobs:
 
       - name: Commit and push the changes to release branch
         working-directory: ${{ steps.get_branch.outputs.branch }}
+        env:
+          EG_MODE: ${{ inputs.eg-mode }}
+          EG_BRANCH: ${{ steps.get_branch.outputs.branch }}
         run: |
           git config user.name "Openshift-AI DevOps"
           git config user.email "openshift-ai-devops@redhat.com"
           git add -A
-          git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          if [[ "${EG_MODE}" == "true" ]]; then
+            # The `early-gate:` subject is load-bearing: the eg push pipeline's CEL
+            # matches on it. --allow-empty guarantees a commit for the gate to observe.
+            git commit --allow-empty -m "early-gate: pin FBC catalog to gated bundle for ${EG_BRANCH}"
+            git push origin "HEAD:${EG_BRANCH}"
+          else
+            git diff --staged --quiet || (git commit -m "Updating the catalog.yaml with latest images and patches" && git push origin ${{ steps.get_branch.outputs.branch }})
+          fi
 
   notify-failure:
     needs: [refresh-pcc, process-fbc]
