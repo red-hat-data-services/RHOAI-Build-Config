@@ -115,8 +115,8 @@ metadata:
     capabilities: Full Lifecycle
     categories: AI/Machine Learning, Big Data
     certified: "False"
-    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e07bd62c4071303aeeb1f6afdc9b9fd866cc562de3f2de5ed2dcc608794abe0f"
-    createdAt: "2026-11-19T20:42:46Z"
+    containerImage: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:98077ae4562dac289f80737d879957e302a6aab7e9b427d36b9e8b5d1d81706f"
+    createdAt: "2026-11-19T20:55:30Z"
     description: Operator for deployment and management of Red Hat OpenShift AI
     features.operators.openshift.io/cnf: "false"
     features.operators.openshift.io/cni: "false"
@@ -1519,7 +1519,7 @@ spec:
                 - name: RELATED_IMAGE_ODH_KSERVE_AUTOGLUON_SERVER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-kserve-autogluon-server-rhel9@sha256:91c97785cabb7a628a58ec9ba116ceb36d2b238eebf005fbb099b76a22b9c49c"
                 - name: RELATED_IMAGE_ODH_KSERVE_CONTROLLER_IMAGE
-                  value: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:f5e0c78a13cbdfd4f49b9cb864504af36356487c9ac037eb689bc3ab2983fefb"
+                  value: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:77fbc47fe274e19b06c6aee3b6fa205e8e8adb53649b7ab201083cc9d86cf2f2"
                 - name: RELATED_IMAGE_ODH_KSERVE_LLMISVC_CONTROLLER_IMAGE
                   value: "registry.redhat.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:a1c7de1a63f2e105d37b9ead00521c0bd3b37cce7b80e8257549614a4f4d482e"
                 - name: RELATED_IMAGE_ODH_KSERVE_LOCALMODELNODE_AGENT_IMAGE
@@ -1860,7 +1860,7 @@ spec:
                   value: "0.30.0+rhaiv.0"
                 - name: RELATED_IMAGE_RHAII_VLLM_OMNI_CUDA_FAST_2_IMAGE_UPSTREAM_VERSION
                   value: "0.30.0+rhaiv.0"
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e07bd62c4071303aeeb1f6afdc9b9fd866cc562de3f2de5ed2dcc608794abe0f"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:98077ae4562dac289f80737d879957e302a6aab7e9b427d36b9e8b5d1d81706f"
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -1912,7 +1912,7 @@ spec:
                 - -r
                 - /opt/manifests-template/.
                 - /opt/manifests/
-                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e07bd62c4071303aeeb1f6afdc9b9fd866cc562de3f2de5ed2dcc608794abe0f"
+                image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:98077ae4562dac289f80737d879957e302a6aab7e9b427d36b9e8b5d1d81706f"
                 imagePullPolicy: Always
                 name: copy-manifests
                 resources:
@@ -2008,6 +2008,7 @@ spec:
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
+    - v2
     containerPort: 443
     conversionCRDs:
     - datascienceclusters.datasciencecluster.opendatahub.io
@@ -2249,8 +2250,8 @@ spec:
     type: MutatingAdmissionWebhook
     webhookPath: /mutate-prometheus-monitors
   relatedImages:
-  - name: odh-rhel9-operator-e07bd62c4071303aeeb1f6afdc9b9fd866cc562de3f2de5ed2dcc608794abe0f-annotation
-    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:e07bd62c4071303aeeb1f6afdc9b9fd866cc562de3f2de5ed2dcc608794abe0f"
+  - name: odh-rhel9-operator-98077ae4562dac289f80737d879957e302a6aab7e9b427d36b9e8b5d1d81706f-annotation
+    image: "registry.redhat.io/rhoai/odh-rhel9-operator@sha256:98077ae4562dac289f80737d879957e302a6aab7e9b427d36b9e8b5d1d81706f"
   - name: odh_ai_gateway_controller_image
     image: "registry.redhat.io/rhoai/odh-ai-gateway-controller-rhel9@sha256:4ed71c2d1e2eb4504d2d887bc102a6987579a47d505bbab514a1eb316006db9e"
   - name: odh_ai_gateway_operator_image
@@ -2302,7 +2303,7 @@ spec:
   - name: odh_kserve_autogluon_server_image
     image: "registry.redhat.io/rhoai/odh-kserve-autogluon-server-rhel9@sha256:91c97785cabb7a628a58ec9ba116ceb36d2b238eebf005fbb099b76a22b9c49c"
   - name: odh_kserve_controller_image
-    image: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:f5e0c78a13cbdfd4f49b9cb864504af36356487c9ac037eb689bc3ab2983fefb"
+    image: "registry.redhat.io/rhoai/odh-kserve-controller-rhel9@sha256:77fbc47fe274e19b06c6aee3b6fa205e8e8adb53649b7ab201083cc9d86cf2f2"
   - name: odh_kserve_llmisvc_controller_image
     image: "registry.redhat.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:a1c7de1a63f2e105d37b9ead00521c0bd3b37cce7b80e8257549614a4f4d482e"
   - name: odh_kserve_localmodelnode_agent_image
