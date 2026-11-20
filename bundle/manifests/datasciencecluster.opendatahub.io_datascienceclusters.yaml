@@ -1912,6 +1912,14 @@ spec:
                             Enables OpenShift Developer Console dashboards for LLMInferenceService.
                             Enabled by default.
                           type: boolean
+                        enableLLMInferenceServiceStrictNetworkPolicy:
+                          description: |-
+                            Enables the strict per-LLMInferenceService NetworkPolicies that restrict
+                            traffic between the workload, scheduler and tokenizer Pods to what each
+                            service needs. When unset or false, KServe creates a single allow-all
+                            NetworkPolicy per service instead, which keeps the open behaviour of
+                            releases that did not restrict Pod traffic across upgrades.
+                          type: boolean
                         enableLLMInferenceServiceTLS:
                           description: |-
                             Enables TLS for LLMInferenceService deployments.
