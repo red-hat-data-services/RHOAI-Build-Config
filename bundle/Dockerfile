@@ -42,10 +42,6 @@ ARG ODH_LLAMA_STACK_CORE_GIT_URL=
 ARG ODH_LLAMA_STACK_CORE_GIT_COMMIT=
 ARG ODH_LLAMA_STACK_K8S_OPERATOR_GIT_URL=
 ARG ODH_LLAMA_STACK_K8S_OPERATOR_GIT_COMMIT=
-ARG ODH_LLM_D_INFERENCE_SCHEDULER_GIT_URL=
-ARG ODH_LLM_D_INFERENCE_SCHEDULER_GIT_COMMIT=
-ARG ODH_LLM_D_ROUTING_SIDECAR_GIT_URL=
-ARG ODH_LLM_D_ROUTING_SIDECAR_GIT_COMMIT=
 ARG ODH_MLMD_GRPC_SERVER_GIT_URL=
 ARG ODH_MLMD_GRPC_SERVER_GIT_COMMIT=
 ARG ODH_ML_PIPELINES_API_SERVER_V2_GIT_URL=
@@ -199,10 +195,6 @@ LABEL \
       odh-llama-stack-core.git.commit="${ODH_LLAMA_STACK_CORE_GIT_COMMIT}" \
       odh-llama-stack-k8s-operator.git.url="${ODH_LLAMA_STACK_K8S_OPERATOR_GIT_URL}" \
       odh-llama-stack-k8s-operator.git.commit="${ODH_LLAMA_STACK_K8S_OPERATOR_GIT_COMMIT}" \
-      odh-llm-d-inference-scheduler.git.url="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_URL}" \
-      odh-llm-d-inference-scheduler.git.commit="${ODH_LLM_D_INFERENCE_SCHEDULER_GIT_COMMIT}" \
-      odh-llm-d-routing-sidecar.git.url="${ODH_LLM_D_ROUTING_SIDECAR_GIT_URL}" \
-      odh-llm-d-routing-sidecar.git.commit="${ODH_LLM_D_ROUTING_SIDECAR_GIT_COMMIT}" \
       odh-mlmd-grpc-server.git.url="${ODH_MLMD_GRPC_SERVER_GIT_URL}" \
       odh-mlmd-grpc-server.git.commit="${ODH_MLMD_GRPC_SERVER_GIT_COMMIT}" \
       odh-ml-pipelines-api-server-v2.git.url="${ODH_ML_PIPELINES_API_SERVER_V2_GIT_URL}" \
@@ -316,4 +308,3 @@ LABEL com.redhat.component="odh-operator-bundle" \
 COPY bundle/manifests /manifests/
 COPY bundle/metadata /metadata/
 COPY bundle/tests/scorecard /tests/scorecard/
-
