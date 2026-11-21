@@ -1,0 +1,738 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  labels:
+    konflux-release-data/artifact-type: components
+    konflux-release-data/rbc-release-commit: cd9ecacef6d772a4c29d37fb1bd0b77ca72b5545
+    test.appstudio.openshift.io/type: override
+  name: rhoai-v3-5-1792511937
+  namespace: rhoai-tenant
+spec:
+  application: rhoai-v3-5
+  components:
+  - containerImage: quay.io/rhoai/odh-operator-bundle@sha256:7948a1bd1d9c0fced9ebd3dec7bb0c605b87f7dda3b10e342feabd067b73d38a
+    name: odh-operator-bundle-v3-5
+    source:
+      git:
+        revision: f91445fc2ba421b29df2617b495deb038ca85e83
+        url: https://github.com/red-hat-data-services/RHOAI-Build-Config
+  - containerImage: quay.io/rhoai/odh-ai-gateway-operator-rhel9@sha256:d783c2b5b953869886e8ef6139600d3b0d0b7168a55d21bf8682c0061ed4accf
+    name: odh-ai-gateway-operator-v3-5
+    source:
+      git:
+        revision: 2eb8a5e819a8e349fff849021f074001b6402dd8
+        url: https://github.com/red-hat-data-services/ai-gateway-operator
+  - containerImage: quay.io/rhoai/odh-ai-gateway-payload-processing-rhel9@sha256:32a3989352edf096214dbe9bd20fc38bf3eb04fd1cb328c64b7b19dd312bb841
+    name: odh-ai-gateway-payload-processing-v3-5
+    source:
+      git:
+        revision: 63f8c50960affdb7edcc7a0a7c3d9b9a92bb7e64
+        url: https://github.com/red-hat-data-services/ai-gateway-payload-processing
+  - containerImage: quay.io/rhoai/odh-automl-rhel9@sha256:6340a192844bb946ba70ef6eff3d38fb4c2e346510696a41c6f56f777a5cb80e
+    name: odh-automl-v3-5
+    source:
+      git:
+        revision: 6ea67fed448bd1779fa5af4d18bb11d1c4c26577
+        url: https://github.com/red-hat-data-services/pipelines-components
+  - containerImage: quay.io/rhoai/odh-autorag-rhel9@sha256:d2646a45bab487f3f0987712eb3928cf18df38efe97f7539e28feb9a7c86c08e
+    name: odh-autorag-v3-5
+    source:
+      git:
+        revision: 6ea67fed448bd1779fa5af4d18bb11d1c4c26577
+        url: https://github.com/red-hat-data-services/pipelines-components
+  - containerImage: quay.io/rhoai/odh-built-in-detector-rhel9@sha256:06d7602d6f0aa5f22c4daaa744baf627f24a136a7ba1d3bc23720b0267d45cc8
+    name: odh-built-in-detector-v3-5
+    source:
+      git:
+        revision: 781004b34ca9331f24ba7afbc61a054c25695118
+        url: https://github.com/red-hat-data-services/guardrails-detectors
+  - containerImage: quay.io/rhoai/odh-cli-rhel9@sha256:2ea99e174c6714ecffaaff802f786437c9c55b4fd23409124e438b8958f90143
+    name: odh-cli-v3-5
+    source:
+      git:
+        revision: 67b4a628a65dd8c152a4a0095de56bf5bd04dced
+        url: https://github.com/red-hat-data-services/odh-cli
+  - containerImage: quay.io/rhoai/odh-core-bff-rhel9@sha256:97607f5f0195bada455cfc1b60ce197ec469e2d1b94c37a3b9e9d82ae06a4730
+    name: odh-core-bff-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-dashboard-operator-rhel9@sha256:eddf4f7b854ad9ab9a8fc6e211ea2b605be54d8d290fca899a7db4aa1130662d
+    name: odh-dashboard-operator-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-dashboard-rhel9@sha256:6f94e2f1daa700d51a95e678219ddebfafa676d536f721f9fa0d645302274ad7
+    name: odh-dashboard-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-data-science-pipelines-argo-argoexec-rhel9@sha256:b4bf7a87d2835fb18354cb6294269802f29b94c9e24ae55a996c943fdfa478f9
+    name: odh-data-science-pipelines-argo-argoexec-v3-5
+    source:
+      git:
+        revision: 2ce1702796f676546d4f2b535eecaa8e6d35da88
+        url: https://github.com/red-hat-data-services/argo-workflows
+  - containerImage: quay.io/rhoai/odh-data-science-pipelines-argo-workflowcontroller-rhel9@sha256:e5c0f70707b72072ff7694a8c4fedd05acd540b4389c025b004c6f3102161006
+    name: odh-data-science-pipelines-argo-workflowcontroller-v3-5
+    source:
+      git:
+        revision: 2ce1702796f676546d4f2b535eecaa8e6d35da88
+        url: https://github.com/red-hat-data-services/argo-workflows
+  - containerImage: quay.io/rhoai/odh-data-science-pipelines-operator-controller-rhel9@sha256:58f6c39bc7d39ea0988f1bedebd29f3f0823898f15c409d517bf7b3845bf02a8
+    name: odh-data-science-pipelines-operator-controller-v3-5
+    source:
+      git:
+        revision: ca3c69582ff0b99893ad82b1c928c10241b250bf
+        url: https://github.com/red-hat-data-services/data-science-pipelines-operator
+  - containerImage: quay.io/rhoai/odh-eval-hub-rhel9@sha256:b40d2ef9d6b4a9de516990c49a24a8b083cd48635d0c489b06bfbd7c4c42bf9f
+    name: odh-eval-hub-v3-5
+    source:
+      git:
+        revision: 18ce91120108f0ce1298cbcfdc414af7ddce58e9
+        url: https://github.com/red-hat-data-services/eval-hub
+  - containerImage: quay.io/rhoai/odh-feast-module-operator-rhel9@sha256:a4a0c016aa97ee344f1d2ee2678a49c9295396427c436c77c26261f95146d465
+    name: odh-feast-module-operator-v3-5
+    source:
+      git:
+        revision: 9facc299f0ec1a26aaf08cb08cea5f582f19b752
+        url: https://github.com/red-hat-data-services/feast-module-operator
+  - containerImage: quay.io/rhoai/odh-feast-operator-rhel9@sha256:378089679237fa5af59eae5bcbc4de201db12db3ce0dabee030ec650c2d22c71
+    name: odh-feast-operator-v3-5
+    source:
+      git:
+        revision: e6b56af21c6dde1c1fc18c5378af020725c4da0c
+        url: https://github.com/red-hat-data-services/feast
+  - containerImage: quay.io/rhoai/odh-feature-server-rhel9@sha256:7df41bd45fb72a1a6d36244348629f6ce63ab91b00ef6f5dbbbf94a7c5d669a3
+    name: odh-feature-server-v3-5
+    source:
+      git:
+        revision: afd8d781600a9358706edf97f53115f136556e99
+        url: https://github.com/red-hat-data-services/feast
+  - containerImage: quay.io/rhoai/odh-fms-guardrails-orchestrator-rhel9@sha256:d1103eebfd167801a268b2df777a8d760f4c7f4460b6f61adc82b423fe374e0b
+    name: odh-fms-guardrails-orchestrator-v3-5
+    source:
+      git:
+        revision: b381d46437b59ee2707cf46e751a619a26073f9e
+        url: https://github.com/red-hat-data-services/fms-guardrails-orchestrator
+  - containerImage: quay.io/rhoai/odh-guardrails-detector-huggingface-runtime-rhel9@sha256:1d591864831164d4941535c448b45235a395bd9eb5221bc3faa2fe7effb7c96f
+    name: odh-guardrails-detector-huggingface-runtime-v3-5
+    source:
+      git:
+        revision: 781004b34ca9331f24ba7afbc61a054c25695118
+        url: https://github.com/red-hat-data-services/guardrails-detectors
+  - containerImage: quay.io/rhoai/odh-kf-notebook-controller-rhel9@sha256:7558362df332c201c3f660fb3135d5e5eeef0459360c6788af401da7b044ba85
+    name: odh-kf-notebook-controller-v3-5
+    source:
+      git:
+        revision: 98fc579b38c89a0a52fcee25031fca19b9fab9af
+        url: https://github.com/red-hat-data-services/kubeflow
+  - containerImage: quay.io/rhoai/odh-kserve-agent-rhel9@sha256:8ec73b6a944b78c3ef5595c28aad3d13284c2c89b6cdf4ed4cdf6a6939ee91d2
+    name: odh-kserve-agent-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-autogluon-server-rhel9@sha256:18e27f6b0551846d0cc658f530e9ff63622947322921086de0dcc3dba4df96ae
+    name: odh-kserve-autogluon-server-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-controller-rhel9@sha256:c20a773d9aa1739a1ab2acd26cb1b583f0303ffbdb54aead419651ae2c2f7769
+    name: odh-kserve-controller-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-llmisvc-controller-rhel9@sha256:ce7d2a294d7df85692c64f2dfe9140af027b17c5d83e36ed8d7e4fe8d9d82a47
+    name: odh-kserve-llmisvc-controller-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-localmodel-controller-rhel9@sha256:03a1fb5b14437e83175e1d8cdeb6e89f0ba76898fe6c48802d7bbf49ca99b38d
+    name: odh-kserve-localmodel-controller-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-localmodelnode-agent-rhel9@sha256:7e4e097ea891cf8b1a5c56c1acf9b99d63d6feaa091cd635ba12fe748a4faa3a
+    name: odh-kserve-localmodelnode-agent-v3-5
+    source:
+      git:
+        revision: ad6f1d789ffd109d3fa3d6e237a5ecd302d43ccc
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-module-operator-rhel9@sha256:0dcef6487025de3fb24053e89dcd2590f69cdbae9011b049d3420ebfa1ff74b9
+    name: odh-kserve-module-operator-v3-5
+    source:
+      git:
+        revision: 3c9dc827f37f4cb893f6b3d9a048f34a74dcdbb4
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-router-rhel9@sha256:5fd34fbf30eb05550317f3bb033f274b40a6af0e34fd01ec7b492b6b8f44386c
+    name: odh-kserve-router-v3-5
+    source:
+      git:
+        revision: 024d4015351b17efddcea2c1b3ae38ab7cc7d102
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kserve-storage-initializer-rhel9@sha256:61939206f89384f832ef35a4cb44e061a1fc8305f199b54bd32c6fcce54cf1cf
+    name: odh-kserve-storage-initializer-v3-5
+    source:
+      git:
+        revision: 9b5c0f072c5c1fee2b2527424259c6cc830735f4
+        url: https://github.com/red-hat-data-services/kserve
+  - containerImage: quay.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:40fb1f92b8d785408d4c98cbf58f18c59992af1c4c7febda5925d1a2c037fbd5
+    name: odh-kube-auth-proxy-v3-5
+    source:
+      git:
+        revision: 21f2d64aa23e7b4ac8f87998cc4c84e1d70f8d9e
+        url: https://github.com/red-hat-data-services/kube-auth-proxy
+  - containerImage: quay.io/rhoai/odh-kube-auth-proxy-rhel9@sha256:40fb1f92b8d785408d4c98cbf58f18c59992af1c4c7febda5925d1a2c037fbd5
+    name: odh-kube-auth-proxy-v3-5
+    source:
+      git:
+        revision: 21f2d64aa23e7b4ac8f87998cc4c84e1d70f8d9e
+        url: https://github.com/red-hat-data-services/kube-auth-proxy
+  - containerImage: quay.io/rhoai/odh-kube-rbac-proxy-rhel9@sha256:ce8eb36be58b878376e64146c0a4ec281666da63b0f13765689a77117f1771c2
+    name: odh-kube-rbac-proxy-v3-5
+    source:
+      git:
+        revision: 82b4ecd3e4b1e5611c857d935f5251035cdca998
+        url: https://github.com/red-hat-data-services/kube-rbac-proxy
+  - containerImage: quay.io/rhoai/odh-kuberay-operator-controller-rhel9@sha256:1d1ad597d4ac6bb99a1d0c60b897de76f2eb2929a5c923c08b03ec048c921384
+    name: odh-kuberay-operator-controller-v3-5
+    source:
+      git:
+        revision: f46f84e122ce7355834016102b09a6e5615cb442
+        url: https://github.com/red-hat-data-services/kuberay
+  - containerImage: quay.io/rhoai/odh-latency-predictor-prediction-rhel9@sha256:50ebf53dfcd1055460c724d2d94afd46b0544db1b1379b2547c2c27b1a8a7db6
+    name: odh-latency-predictor-prediction-v3-5
+    source:
+      git:
+        revision: 3c2b2450e2adceb172c75d56062986532d0c2ee0
+        url: https://github.com/red-hat-data-services/llm-d-latency-predictor
+  - containerImage: quay.io/rhoai/odh-latency-predictor-training-rhel9@sha256:d5199b02ba92159d19c6b83423e004b916945f1844fd19bc3d10fcf59f2728cd
+    name: odh-latency-predictor-training-v3-5
+    source:
+      git:
+        revision: 3c2b2450e2adceb172c75d56062986532d0c2ee0
+        url: https://github.com/red-hat-data-services/llm-d-latency-predictor
+  - containerImage: quay.io/rhoai/odh-llm-d-async-rhel9@sha256:c6d74d1ffbcefc02bd923b4fed211a7494cd038fb35790d4d332b5c010d33104
+    name: odh-llm-d-async-v3-5
+    source:
+      git:
+        revision: c5c090319d5bddc6428398d71ccf3a67e2a35661
+        url: https://github.com/red-hat-data-services/llm-d-async
+  - containerImage: quay.io/rhoai/odh-llm-d-batch-gateway-apiserver-rhel9@sha256:645c6d69924794c1ec455531405f165f8f42a63680f0c3a3a2cc1827bba30c07
+    name: odh-llm-d-batch-gateway-apiserver-v3-5
+    source:
+      git:
+        revision: 16695a01086d39035d149898ba4c7f8cde7f8361
+        url: https://github.com/red-hat-data-services/batch-gateway
+  - containerImage: quay.io/rhoai/odh-llm-d-batch-gateway-gc-rhel9@sha256:acf8b67c36691aa4dab81cf1a819367cf7667072b36afd033b33479c868476c8
+    name: odh-llm-d-batch-gateway-gc-v3-5
+    source:
+      git:
+        revision: 16695a01086d39035d149898ba4c7f8cde7f8361
+        url: https://github.com/red-hat-data-services/batch-gateway
+  - containerImage: quay.io/rhoai/odh-llm-d-batch-gateway-operator-rhel9@sha256:c1261ec6b28cab4576f5bf0a86f6e2228f6ce897e2bb4a2faac74b08a0817008
+    name: odh-llm-d-batch-gateway-operator-v3-5
+    source:
+      git:
+        revision: e826a326345d10f3c9f0c84e35f1cc4f54450fc0
+        url: https://github.com/red-hat-data-services/llm-d-batch-gateway-operator
+  - containerImage: quay.io/rhoai/odh-llm-d-batch-gateway-processor-rhel9@sha256:f37a421574dac9ae85a7c085a1b02639b3be3a78446b61f94c2fde116bbb0dc8
+    name: odh-llm-d-batch-gateway-processor-v3-5
+    source:
+      git:
+        revision: 16695a01086d39035d149898ba4c7f8cde7f8361
+        url: https://github.com/red-hat-data-services/batch-gateway
+  - containerImage: quay.io/rhoai/odh-llm-d-router-disagg-sidecar-rhel9@sha256:a8c031c2dff1f6742845c3b9e6c85ed66bf5beb62e68d4281c3223dae32b04dc
+    name: odh-llm-d-router-disagg-sidecar-v3-5
+    source:
+      git:
+        revision: 5647c049f723df1353645c905924d3e7b3f0dfe5
+        url: https://github.com/red-hat-data-services/llm-d-router
+  - containerImage: quay.io/rhoai/odh-llm-d-router-endpoint-picker-rhel9@sha256:576be540566ad2ddeb0b45866a48c8df80bd334dd2b2844578df601ca74fff7c
+    name: odh-llm-d-router-endpoint-picker-v3-5
+    source:
+      git:
+        revision: 5647c049f723df1353645c905924d3e7b3f0dfe5
+        url: https://github.com/red-hat-data-services/llm-d-router
+  - containerImage: quay.io/rhoai/odh-maas-api-rhel9@sha256:a7e5a87a6e64b1e99bceaf9c1f4e0ece6f3b7f8ce8227edd59586f7344c385ee
+    name: odh-maas-api-v3-5
+    source:
+      git:
+        revision: 08503003805250f88c489355b1c9b905cca93a5e
+        url: https://github.com/red-hat-data-services/models-as-a-service
+  - containerImage: quay.io/rhoai/odh-maas-controller-rhel9@sha256:9b51a6f9cc52a7a2e1355cf3e7b728fa85f23af2b183c137e17e57412e8ea3d6
+    name: odh-maas-controller-v3-5
+    source:
+      git:
+        revision: 08503003805250f88c489355b1c9b905cca93a5e
+        url: https://github.com/red-hat-data-services/models-as-a-service
+  - containerImage: quay.io/rhoai/odh-mcp-lifecycle-module-operator-rhel9@sha256:66f79b1c98c2d8623e158dfa305eafdab3d413eae71d92942a4d9ae4bc8897f1
+    name: odh-mcp-lifecycle-module-operator-v3-5
+    source:
+      git:
+        revision: 587f34375386b01951590ebc233e4b82dae4ad37
+        url: https://github.com/red-hat-data-services/mcp-lifecycle-module-operator
+  - containerImage: quay.io/rhoai/odh-mcp-lifecycle-operator-rhel9@sha256:6448a10e29277ddf3cc4e7eb009a7af27302a8a84fefd6a2c5a23782ade166c1
+    name: odh-mcp-lifecycle-operator-v3-5
+    source:
+      git:
+        revision: 53bd6c070992da40a92a15d14801d94b09c7ed25
+        url: https://github.com/red-hat-data-services/mcp-lifecycle-operator
+  - containerImage: quay.io/rhoai/odh-ml-pipelines-api-server-v2-rhel9@sha256:a4f35170663c01038b7053e596bee85f1687233dc3622a12142b148579136e32
+    name: odh-ml-pipelines-api-server-v2-v3-5
+    source:
+      git:
+        revision: 06449e38ff8cb04a2de9c209982db1ecdb64872d
+        url: https://github.com/red-hat-data-services/data-science-pipelines
+  - containerImage: quay.io/rhoai/odh-ml-pipelines-driver-rhel9@sha256:dff48ca20500df720486d864c4cc0ad503962b82a0557db7b47c8606c743e9fb
+    name: odh-ml-pipelines-driver-v3-5
+    source:
+      git:
+        revision: 06449e38ff8cb04a2de9c209982db1ecdb64872d
+        url: https://github.com/red-hat-data-services/data-science-pipelines
+  - containerImage: quay.io/rhoai/odh-ml-pipelines-launcher-rhel9@sha256:a749ea7018b9e6e49f8788073810d4c340243ef0378d47e436a8ae10130982ee
+    name: odh-ml-pipelines-launcher-v3-5
+    source:
+      git:
+        revision: 06449e38ff8cb04a2de9c209982db1ecdb64872d
+        url: https://github.com/red-hat-data-services/data-science-pipelines
+  - containerImage: quay.io/rhoai/odh-ml-pipelines-persistenceagent-v2-rhel9@sha256:5b5fbc90156fdf32216a0c00fa0f7e2b05118c41c1660ce9f5f39eced5491740
+    name: odh-ml-pipelines-persistenceagent-v2-v3-5
+    source:
+      git:
+        revision: 06449e38ff8cb04a2de9c209982db1ecdb64872d
+        url: https://github.com/red-hat-data-services/data-science-pipelines
+  - containerImage: quay.io/rhoai/odh-ml-pipelines-scheduledworkflow-v2-rhel9@sha256:03d16e15c9cc4bb72bdd7033cae08460ba69382d5c2edb786bdb72ba0c554abb
+    name: odh-ml-pipelines-scheduledworkflow-v2-v3-5
+    source:
+      git:
+        revision: be4cd7b7cd9de6e288239f6be433fbc8266a860a
+        url: https://github.com/red-hat-data-services/data-science-pipelines
+  - containerImage: quay.io/rhoai/odh-mlflow-operator-rhel9@sha256:ffcf5c2e5fa1802b1b37aa9aef7cc5655f7ca79bec5c0e9c375a9e5ecd0f25bf
+    name: odh-mlflow-operator-v3-5
+    source:
+      git:
+        revision: 807324276b60f69af8d4018ee28c32baf6cb34c9
+        url: https://github.com/red-hat-data-services/mlflow-operator
+  - containerImage: quay.io/rhoai/odh-mlflow-rhel9@sha256:0be528dc82781989d7d3fcddbf1f9825946c5ae5693c88106037c931f0a7120f
+    name: odh-mlflow-v3-5
+    source:
+      git:
+        revision: 3719eba2dfd856d6eaa3b2f6ab1fac162ffea9cc
+        url: https://github.com/red-hat-data-services/mlflow
+  - containerImage: quay.io/rhoai/odh-mlmd-grpc-server-rhel9@sha256:b26ea1deae4d82bcff589e66871ae9f6bbe52e51d80f3e3dba3a8e674d542213
+    name: odh-mlmd-grpc-server-v3-5
+    source:
+      git:
+        revision: 9f74c8e2ee8d533a9b7a233d7991ee8dff3d415f
+        url: https://github.com/red-hat-data-services/ml-metadata
+  - containerImage: quay.io/rhoai/odh-mlserver-cuda-rhel9@sha256:79dc2a3f05f72bf3d293fb9f0365eb01aaec02d64ce1400802d8fdbc20c03d00
+    name: odh-mlserver-cuda-v3-5
+    source:
+      git:
+        revision: 55f45f37c42260ba846ce5ba7b1e2d0208132981
+        url: https://github.com/red-hat-data-services/MLServer
+  - containerImage: quay.io/rhoai/odh-mlserver-rhel9@sha256:00e7adb823dc1edb2c3dc1f51dfa5a8745876c7756cbcaae5c118f4fd9ecbaa0
+    name: odh-mlserver-v3-5
+    source:
+      git:
+        revision: 55f45f37c42260ba846ce5ba7b1e2d0208132981
+        url: https://github.com/red-hat-data-services/MLServer
+  - containerImage: quay.io/rhoai/odh-mod-arch-agent-ops-rhel9@sha256:0f6f5ea6a248455132c100565ba8304804d18b76523ca40fb7077c9a2bd74d2c
+    name: odh-mod-arch-agent-ops-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-automl-rhel9@sha256:66aaf174245e580af9a49c9808ffa50ceaa22ee24f9d82ac7a97e2e9aae7773a
+    name: odh-mod-arch-automl-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-autorag-rhel9@sha256:dd5d108cbc4544f1f00335a328c128afdd50cb6404dfda5584069ca10d10dd48
+    name: odh-mod-arch-autorag-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-eval-hub-rhel9@sha256:36d93fb2b48de3c2413a245da951958242d5f1d2c3fd0bfb197caf42e7e0cacd
+    name: odh-mod-arch-eval-hub-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-gen-ai-rhel9@sha256:454ec285a52d8837dff8007b45cfbc164fb5c7e20a0864eda10ce3a7346ab7f9
+    name: odh-mod-arch-gen-ai-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-maas-rhel9@sha256:0d5ed5f9436d32008ac5ff0f813b1d3da7d24331603cb389734398511bf83380
+    name: odh-mod-arch-maas-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-mlflow-rhel9@sha256:d24e6e7fb7a9cfabe54e2d49f4a31ca61a88c13b5e0b61648eb3c7e076876f82
+    name: odh-mod-arch-mlflow-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-mod-arch-model-registry-rhel9@sha256:8d7f6151904c8cacadb130c22e0448c8f0689db27c9f4b1dd0858366d855ff01
+    name: odh-mod-arch-model-registry-v3-5
+    source:
+      git:
+        revision: 4d6753d923c78577dc721ed2294a310664eef720
+        url: https://github.com/red-hat-data-services/odh-dashboard
+  - containerImage: quay.io/rhoai/odh-model-controller-rhel9@sha256:523001deddebf45841f9352bd2a7518e6ca302f50ad2841b45985134e250e4ea
+    name: odh-model-controller-v3-5
+    source:
+      git:
+        revision: 95ad0462d57d002db54a78134d1a48ed213a292c
+        url: https://github.com/red-hat-data-services/odh-model-controller
+  - containerImage: quay.io/rhoai/odh-model-metadata-collection-rhel9@sha256:8a0aec17f8a485372eb95f0755e290e0c91f45b8eeaf3e18d9ecb0e59ead7444
+    name: odh-model-metadata-collection-v3-5
+    source:
+      git:
+        revision: 95b41ac04a64c9d5304b1964318274ee5b0831c0
+        url: https://github.com/red-hat-data-services/model-metadata-collection
+  - containerImage: quay.io/rhoai/odh-model-performance-data-rhel9@sha256:d3705b9e4841cc350b33b9588aa2b675d259092caeb4192e143bede5a0c73bfd
+    name: odh-model-performance-data-v3-5
+    source:
+      git:
+        revision: 6b0cd391518573e114f5a4c44c5fd6ee144f0c3b
+        url: https://github.com/red-hat-data-services/models-perf-benchmark-data
+  - containerImage: quay.io/rhoai/odh-model-registry-job-async-upload-rhel9@sha256:8585b02212df3ed48780d209821f37eca508af7d34bea2144233521a5727e3ad
+    name: odh-model-registry-job-async-upload-v3-5
+    source:
+      git:
+        revision: 0072739a8192a808e790ec901baf952225521bcb
+        url: https://github.com/red-hat-data-services/model-registry
+  - containerImage: quay.io/rhoai/odh-model-registry-operator-rhel9@sha256:aa9a5bb902cbc83cb60653eeb88bcd104fac226567ba6d80d2b7d7427485aeb8
+    name: odh-model-registry-operator-v3-5
+    source:
+      git:
+        revision: d2f5cfd57245722bb2839660ad41e090ca6526bd
+        url: https://github.com/red-hat-data-services/model-registry-operator
+  - containerImage: quay.io/rhoai/odh-model-registry-rhel9@sha256:005e81eb3b664edd1b15dc5723a61eddb277a4e9f6b5a8c398bfabcc8a19a791
+    name: odh-model-registry-v3-5
+    source:
+      git:
+        revision: fafc8a3e49ebb5b2747440486ddf62c66c005096
+        url: https://github.com/red-hat-data-services/model-registry
+  - containerImage: quay.io/rhoai/odh-model-serving-api-rhel9@sha256:69287ba29237300cd0742419bc475e90b18be578c93f5bd6f334ff3bd90bb151
+    name: odh-model-serving-api-v3-5
+    source:
+      git:
+        revision: 95ad0462d57d002db54a78134d1a48ed213a292c
+        url: https://github.com/red-hat-data-services/odh-model-controller
+  - containerImage: quay.io/rhoai/odh-must-gather-rhel9@sha256:fd0d6642eaad31fd46b6928ace3ef284d871ad9e814df139fc43188f647a89aa
+    name: odh-must-gather-v3-5
+    source:
+      git:
+        revision: 9de2a9efbe89a2c5e3760f90eb8bab09692c875c
+        url: https://github.com/red-hat-data-services/must-gather
+  - containerImage: quay.io/rhoai/odh-notebook-controller-rhel9@sha256:34a69624843113c386582e7cae9f006c5e8e996147dee1ebe389098068c6cddf
+    name: odh-notebook-controller-v3-5
+    source:
+      git:
+        revision: 98fc579b38c89a0a52fcee25031fca19b9fab9af
+        url: https://github.com/red-hat-data-services/kubeflow
+  - containerImage: quay.io/rhoai/odh-ogx-core-rhel9@sha256:a96caf4e5dfbe8ee9f1c342f2c1ab7200ce39d6ef464375718ac0313bc97dd5d
+    name: odh-ogx-core-v3-5
+    source:
+      git:
+        revision: be0094600a355aa72e80718b92c863134541e944
+        url: https://github.com/red-hat-data-services/ogx-distribution
+  - containerImage: quay.io/rhoai/odh-ogx-k8s-operator-rhel9@sha256:afe05811834664dfdb32eb65f02bf9a6a8a7456bd5e704cb94810b0f9dd2cbab
+    name: odh-ogx-k8s-operator-v3-5
+    source:
+      git:
+        revision: 0680c49842dfe89690f3d95b766539182769049f
+        url: https://github.com/red-hat-data-services/ogx-k8s-operator
+  - containerImage: quay.io/rhoai/odh-ogx-module-operator-rhel9@sha256:3740e22d0709d5a97cd17665ca5b061a99591a9dac66e68b15f70988f96ff879
+    name: odh-ogx-module-operator-v3-5
+    source:
+      git:
+        revision: 0680c49842dfe89690f3d95b766539182769049f
+        url: https://github.com/red-hat-data-services/ogx-k8s-operator
+  - containerImage: quay.io/rhoai/odh-openvino-model-server-rhel9@sha256:0d36cf373c78768fb10c295cb7496f7c22160c8528a8c4613338035c04d72a3d
+    name: odh-openvino-model-server-v3-5
+    source:
+      git:
+        revision: c624ca398fd8ee0d43d27934463d99cce8a54376
+        url: https://github.com/red-hat-data-services/openvino_model_server
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-datascience-cpu-py312-rhel9@sha256:a82b15fb6508f8f36a645afcb5e2cb943c2a53f4a2e8a1d1191d2bbbe7552db6
+    name: odh-pipeline-runtime-datascience-cpu-py312-v3-5
+    source:
+      git:
+        revision: 74a1feb4caf7cc610cd734bbcb506253c68a5f7e
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-minimal-cpu-py312-rhel9@sha256:834a2dcff15dc63f259284e9c6a344393b286d2b639706e4ed334b8817412c14
+    name: odh-pipeline-runtime-minimal-cpu-py312-v3-5
+    source:
+      git:
+        revision: 5a7d121db24b0f2f6265fff5e4fb3434e7e29eba
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-pytorch-cuda-py312-rhel9@sha256:1429e1fbd758254b7d58344e775bd26e94a5687084f0a374c905f022f2e6bb6e
+    name: odh-pipeline-runtime-pytorch-cuda-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-rhel9@sha256:730de563c2c3be4e2b4873f3bcd0881c30c20f5a58d2926d80bd5996025d379e
+    name: odh-pipeline-runtime-pytorch-llmcompressor-cuda-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-pytorch-rocm-py312-rhel9@sha256:9bb65c46e7f3319447044ca84ba85299f0d0d18017e52c3f581394b5095abc23
+    name: odh-pipeline-runtime-pytorch-rocm-py312-v3-5
+    source:
+      git:
+        revision: 74a1feb4caf7cc610cd734bbcb506253c68a5f7e
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-tensorflow-cuda-py312-rhel9@sha256:c9eb99c3109d9835980e970b583a9192549e0c2637bc34bd6ed956fc8e0ae2bc
+    name: odh-pipeline-runtime-tensorflow-cuda-py312-v3-5
+    source:
+      git:
+        revision: 74a1feb4caf7cc610cd734bbcb506253c68a5f7e
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipeline-runtime-tensorflow-rocm-py312-rhel9@sha256:5da3869f75cc1665a857333eefe413dbe4a164d2eaa94acc37f4c907f670db87
+    name: odh-pipeline-runtime-tensorflow-rocm-py312-v3-5
+    source:
+      git:
+        revision: 74a1feb4caf7cc610cd734bbcb506253c68a5f7e
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-pipelines-components-rhel9@sha256:6bd826f1ce3b80e1f5c975c198dd984413b882ad727eeb2e9748185ebde6bbc7
+    name: odh-pipelines-components-v3-5
+    source:
+      git:
+        revision: 6ea67fed448bd1779fa5af4d18bb11d1c4c26577
+        url: https://github.com/red-hat-data-services/pipelines-components
+  - containerImage: quay.io/rhoai/odh-rhaii-cluster-validator-rhel9@sha256:f09f845ac14d5cffdf2a935ea0040fcb1f52326301c39cd3637352ca5a11b580
+    name: odh-rhaii-cluster-validator-v3-5
+    source:
+      git:
+        revision: e4cd604548677314c2840d0f55b46a5c8735c63f
+        url: https://github.com/red-hat-data-services/rhaii-cluster-validation
+  - containerImage: quay.io/rhoai/odh-rhaii-validator-tools-rhel9@sha256:c5b56934db2b97ae734f06fc725b2251a1a493590e243f4dd1436123b7cfe4c0
+    name: odh-rhaii-validator-tools-v3-5
+    source:
+      git:
+        revision: e4cd604548677314c2840d0f55b46a5c8735c63f
+        url: https://github.com/red-hat-data-services/rhaii-cluster-validation
+  - containerImage: quay.io/rhoai/odh-rhel9-operator@sha256:e32f0d06197ffff8037f2165e18705cafddeed364e779b6e12a4e2d7cec4093f
+    name: odh-operator-v3-5
+    source:
+      git:
+        revision: 517a34b2ab358204c36dda26dc7645e69e2d2380
+        url: https://github.com/red-hat-data-services/rhods-operator
+  - containerImage: quay.io/rhoai/odh-spark-operator-rhel9@sha256:c81cb9dba4c196ba922a74effb0fa4e8d4af1f1d5f368cdbb83ac3746dd57401
+    name: odh-spark-operator-v3-5
+    source:
+      git:
+        revision: 480fcbb81ad472a1232fad4ade40ebda899bf585
+        url: https://github.com/red-hat-data-services/spark-operator
+  - containerImage: quay.io/rhoai/odh-ta-lmes-driver-rhel9@sha256:9ccb541654270c04d66112116803f73e355de1460b74b3e91ce5224e661a7203
+    name: odh-ta-lmes-driver-v3-5
+    source:
+      git:
+        revision: 190bcc3d51c714163796d6699ca706ab926f0aae
+        url: https://github.com/red-hat-data-services/trustyai-service-operator
+  - containerImage: quay.io/rhoai/odh-ta-lmes-job-rhel9@sha256:5f7f9537d51e64f38a9b2bd79461ba5328fc54b5fc51640ae7b2378b414d7fba
+    name: odh-ta-lmes-job-v3-5
+    source:
+      git:
+        revision: 9e19789901a89abac8b89d13986c0e6bdc11a568
+        url: https://github.com/red-hat-data-services/lm-evaluation-harness
+  - containerImage: quay.io/rhoai/odh-th-torch-cpu-py312-rhel9@sha256:847876d5df88e2e1e698f5974d4e747799a376fb9eff0dee5702dfea4a6f15c5
+    name: odh-th-torch-cpu-py312-v3-5
+    source:
+      git:
+        revision: eb1a7d3e1ebceea1858ce048769965b47e6045ed
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-th-torch-cuda-py312-rhel9@sha256:20d6e57b3a1f0cf31132c88e0561f4505d726df96530ea956b11b2628b39b889
+    name: odh-th-torch-cuda-py312-v3-5
+    source:
+      git:
+        revision: eb1a7d3e1ebceea1858ce048769965b47e6045ed
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-th-torch-rocm-py312-rhel9@sha256:774fa77c148bfe207f8670c4c3ebcbd27886d673d43d4a0e945f3fdba6b9fadb
+    name: odh-th-torch-rocm-py312-v3-5
+    source:
+      git:
+        revision: eb1a7d3e1ebceea1858ce048769965b47e6045ed
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-trainer-rhel9@sha256:b2fb14d36cc08deb2b4b32fbfdb2eb32156a6a703ac2598d183d327f04afe2a1
+    name: odh-trainer-v3-5
+    source:
+      git:
+        revision: afbaa3f3bc75d511757faabacf8cfc42d7b08481
+        url: https://github.com/red-hat-data-services/trainer
+  - containerImage: quay.io/rhoai/odh-training-cuda128-torch28-py312-rhel9@sha256:a839838c75aa6984a8f89cd549eb5ecf7fa7479de5124cd01ccf0371ddaeccba
+    name: odh-training-cuda128-torch28-py312-v3-5
+    source:
+      git:
+        revision: ad4fa6409b9751e0830c6af8f32f9ed9f3763b46
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-training-cuda128-torch29-py312-rhel9@sha256:d37ecd6d334de34adbb2ccecffb31d7447e4a45d665502d3cde5d40e73112b83
+    name: odh-training-cuda128-torch29-py312-v3-5
+    source:
+      git:
+        revision: eb1a7d3e1ebceea1858ce048769965b47e6045ed
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-training-operator-rhel9@sha256:de2ae20a1c25e65f127ae4a855e9272813d39b2fcbe0e086ddb5b711ef35073a
+    name: odh-training-operator-v3-5
+    source:
+      git:
+        revision: c7ab8dcaf470e7f778e64df42b8d04dcaab4a272
+        url: https://github.com/red-hat-data-services/training-operator
+  - containerImage: quay.io/rhoai/odh-training-rocm64-torch28-py312-rhel9@sha256:2e175d09e13b6f3336196143f194bc04f4142de46fbc230d7a1907b8f47fdb9f
+    name: odh-training-rocm64-torch28-py312-v3-5
+    source:
+      git:
+        revision: ad4fa6409b9751e0830c6af8f32f9ed9f3763b46
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-training-rocm64-torch29-py312-rhel9@sha256:339764217bc68702f5df95b1113ec4cd25f50b2d63a64ee3c06391cff1048b2f
+    name: odh-training-rocm64-torch29-py312-v3-5
+    source:
+      git:
+        revision: eb1a7d3e1ebceea1858ce048769965b47e6045ed
+        url: https://github.com/red-hat-data-services/distributed-workloads
+  - containerImage: quay.io/rhoai/odh-trustyai-garak-lls-provider-dsp-rhel9@sha256:b2c5248fad6ad8591d9d35d32d28ccaf0677a2101a292dd07a8c5e4140e95c35
+    name: odh-trustyai-garak-lls-provider-dsp-v3-5
+    source:
+      git:
+        revision: 0bd2f77573f0681e094a8bcb9d2d49c4fc3dd236
+        url: https://github.com/red-hat-data-services/llama-stack-provider-trustyai-garak
+  - containerImage: quay.io/rhoai/odh-trustyai-nemo-guardrails-server-rhel9@sha256:e9d3e37c0fa480b1c0fed2e39e4ca07f547ebde15de1ae85541fa44ab9dd3fb2
+    name: odh-trustyai-nemo-guardrails-server-v3-5
+    source:
+      git:
+        revision: 99f0947b941b1b7467d84e45688716670825c41a
+        url: https://github.com/red-hat-data-services/NeMo-Guardrails
+  - containerImage: quay.io/rhoai/odh-trustyai-service-operator-rhel9@sha256:655c85c0b10238c97591c8c21b26c974112602cf0bfaf3ff89ed0bb5820baf38
+    name: odh-trustyai-service-operator-v3-5
+    source:
+      git:
+        revision: 190bcc3d51c714163796d6699ca706ab926f0aae
+        url: https://github.com/red-hat-data-services/trustyai-service-operator
+  - containerImage: quay.io/rhoai/odh-trustyai-service-rhel9@sha256:29b7e7ec7bfe8babdef8b2b626ec405c03004078759948387c19f47e3f59771e
+    name: odh-trustyai-service-v3-5
+    source:
+      git:
+        revision: 40ee614a1d25ca1c0ff4af208f9c6dd8d5d6f17f
+        url: https://github.com/red-hat-data-services/trustyai-explainability
+  - containerImage: quay.io/rhoai/odh-trustyai-vllm-orchestrator-gateway-rhel9@sha256:7587d3f1996d5d99cd56244e4c6b024500e9a6aa97c3ff8ebe8079c17b90110c
+    name: odh-trustyai-vllm-orchestrator-gateway-v3-5
+    source:
+      git:
+        revision: b9bc0e139b103db3b5286ac7c477d2a3a49ca0c3
+        url: https://github.com/red-hat-data-services/vllm-orchestrator-gateway
+  - containerImage: quay.io/rhoai/odh-vllm-cpu-rhel9@sha256:9bdf537bac6d504122daeadaa9fcbd6eecc55b7bd5680174390ca8ccafe92ea3
+    name: odh-vllm-cpu-v3-5
+    source:
+      git:
+        revision: fd6617e8d86061de3887db97f8336281346ac189
+        url: https://github.com/red-hat-data-services/vllm-cpu
+  - containerImage: quay.io/rhoai/odh-vllm-cpu-rhel9@sha256:9bdf537bac6d504122daeadaa9fcbd6eecc55b7bd5680174390ca8ccafe92ea3
+    name: odh-vllm-cpu-v3-5
+    source:
+      git:
+        revision: fd6617e8d86061de3887db97f8336281346ac189
+        url: https://github.com/red-hat-data-services/vllm-cpu
+  - containerImage: quay.io/rhoai/odh-vllm-cpu-rhel9@sha256:d1c5af82683c9c69ecb9ad78ac4a309e303f211fcd36f3322d3f8917c943b613
+    name: odh-vllm-cpu-v3-5
+    source:
+      git:
+        revision: 7ac5a9ff2cc3570ea897ae4fa2f2d535c5ef26d8
+        url: https://github.com/red-hat-data-services/vllm-cpu
+  - containerImage: quay.io/rhoai/odh-workbench-codeserver-datascience-cpu-py312-rhel9@sha256:45e35703144250c03b812ca381cd6dfcf3c023f7fe8bfeec28ba10f27ef73844
+    name: odh-workbench-codeserver-datascience-cpu-py312-v3-5
+    source:
+      git:
+        revision: bb5095157db006d2393754e2a51fb1494349e5dc
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-datascience-cpu-py312-rhel9@sha256:07d791765ec0a9d3210e9cfc9f2cbac56ef4489ac5bc52e6b6f57e4c637bb308
+    name: odh-workbench-jupyter-datascience-cpu-py312-v3-5
+    source:
+      git:
+        revision: bb5095157db006d2393754e2a51fb1494349e5dc
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-minimal-cpu-py312-rhel9@sha256:fc599e6fa4217f68ec0512fef2817501d248fd2791db076f0ffb9b32b1eb7d11
+    name: odh-workbench-jupyter-minimal-cpu-py312-v3-5
+    source:
+      git:
+        revision: 5a7d121db24b0f2f6265fff5e4fb3434e7e29eba
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:57460120b026cc44fb2efb893c0044c994d812a83d9c03f08d1c6e43787e2ff6
+    name: odh-workbench-jupyter-minimal-cuda-py312-v3-5
+    source:
+      git:
+        revision: 5a7d121db24b0f2f6265fff5e4fb3434e7e29eba
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-minimal-rocm-py312-rhel9@sha256:7d416f699db8f233039056e887facecec110a5972b74f4a336b09e64a5d910f6
+    name: odh-workbench-jupyter-minimal-rocm-py312-v3-5
+    source:
+      git:
+        revision: 5a7d121db24b0f2f6265fff5e4fb3434e7e29eba
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-pytorch-cuda-py312-rhel9@sha256:084e90a90ed8455495f4e295d9448623a5cce54afb7c7bceba65aa61dad830cc
+    name: odh-workbench-jupyter-pytorch-cuda-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-rhel9@sha256:9c21f43687ec1c0d603e1786dc50b783d9343e2ab4c950a3b362ca44e4d578ef
+    name: odh-wb-jupyter-pytorch-llmcompressor-cuda-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-pytorch-rocm-py312-rhel9@sha256:80fd029d9b7a44a76663ecf4a124694c48c739d0b10bb591b6d75af76da4060e
+    name: odh-workbench-jupyter-pytorch-rocm-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:e797c8992e4395f8d2b129b9dfc9d9341a66189a42336201a1310ee7c78b96bc
+    name: odh-workbench-jupyter-tensorflow-cuda-py312-v3-5
+    source:
+      git:
+        revision: bb5095157db006d2393754e2a51fb1494349e5dc
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-tensorflow-rocm-py312-rhel9@sha256:b8dd1d8b1cb3f9925a822e19f6a72664c63824d38ff0778f3bf4a772dd36d70b
+    name: odh-workbench-jupyter-tensorflow-rocm-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbench-jupyter-trustyai-cpu-py312-rhel9@sha256:3e25aa907f130ead7bc6fb0416214031f9027aca3feeebf616b8c9bdb6a78e3d
+    name: odh-workbench-jupyter-trustyai-cpu-py312-v3-5
+    source:
+      git:
+        revision: 63e4cc42bcc1049cc53e1b1fd996d5a3eba572fd
+        url: https://github.com/red-hat-data-services/notebooks
+  - containerImage: quay.io/rhoai/odh-workbenches-operator-rhel9@sha256:231bb584a23ce91682ab4de454be88236adbad5ade70adb9b969e77d327e9e27
+    name: odh-workbenches-operator-v3-5
+    source:
+      git:
+        revision: 488632c3467f1dbfb6b26c176dffba05b4522088
+        url: https://github.com/red-hat-data-services/workbenches-operator
+  - containerImage: quay.io/rhoai/odh-workload-variant-autoscaler-controller-rhel9@sha256:6d3f9fde27dddb85c0e64bec656852dee0b17c143f9343de1d2c85ec428db74a
+    name: odh-workload-variant-autoscaler-controller-v3-5
+    source:
+      git:
+        revision: 8c6d44039ad1fdab88d99314071c817b26a11df8
+        url: https://github.com/red-hat-data-services/workload-variant-autoscaler
