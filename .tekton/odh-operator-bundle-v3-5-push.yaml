@@ -1,5 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
+# konflux build manual retrigger - 2026-11-19 06:04:17
 metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/red-hat-data-services/RHOAI-Build-Config?rev={{revision}}
@@ -8,6 +9,8 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     build.appstudio.openshift.io/build-nudge-files: "catalog/catalog-patch.yaml"
+    # Trigger on bundle/ changes (or this tekton file)
+    # No trigger if bundle/bundle-patch.yaml is the only change
     pipelinesascode.tekton.dev/on-cel-expression: |
       konflux_cluster == "stone-prod-p02"
       && event == "push"
@@ -32,7 +35,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/odh-operator-bundle:{{target_branch}}
   - name: rhoai-version
-    value: "3.5.4"
+    value: "3.5.5"
   - name: dockerfile
     value: bundle/Dockerfile
   - name: path-context
@@ -72,3 +75,4 @@ spec:
           cpu: "500m"
           memory: "1Gi"
 status: {}
+#restart
