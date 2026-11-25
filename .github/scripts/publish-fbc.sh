@@ -44,16 +44,12 @@ generate_catalogs() {
     yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
     LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
 
-    #Previous Release - Invoke the FBC processor to extract the snapshot images
+    # Render the previous bundle declared alongside its channel entries.
+    # Snapshot selection can return a different version and leave those entries unresolved.
+    PREVIOUS_BUNDLE_IMAGE=$(yq -e '.patch["olm.bundle"][0]' "$PREVIOUS_PATCH_YAML_PATH")
+    echo "PREVIOUS_BUNDLE_IMAGE = $PREVIOUS_BUNDLE_IMAGE"
     cp -f utils/utils/fbc-processor/fbc-semver-template.yaml utils/utils/fbc-processor/previous-fbc-semver-template.yaml
-    PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH=${PREVIOUS_BRANCH}/catalog/catalog_build_args.map
-    python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/previous_snapshot_images.json -v ${PREVIOUS_BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${PREVIOUS_BUILD_CONFIG_PATH} --catalog-build-args-file-path ${PREVIOUS_CATALOG_BUILD_ARGS_FILE_PATH} "${build_type_args[@]}"
-    PREVIOUS_LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/previous_snapshot_images.json)
-    echo "PREVIOUS_LATEST_BUNDLE_IMAGE = $PREVIOUS_LATEST_BUNDLE_IMAGE"
-    yq e -i '.stable.bundles[0].image = "$PREVIOUS_LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
-    PREVIOUS_LATEST_BUNDLE_IMAGE="$PREVIOUS_LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(PREVIOUS_LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
-
-
+    PREVIOUS_BUNDLE_IMAGE="$PREVIOUS_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = strenv(PREVIOUS_BUNDLE_IMAGE)' utils/utils/fbc-processor/previous-fbc-semver-template.yaml
 
     #Generate the single bundle catalog === sbc
     CSV_META_MIN_OCP_VERSION=417
