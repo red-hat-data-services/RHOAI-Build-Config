@@ -22,6 +22,11 @@ on:
         required: false
         default: ''
         type: string
+      operator-image-ref:
+        description: 'Digest-pinned operator image ref for EG (e.g. quay.io/rhoai/odh-rhel9-operator@sha256:...). Skips GITHUB_REF_NAME tag lookup when provided.'
+        required: false
+        default: ''
+        type: string
       dry_run:
         description: 'Push results to BRANCH-dry-run instead of the actual branch.'
         required: false
@@ -127,12 +132,25 @@ jobs:
       - name: Fetch latest operator image
         run: |
           set -euo pipefail
-          # For CI: use the branch name as the image tag (e.g. rhoai-3.6)
-          IMAGE_TAG="${GITHUB_REF_NAME}"
-          echo "Fetching operator image tag: ${IMAGE_TAG}"
-          INSPECT_OUTPUT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-rhel9-operator:${IMAGE_TAG}")
 
-          DIGEST=$(echo "${INSPECT_OUTPUT}" | jq -r '.Digest // empty')
+          if [[ "${{ inputs.eg-mode }}" == "true" && -n "${{ inputs.operator-image-ref }}" ]]; then
+            # EG mode: use the digest-pinned operator ref passed from the EG pipeline.
+            # In EG mode GITHUB_REF_NAME is the ephemeral bundle branch (e.g.
+            # eg-bundle-148-...), not the release branch, so the tag-based lookup
+            # would fail with "manifest unknown".
+            OPERATOR_IMAGE_REF="${{ inputs.operator-image-ref }}"
+            echo "EG mode: using digest-pinned operator image ref: ${OPERATOR_IMAGE_REF}"
+            INSPECT_OUTPUT=$(skopeo inspect --no-tags "docker://${OPERATOR_IMAGE_REF}")
+            DIGEST=$(echo "${OPERATOR_IMAGE_REF}" | sed 's/.*@//')
+          else
+            # Release mode: use the branch name as the image tag (e.g. rhoai-3.6)
+            IMAGE_TAG="${GITHUB_REF_NAME}"
+            echo "Fetching operator image tag: ${IMAGE_TAG}"
+            INSPECT_OUTPUT=$(skopeo inspect --no-tags "docker://quay.io/rhoai/odh-rhel9-operator:${IMAGE_TAG}")
+            DIGEST=$(echo "${INSPECT_OUTPUT}" | jq -r '.Digest // empty')
+            OPERATOR_IMAGE_REF="quay.io/rhoai/odh-rhel9-operator@${DIGEST}"
+          fi
+
           GIT_URL=$(echo "${INSPECT_OUTPUT}" | jq -r '.Labels["git.url"] // .Labels["github.url"] // empty')
           GIT_COMMIT=$(echo "${INSPECT_OUTPUT}" | jq -r '.Labels["git.commit"] // .Labels["github.commit"] // empty')
 
@@ -144,7 +162,6 @@ jobs:
             exit 1
           fi
 
-          OPERATOR_IMAGE_REF="quay.io/rhoai/odh-rhel9-operator@${DIGEST}"
           # Extract owner/repo for actions/checkout (strip https://github.com/ prefix)
           OPERATOR_REPO="${GIT_URL#https://github.com/}"
           OPERATOR_REPO="${OPERATOR_REPO%/}"
