@@ -28,7 +28,10 @@ permissions:
 
 jobs:
   insta-merge:
-    if: ${{ github.event.sender.login == 'konflux-internal-p02[bot]'  && contains(github.event.pull_request.title, 'update odh-operator-bundle-')}}
+    # Both Konflux apps create nudge PRs (konflux-internal[bot] and
+    # konflux-internal-p02[bot]) depending on which instance builds the
+    # component — accept both or nudges stick open and block the chain.
+    if: ${{ (github.event.sender.login == 'konflux-internal[bot]' || github.event.sender.login == 'konflux-internal-p02[bot]')  && contains(github.event.pull_request.title, 'update odh-operator-bundle-')}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
