@@ -10,7 +10,7 @@ metadata:
     # No build-nudge-files: this image is deleted with its branch. The gate's
     # answer is FBC_IMAGE_REF_BY_DIGEST, not a nudge.
     #
-    # One arm only. rhoai-3.6 is already built by rhoai-fbc-fragment-v3-6-push.yaml.
+    # One arm only. rhoai-3.7-ea.1 is already built by rhoai-fbc-fragment-v3-7-ea-1-push.yaml.
     #
     # eg-fbc- is deliberately disjoint from eg-bundle-: the bundle file fires on
     # eg-bundle-* with an "early-gate:" subject, which is exactly the shape of
@@ -43,7 +43,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/rhoai-fbc-fragment:rhoai-fbc-fragment-{{target_branch}}-{{revision}}
   - name: rhoai-version
-    value: "3.6.0"
+    value: "3.7.0-ea.1"
   - name: build-type
     value: "ci"
   - name: dockerfile
@@ -75,7 +75,7 @@ spec:
   - name: build-args-file
     value: catalog/catalog_build_args.map
   # No skip-fips-check, enable-slack-* or enable-downstream-triggers: not declared
-  # by fbc-fragment-build.yaml on konflux-central@rhoai-3.6, and an undeclared
+  # by fbc-fragment-build.yaml on konflux-central@rhoai-3.7-ea.1, and an undeclared
   # param fails the run at validation.
   #
   # The POC used skip-fips-check to drop fbc-fips-check-oci-ta, whose own 6h
@@ -89,10 +89,10 @@ spec:
       value: https://github.com/red-hat-data-services/konflux-central.git
     # A literal branch, not '{{ target_branch }}': the eg-fbc-* branches are
     # created by the gate in THIS repo and never exist in konflux-central, so
-    # target_branch would not resolve and no build would start. rhoai-3.6 rather
+    # target_branch would not resolve and no build would start. rhoai-3.7-ea.1 rather
     # than main so the gate uses the pipeline the release uses. Bump with the branch.
     - name: revision
-      value: 'rhoai-3.6'
+      value: 'rhoai-3.7-ea.1'
     - name: pathInRepo
       value: pipelines/fbc-fragment-build.yaml
   taskRunTemplate:
