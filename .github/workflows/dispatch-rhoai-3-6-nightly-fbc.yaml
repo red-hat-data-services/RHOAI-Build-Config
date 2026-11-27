@@ -1,0 +1,23 @@
+name: Dispatch RHOAI 3.6 Nightly FBC After Bundle
+
+on:
+  check_run:
+    types: [completed]
+
+permissions:
+  actions: write
+
+jobs:
+  dispatch-nightly-fbc:
+    if: >-
+      github.event.check_run.conclusion == 'success' &&
+      github.event.check_run.app.slug == 'konflux-internal-p02' &&
+      github.event.check_run.name == 'Konflux Production Internal / odh-operator-bundle-v3-6-on-schedule' &&
+      startsWith(github.event.check_run.details_url, 'https://konflux-ui.apps.stone-prod-p02.hjvn.p1.openshiftapps.com/ns/rhoai-tenant/pipelinerun/odh-operator-bundle-v3-6-on-schedule-')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Start the nightly FBC workflow on rhoai-3.6
+        run: gh workflow run trigger-nightly-fbc-build.yaml --ref rhoai-3.6
