@@ -36,7 +36,10 @@ env:
 
 jobs:
   process-bundle:
-    if: ${{ github.ref_name != 'main' }}
+    if: >-
+      ${{ github.ref_name != 'main' &&
+          (github.event_name != 'push' ||
+           !startsWith(github.event.head_commit.message, 'Updating the nightly bundle-csv and helm chart values with latest images')) }}
     runs-on: ubuntu-latest
     container:
       # defined here: https://github.com/red-hat-data-services/devops-images/tree/main/builds
