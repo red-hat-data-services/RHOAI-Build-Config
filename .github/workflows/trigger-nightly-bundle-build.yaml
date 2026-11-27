@@ -186,7 +186,7 @@ jobs:
           git add -A
           PUSH_BRANCH="${{ inputs.dry_run == true && format('{0}-dry-run-nightly-bundle', steps.get_branch.outputs.branch) || steps.get_branch.outputs.branch }}"
           FORCE_FLAG="${{ inputs.dry_run == true && '--force' || '' }}"
-          git diff --staged --quiet || (git commit -m "Updating the bundle-csv and helm chart values with latest images
+          git diff --staged --quiet || (git commit -m "Updating the nightly bundle-csv and helm chart values with latest images
 
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" && git push ${FORCE_FLAG} origin HEAD:${PUSH_BRANCH})
 
