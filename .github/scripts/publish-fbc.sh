@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-build_type_args=()
 push_pipeline_operation=enable
 if [[ $1 == nightly ]]; then
-    build_type_args=(--build-type nightly)
     push_pipeline_operation=disable
 fi
 
@@ -25,9 +23,6 @@ generate_catalogs() {
     PREVIOUS_PATCH_YAML_PATH=${PREVIOUS_BRANCH}/catalog/catalog-patch.yaml
 
     OC_TOKEN=$(echo $OC_TOKEN | awk '{$1=$1};1' | tr -d '\n')
-    OPERATOR_BUNDLE_IMAGE_NAME=RELATED_IMAGE_ODH_OPERATOR_BUNDLE_IMAGE
-    echo "OPERATOR_BUNDLE_IMAGE_NAME = $OPERATOR_BUNDLE_IMAGE_NAME"
-
     #Generate the catalog for the latest bundle
     #podman login quay.io -u ${RHOAI_QUAY_RO_USERNAME} -p ${RHOAI_QUAY_RO_TOKEN}
     BASE64_AUTH=$(echo -n "${RHOAI_QUAY_RO_USERNAME}:${RHOAI_QUAY_RO_TOKEN}" | base64 -w 0)
@@ -36,13 +31,17 @@ generate_catalogs() {
     APPLICATION_NAME=rhoai-${COMPONENT_SUFFIX}
     echo "APPLICATION_NAME = $APPLICATION_NAME"
 
-    #Invoke the FBC processor to extract the snapshot images
+    # Both workflows publish to the same branch. Render the bundle pinned in
+    # its catalog patch and derive the build metadata from that same image.
     CATALOG_BUILD_ARGS_FILE_PATH=${BRANCH}/catalog/catalog_build_args.map
-    python3 utils/utils/fbc-processor/fbc-processor.py -op extract-snapshot-images -o utils/snapshot_images.json -v ${BRANCH} -f ${OPERATOR_BUNDLE_COMPONENT_NAME} -b ${BUILD_CONFIG_PATH} --catalog-build-args-file-path ${CATALOG_BUILD_ARGS_FILE_PATH} "${build_type_args[@]}"
-    LATEST_BUNDLE_IMAGE=$(jq --arg OPERATOR_BUNDLE_IMAGE_NAME "$OPERATOR_BUNDLE_IMAGE_NAME" -r '.[]   | select(.name == $OPERATOR_BUNDLE_IMAGE_NAME) | .value' utils/snapshot_images.json)
-    echo "LATEST_BUNDLE_IMAGE = $LATEST_BUNDLE_IMAGE"
-    yq e -i '.stable.bundles[0].image = "$LATEST_BUNDLE_IMAGE"' utils/utils/fbc-processor/fbc-semver-template.yaml
-    LATEST_BUNDLE_IMAGE="$LATEST_BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = env(LATEST_BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
+    BUNDLE_IMAGE=$(yq -e '.patch["olm.bundle"][0]' "$PATCH_YAML_PATH")
+    echo "BUNDLE_IMAGE = $BUNDLE_IMAGE"
+    python3 utils/utils/fbc-processor/fbc-processor.py \
+        -op extract-snapshot-images -o utils/snapshot_images.json \
+        -v "$BRANCH" -f "$OPERATOR_BUNDLE_COMPONENT_NAME" -b "$BUILD_CONFIG_PATH" \
+        --catalog-build-args-file-path "$CATALOG_BUILD_ARGS_FILE_PATH" \
+        --use-existing-digests -p "$PATCH_YAML_PATH"
+    BUNDLE_IMAGE="$BUNDLE_IMAGE" yq e -i '.stable.bundles[0].image = strenv(BUNDLE_IMAGE)' utils/utils/fbc-processor/fbc-semver-template.yaml
 
     # Render the previous bundle declared alongside its channel entries.
     # Snapshot selection can return a different version and leave those entries unresolved.
