@@ -250,6 +250,8 @@ ARG ODH_FEAST_MCP_GIT_URL=
 ARG ODH_FEAST_MCP_GIT_COMMIT=
 ARG ODH_TRAINER_OPERATOR_GIT_URL=
 ARG ODH_TRAINER_OPERATOR_GIT_COMMIT=
+ARG ODH_DATA_CONNECT_HUB_CONTROLLER_GIT_URL=
+ARG ODH_DATA_CONNECT_HUB_CONTROLLER_GIT_COMMIT=
 
 # Core bundle labels.
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
@@ -512,7 +514,9 @@ LABEL \
       odh-feast-mcp.git.url="${ODH_FEAST_MCP_GIT_URL}" \
       odh-feast-mcp.git.commit="${ODH_FEAST_MCP_GIT_COMMIT}" \
       odh-trainer-operator.git.url="${ODH_TRAINER_OPERATOR_GIT_URL}" \
-      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}"
+      odh-trainer-operator.git.commit="${ODH_TRAINER_OPERATOR_GIT_COMMIT}" \
+      odh-data-connect-hub-controller.git.url="${ODH_DATA_CONNECT_HUB_CONTROLLER_GIT_URL}" \
+      odh-data-connect-hub-controller.git.commit="${ODH_DATA_CONNECT_HUB_CONTROLLER_GIT_COMMIT}"
 # Copy files to locations specified by labels.
 
 LABEL com.redhat.component="odh-operator-bundle" \
