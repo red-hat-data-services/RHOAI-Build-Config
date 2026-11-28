@@ -10,7 +10,7 @@ metadata:
     # No build-nudge-files: this image is deleted with its branch, so a nudge PR
     # would point at nothing. Block 3 takes the digest from the gate's results.
     #
-    # One arm only. rhoai-3.6 is already built by odh-operator-bundle-v3-6-push.yaml.
+    # One arm only. rhoai-3.7-ea.1 is already built by odh-operator-bundle-v3-7-ea-1-push.yaml.
     #
     # The "early-gate:" subject is load-bearing: creating the branch is itself a
     # push, and the fork inherits the release branch's tip commit, so without it
@@ -40,7 +40,7 @@ spec:
   - name: output-image
     value: quay.io/rhoai/odh-operator-bundle:odh-operator-bundle-{{target_branch}}-{{revision}}
   - name: rhoai-version
-    value: "3.6.0"
+    value: "3.7.0-ea.1"
   - name: dockerfile
     value: bundle/Dockerfile
   - name: path-context
@@ -48,7 +48,7 @@ spec:
   - name: hermetic
     value: true
   # No prefetch-input (FROM scratch, nothing to fetch) and no skip-checks, both
-  # matching odh-operator-bundle-v3-6-push.yaml: the gate scans what release scans.
+  # matching odh-operator-bundle-v3-7-ea-1-push.yaml: the gate scans what release scans.
   - name: build-source-image
     value: true
   # false, as the release file: container-build.yaml pushes the plain tag, so
@@ -58,7 +58,7 @@ spec:
   - name: build-args-file
     value: bundle/bundle_build_args.map
   # No enable-slack-*, enable-downstream-triggers or skip-fips-check. The POC
-  # passes them, but container-build.yaml on konflux-central@rhoai-3.6 declares
+  # passes them, but container-build.yaml on konflux-central@rhoai-3.7-ea.1 declares
   # none of them, and an undeclared param fails the run at validation.
   pipelineRef:
     resolver: git
@@ -67,10 +67,10 @@ spec:
       value: https://github.com/red-hat-data-services/konflux-central.git
     # A literal branch, not '{{ target_branch }}': the eg-bundle-* branches are
     # created by the gate in THIS repo and never exist in konflux-central, so
-    # target_branch would not resolve and no build would start. rhoai-3.6 rather
+    # target_branch would not resolve and no build would start. rhoai-3.7-ea.1 rather
     # than main so the gate uses the pipeline the release uses. Bump with the branch.
     - name: revision
-      value: 'rhoai-3.6'
+      value: 'rhoai-3.7-ea.1'
     - name: pathInRepo
       value: pipelines/container-build.yaml
   taskRunTemplate:
